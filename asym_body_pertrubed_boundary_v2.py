@@ -28,7 +28,8 @@ from mayavi.modules.image_plane_widget import ImagePlaneWidget
 view = 'front side'
 
 # Uniform lighting?
-uniform_light = True
+#uniform_light = True
+uniform_light = False
 
 
 show_density = False
@@ -40,22 +41,26 @@ show_mag = False
 show_mag_scale = False
 show_mag_vec = False
 show_vel_front = False
+show_vel_front_pert = False
 show_vel_top = False
+show_vel_top_pert = False
 show_disp_top = False
 show_disp_front = False
 show_axes = False
 show_boundary = False
 
-#show_density = True
+show_density = True
 #show_density_lagrang = True
 #show_density_pert = True
-show_density_pert2 = True
+#show_density_pert2 = True #THIS ONE WORKS
 #show_pressure = True
 show_mag = True
 #show_mag_scale = True
 #show_mag_vec = True
 show_vel_front = True
+#show_vel_front_pert = True
 #show_vel_top = True
+#show_vel_top_pert = True
 #show_disp_top = True
 #show_disp_front = True
 show_axes = True
@@ -74,13 +79,15 @@ def disp_rel_asym_2var(W, K):
 # Find a solution for W
 ntries = 50
 #
+
+# Slow kink Surface
 W_init = 0.2
 W_end = sf.cT
 W = W_init
 
 W = solver.solver_forwards(disp_rel_asym_1var, W_init, W_end, ntries)
 
-# Slow kink body 1
+## Slow kink body 1
 #W_init = 0.760431
 #W_end = 0.760531
 #W = W_init
@@ -166,49 +173,61 @@ if show_disp_top==True or show_disp_front==True:
                         xixvals_mask_front[i,j,k] = 0
                         xizvals_mask_front[i,j,k] = 0
                         
+if show_vel_front == True or show_vel_top == True:
+    vxvals = np.real(np.repeat(sf.vx_kink(xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
+    #vzvals = np.real((1j * sf.c0**2 / (sf.c0**2 - W**2)) * 
+    #                 np.repeat(sf.vx_dash_kink(xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
+    vzvals = np.real(np.repeat(sf.vz_kink(xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
+    
+    vyvals = np.zeros_like(vxvals)
+    
+    vxvals_mask = np.copy(vxvals)
+    vyvals_mask = np.copy(vyvals)
+    vzvals_mask = np.copy(vzvals)
+    
+if show_vel_front_pert == True or show_vel_top_pert == True:
+    vxvals = np.real(np.repeat(sf.vx_kink_pert(xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
 
-vxvals = np.real(np.repeat(sf.vx_kink(xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
-#vzvals = np.real((1j * sf.c0**2 / (sf.c0**2 - W**2)) * 
-#                 np.repeat(sf.vx_dash_kink(xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
-vzvals = np.real(np.repeat(sf.vz_kink(xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
+    vzvals = np.real(np.repeat(sf.vz_kink_pert(xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
+    
+    vyvals = np.zeros_like(vxvals)
+    
+    vxvals_mask = np.copy(vxvals)
+    vyvals_mask = np.copy(vyvals)
+    vzvals_mask = np.copy(vzvals)
 
-vyvals = np.zeros_like(vxvals)
-
-vxvals_mask = np.copy(vxvals)
-vyvals_mask = np.copy(vyvals)
-vzvals_mask = np.copy(vzvals)
-
-mod = 4
-mod_top = np.ceil(4. / y_spacing)
-
-for i in range(vxvals.shape[0]):
-    for j in range(vxvals.shape[1]):
-        for k in range(vxvals.shape[2]):
-            if (i%mod)!=0 or (j%mod)!=0 or (k%mod)!=0:
-                vxvals_mask[i,j,k] = 0
-                vzvals_mask[i,j,k] = 0
-                
-vxvals_mask_top = np.copy(vxvals)
-vyvals_mask_top = np.copy(vyvals)
-vzvals_mask_top = np.copy(vzvals)
-
-for i in range(vxvals.shape[0]):
-    for j in range(vxvals.shape[1]):
-        for k in range(vxvals.shape[2]):
-            if (i%mod)!=0 or (k%mod_top)!=0:
-                vxvals_mask_top[i,j,k] = 0
-                vzvals_mask_top[i,j,k] = 0
-                
-vxvals_mask_front = np.copy(vxvals)
-vyvals_mask_front = np.copy(vyvals)
-vzvals_mask_front = np.copy(vzvals)
-
-for i in range(vxvals.shape[0]):
-    for j in range(vxvals.shape[1]):
-        for k in range(vxvals.shape[2]):
-            if (i%mod)!=0 or (j%mod)!=0:
-                vxvals_mask_front[i,j,k] = 0
-                vzvals_mask_front[i,j,k] = 0
+if np.array([show_vel_front, show_vel_top, show_vel_front_pert, show_vel_top_pert]).any() == True:
+    mod = 4
+    mod_top = np.ceil(4. / y_spacing)
+    
+    for i in range(vxvals.shape[0]):
+        for j in range(vxvals.shape[1]):
+            for k in range(vxvals.shape[2]):
+                if (i%mod)!=0 or (j%mod)!=0 or (k%mod)!=0:
+                    vxvals_mask[i,j,k] = 0
+                    vzvals_mask[i,j,k] = 0
+                    
+    vxvals_mask_top = np.copy(vxvals)
+    vyvals_mask_top = np.copy(vyvals)
+    vzvals_mask_top = np.copy(vzvals)
+    
+    for i in range(vxvals.shape[0]):
+        for j in range(vxvals.shape[1]):
+            for k in range(vxvals.shape[2]):
+                if (i%mod)!=0 or (k%mod_top)!=0:
+                    vxvals_mask_top[i,j,k] = 0
+                    vzvals_mask_top[i,j,k] = 0
+                    
+    vxvals_mask_front = np.copy(vxvals)
+    vyvals_mask_front = np.copy(vyvals)
+    vzvals_mask_front = np.copy(vzvals)
+    
+    for i in range(vxvals.shape[0]):
+        for j in range(vxvals.shape[1]):
+            for k in range(vxvals.shape[2]):
+                if (i%mod)!=0 or (j%mod)!=0:
+                    vxvals_mask_front[i,j,k] = 0
+                    vzvals_mask_front[i,j,k] = 0
 
 #bxvals = sf.B0*vxvals / W
 #bz_eq2d = np.repeat(sf.bz_eq(xvals, K)[:, np.newaxis], nz+1, axis=1)
@@ -283,8 +302,8 @@ if show_boundary == True:
     ext_min_r = ((nx+1) * (xi_boundary_r_vals.min() - xmin) / (xmax - xmin)) * x_spacing
     ext_max_r = ((nx+1) * (xi_boundary_r_vals.max() - xmin) / (xmax - xmin)) * x_spacing
     
-    ext_min_l = ((nx+1) * (xi_boundary_l_vals.min() - xmin) / (xmax - xmin) + 2) * x_spacing
-    ext_max_l = ((nx+1) * (xi_boundary_l_vals.max() - xmin) / (xmax - xmin) + 2) * x_spacing
+    ext_min_l = ((nx+1) * (xi_boundary_l_vals.min() - xmin) / (xmax - xmin)) * x_spacing #plus 2 after (xmax-xmin)?
+    ext_max_l = ((nx+1) * (xi_boundary_l_vals.max() - xmin) / (xmax - xmin)) * x_spacing #plus 2 after (xmax-xmin)?
     
     
     boundary_r = mlab.mesh(xi_boundary_r_vals, zvals, yvals,
@@ -329,6 +348,10 @@ if show_density == True:
     ##vol1._otf = otf
     rvol1._volume_property.set_scalar_opacity(otf)
     
+    # exempt volume from shading and improve overall look by increasing opacity
+    rvol1.volume_property.shade = False
+    rvol1.volume_property.scalar_opacity_unit_distance = 2.0
+    
     
     #Volume for low pressure
     rvmin2 = minr + 0. * (maxr - minr)
@@ -344,7 +367,7 @@ if show_density == True:
     rvol2._volume_property.set_color(ctf2)
     rvol2._ctf = ctf2
     rvol2.update_ctf = True
-    
+
     #Changing the opacity of the volume vol1
     ## Changing the otf:
     otf = PiecewiseFunction()
@@ -352,6 +375,10 @@ if show_density == True:
     otf.add_point(rvmin2, 0.10)
     ##vol1._otf = otf
     rvol2._volume_property.set_scalar_opacity(otf)
+    
+    # exempt volume from shading and improve overall look by increasing opacity
+    rvol2.volume_property.shade = False
+    rvol2.volume_property.scalar_opacity_unit_distance = 2.0
 
 if show_density_lagrang == True:
     # Scalar field density   
@@ -387,6 +414,10 @@ if show_density_lagrang == True:
     ##vol1._otf = otf
     rvol1._volume_property.set_scalar_opacity(otf)
     
+    # exempt volume from shading and improve overall look by increasing opacity
+    rvol1.volume_property.shade = False
+    rvol1.volume_property.scalar_opacity_unit_distance = 2.0
+    
     
     #Volume for low pressure
     rvmin2 = -0.5 #minr + 0.49 * (maxr - minr)
@@ -410,6 +441,10 @@ if show_density_lagrang == True:
     otf.add_point(rvmin2, 0.10)
     ##vol1._otf = otf
     rvol2._volume_property.set_scalar_opacity(otf)
+
+    # exempt volume from shading and improve overall look by increasing opacity
+    rvol2.volume_property.shade = False
+    rvol2.volume_property.scalar_opacity_unit_distance = 2.0
     
 if show_density_pert == True:
     # Scalar field density   
@@ -445,6 +480,10 @@ if show_density_pert == True:
     ##vol1._otf = otf
     rvol1._volume_property.set_scalar_opacity(otf)
     
+    # exempt volume from shading and improve overall look by increasing opacity
+    rvol1.volume_property.shade = False
+    rvol1.volume_property.scalar_opacity_unit_distance = 2.0
+    
     
     #Volume for low pressure
     rvmin2 = minr + 0. * (maxr - minr)
@@ -468,6 +507,10 @@ if show_density_pert == True:
     otf.add_point(rvmin2, 0.10)
     ##vol1._otf = otf
     rvol2._volume_property.set_scalar_opacity(otf)
+    
+    # exempt volume from shading and improve overall look by increasing opacity
+    rvol2.volume_property.shade = False
+    rvol2.volume_property.scalar_opacity_unit_distance = 2.0
     
 if show_density_pert2 == True:
     # Scalar field density   
@@ -503,6 +546,10 @@ if show_density_pert2 == True:
     ##vol1._otf = otf
     rvol1._volume_property.set_scalar_opacity(otf)
     
+    # exempt volume from shading and improve overall look by increasing opacity
+    rvol1.volume_property.shade = False
+    rvol1.volume_property.scalar_opacity_unit_distance = 2.0
+    
     
     #Volume for low pressure
     rvmin2 = minr + 0. * (maxr - minr)
@@ -526,6 +573,10 @@ if show_density_pert2 == True:
     otf.add_point(rvmin2, 0.10)
     ##vol1._otf = otf
     rvol2._volume_property.set_scalar_opacity(otf)
+    
+    # exempt volume from shading and improve overall look by increasing opacity
+    rvol2.volume_property.shade = False
+    rvol2.volume_property.scalar_opacity_unit_distance = 2.0
 
 if show_pressure == True:
     # Scalar field p_tot    
@@ -599,9 +650,8 @@ if show_pressure == True:
 #module_manager = image_plane_widget.parent
 #module_manager.scalar_lut_manager.lut_mode = 'RdBu'
 #module_manager.scalar_lut_manager.reverse_lut = True
-
-
     
+
 # Vector field bxvals, bzvals, byvals
 field = mlab.pipeline.vector_field(bxvals, bzvals, byvals, name="B field", 
                                        figure=fig)
@@ -673,7 +723,7 @@ if show_mag_vec == True:
 ##vectors.glyph.glyph.orient = False
 #vectors.glyph.color_mode = 'no_coloring'
 
-if show_vel_top == True:
+if show_vel_top == True or show_vel_top_pert == True:
     vdirfield_top = mlab.pipeline.vector_field(vxvals_mask_top, np.zeros_like(vxvals_mask_top),
                                                 vyvals_mask_top, name="V field top",
                                                 figure=fig)
@@ -687,7 +737,7 @@ if show_vel_top == True:
     vector_cut_plane_top.glyph.glyph_source.glyph_source = vector_cut_plane_top.glyph.glyph_source.glyph_dict['arrow_source']
     vector_cut_plane_top.glyph.glyph_source.glyph_position = 'center'
     
-if show_vel_front == True:
+if show_vel_front == True or show_vel_front_pert == True:
     vdirfield_front = mlab.pipeline.vector_field(vxvals_mask_front, vzvals_mask_front,
                                                  vyvals_mask_front, name="V field front",
                                                  figure=fig)
@@ -771,46 +821,45 @@ if show_axes == True:
     axes.axes.z_label = ''
     axes.axes.label_format = ''
 
-if uniform_light == True:
-    #uniform lighting
-    field.scene.light_manager.number_of_lights = 6
-    
-    camera_light1 = field.scene.light_manager.lights[0]
-    camera_light1.activate = True
-    camera_light1.intensity = 0.5
-    camera_light1.elevation = 90.
-    camera_light1.azimuth = 0.
-
-    camera_light2 = field.scene.light_manager.lights[1]
-    camera_light2.activate = True
-    camera_light2.intensity = 0.5
-    camera_light2.elevation = -90.
-    camera_light2.azimuth = 0.
-
-    camera_light3 = field.scene.light_manager.lights[2]
-    camera_light3.activate = True
-    camera_light3.intensity = 0.5
-    camera_light3.elevation = 0.
-    camera_light3.azimuth = -90
-
-    camera_light4 = field.scene.light_manager.lights[3]
-    camera_light4.activate = True
-    camera_light4.intensity = 0.5
-    camera_light4.elevation = 0.
-    camera_light4.azimuth = 0.
-
-    camera_light5 = field.scene.light_manager.lights[4]
-    camera_light5.activate = True
-    camera_light5.intensity = 0.5
-    camera_light5.elevation = 0.
-    camera_light5.azimuth = 90.
-
-    camera_light6 = field.scene.light_manager.lights[5]
-    camera_light6.activate = True
-    camera_light6.intensity = 0.5
-    camera_light6.elevation = 0.
-    camera_light6.azimuth = 180.
-    
+#if uniform_light == True:
+#    #uniform lighting
+#    field.scene.light_manager.number_of_lights = 6
+#    
+#    camera_light1 = field.scene.light_manager.lights[0]
+#    camera_light1.activate = True
+#    camera_light1.intensity = 0.7
+#    camera_light1.elevation = 90.
+#    camera_light1.azimuth = 0.
+#
+#    camera_light2 = field.scene.light_manager.lights[1]
+#    camera_light2.activate = True
+#    camera_light2.intensity = 0.7
+#    camera_light2.elevation = -90.
+#    camera_light2.azimuth = 0.
+#
+#    camera_light3 = field.scene.light_manager.lights[2]
+#    camera_light3.activate = True
+#    camera_light3.intensity = 0.7
+#    camera_light3.elevation = 0.
+#    camera_light3.azimuth = -90
+#
+#    camera_light4 = field.scene.light_manager.lights[3]
+#    camera_light4.activate = True
+#    camera_light4.intensity = 0.7
+#    camera_light4.elevation = 0.
+#    camera_light4.azimuth = 0.
+#
+#    camera_light5 = field.scene.light_manager.lights[4]
+#    camera_light5.activate = True
+#    camera_light5.intensity = 0.7
+#    camera_light5.elevation = 0.
+#    camera_light5.azimuth = 90.
+#
+#    camera_light6 = field.scene.light_manager.lights[5]
+#    camera_light6.activate = True
+#    camera_light6.intensity = 0.7
+#    camera_light6.elevation = 0.
+#    camera_light6.azimuth = 180.
 
 #Black background
 field.scene.background = (0., 0., 0.)

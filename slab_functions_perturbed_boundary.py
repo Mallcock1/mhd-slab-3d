@@ -58,8 +58,10 @@ def me(W):
 #    else:
 #        constant = 0.05 # for surface modes
 #    return constant
+
 const = 0.05 #for surface
-    
+#const = 0.3 # Body
+
 # MAKE THESE GUYS FUCTIONS!
 constC_s = const
 constB_kink = const
@@ -479,21 +481,21 @@ def p_tothat_kink(x, W, K, R1):
         p_tothatfunction[i] = constD_kink(W, K, R1)*(sc.sinh(m2(W)*x[i]) -
                                                            sc.cosh(m2(W)*x[i])) * lamb2(W)
     return p_tothatfunction
-#
-#def vx_kink(x, z, t, W, K, R1):
-#    if type(vxhat_kink(x, W, K, R1)) == np.complex128:
-#        return vxhat_kink(x, W, K, R1) * np.exp(1j*(z-t))
-#    else:
-#        return np.outer(vxhat_kink(x, W, K, R1), np.exp(1j*(z-t)))
-#
-#def vx_dash_kink(x, z, t, W, K, R1):
-#    return np.outer(vxhat_dash_kink(x, W, K, R1), np.exp(1j*(z-t)))
-#
-#def vz_kink(x, z, t, W, K, R1):
-#    if type(vzhat_kink(x, W, K, R1)) == np.complex128:
-#        return vzhat_kink(x, W, K, R1) * np.exp(1j*(z-t))
-#    else:
-#        return np.outer(vzhat_kink(x, W, K, R1), np.exp(1j*(z-t)))
+
+def vx_kink(x, z, t, W, K, R1):
+    if type(vxhat_kink(x, W, K, R1)) == np.complex128:
+        return vxhat_kink(x, W, K, R1) * np.exp(1j*(z-t))
+    else:
+        return np.outer(vxhat_kink(x, W, K, R1), np.exp(1j*(z-t)))
+
+def vx_dash_kink(x, z, t, W, K, R1):
+    return np.outer(vxhat_dash_kink(x, W, K, R1), np.exp(1j*(z-t)))
+
+def vz_kink(x, z, t, W, K, R1):
+    if type(vzhat_kink(x, W, K, R1)) == np.complex128:
+        return vzhat_kink(x, W, K, R1) * np.exp(1j*(z-t))
+    else:
+        return np.outer(vzhat_kink(x, W, K, R1), np.exp(1j*(z-t)))
     
 def xix_kink(x, z, t, W, K, R1):
     if type(vxhat_kink(x, W, K, R1)) == np.complex128:
@@ -512,20 +514,12 @@ def p_tot_kink(x, z, t, W, K, R1):
     
     
 def xihat_boundary_kink(W, K, R1, boundary='r'):
-    if m0(W)**2 < 0:
-        if boundary == 'r' or boundary == 'right':
-            xihat_kink = (1 / W) * (constB_kink*sc.cosh(m0(W)*K) + 
-                                     constC_kink(W, K, R1)*sc.sinh(m0(W)*K))
-        if boundary == 'l' or boundary == 'left':
-            xihat_kink = (1 / W) * (constB_kink*sc.cosh(m0(W)*-K) + 
-                                     constC_kink(W, K, R1)*sc.sinh(m0(W)*-K))
-    else:
-        if boundary == 'r' or boundary == 'right':
-            xihat_kink = (1j / W) * (constB_kink*sc.cosh(m0(W)*K) + 
-                                     constC_kink(W, K, R1)*sc.sinh(m0(W)*K))
-        if boundary == 'l' or boundary == 'left':
-            xihat_kink = (1j / W) * (constB_kink*sc.cosh(m0(W)*-K) + 
-                                     constC_kink(W, K, R1)*sc.sinh(m0(W)*-K))        
+    if boundary == 'r' or boundary == 'right':
+        xihat_kink = (1j / W) * (constB_kink*sc.cosh(m0(W)*K) + 
+                                 constC_kink(W, K, R1)*sc.sinh(m0(W)*K))
+    if boundary == 'l' or boundary == 'left':
+        xihat_kink = (1j / W) * (constB_kink*sc.cosh(m0(W)*-K) + 
+                                 constC_kink(W, K, R1)*sc.sinh(m0(W)*-K))   
     return xihat_kink
 
 def xi_boundary_kink(z, t, W, K, R1, boundary='r'):           
@@ -538,7 +532,7 @@ def bxhat_kink(x, z, t, W, K, R1):
     indices = np.where(truth == True)
     bxhat_function = np.zeros(len(x), dtype=complex)
     for i in indices:
-        bxhat_function[i] = (-B0/W)*m0(W)*(constB_kink*sc.cosh(m0(W)*x[i]) +
+        bxhat_function[i] = (-B0/W)*(constB_kink*sc.cosh(m0(W)*x[i]) +
                                    constC_kink(W, K, R1)*sc.sinh(m0(W)*x[i]))
 #    truth2 = np.array(x < (-K + xi_boundary_kink(z, t, W, R1, K, boundary='l'))*np.ones(len(x)))
 #    indices2 = np.where(truth2 == True)
@@ -587,7 +581,7 @@ def rho_hat_kink(x, W, K, R1):
     indices = np.where(truth == True)
     rho_hatfunction = np.zeros(len(x), dtype=complex)
     for i in indices:
-        rho_hatfunction[i] = -m0(W)*(constB_kink*sc.sinh(m0(W)*x[i]) +
+        rho_hatfunction[i] = m0(W)*(constB_kink*sc.sinh(m0(W)*x[i]) +
                              constC_kink(W, K, R1)*sc.cosh(m0(W)*x[i])) * lamb00(W) / (c0**2 * m00(W))
     truth2 = np.array(x < -K*np.ones(len(x)))
     indices2 = np.where(truth2 == True)
@@ -612,7 +606,7 @@ def rho_kink_lagrang(x, z, t, W, K, R1):
     NUG = np.real(np.array(np.meshgrid(x,z)) + np.array([xix_kink(x, z, t, W, K, R1), 
                                                  xiz_kink(x, z, t, W, K, R1)]))
     f = sc.interpolate.interp2d(NUG[0,:,:], NUG[1,:,:], rho_kink_xz, kind='cubic')
-    return f(x,z)           
+    return f(x,z)
                 
                 
 # for plotting rho(x + xi,t) at (x,t)
@@ -686,7 +680,7 @@ def rho_kink_pert2(x, z, t, W, K, R1):
             rho_vals[i,j] = rho_hat_vals[i,j] * np.exp(1j*(z[j]-t))
     return rho_vals
     
-def vx_kink(x, z, t, W, K, R1):
+def vx_kink_pert(x, z, t, W, K, R1):
     vx_hat_vals = np.zeros((len(x), len(z)), dtype=complex)
     vx_vals = np.zeros((len(x), len(z)), dtype=complex)
     for i in range(len(x)):
@@ -709,7 +703,7 @@ def vx_kink(x, z, t, W, K, R1):
 
     return vx_vals
     
-def vz_kink(x, z, t, W, K, R1):
+def vz_kink_pert(x, z, t, W, K, R1):
     vz_hat_vals = np.zeros((len(x), len(z)), dtype=complex)
     vz_vals = np.zeros((len(x), len(z)), dtype=complex)
     for i in range(len(x)):
