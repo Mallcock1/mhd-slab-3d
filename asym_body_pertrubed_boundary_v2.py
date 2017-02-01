@@ -19,6 +19,12 @@ from mayavi.modules.image_plane_widget import ImagePlaneWidget
 
 ###############################################################################
 
+# What mode do you want? OPTIONS:
+mode_options = ['slow kink surf', 'slow saus surf', 'slow kink body 1',
+                'slow saus body 1', 'slow kink body 2', 'slow saus body 2']
+mode = mode_options[2]
+
+
 # Which angle shall we view from?
 #view = 'front'
 #view = 'front parallel'
@@ -30,7 +36,6 @@ view = 'front side'
 # Uniform lighting?
 #uniform_light = True
 uniform_light = False
-
 
 show_density = False
 show_density_lagrang = False
@@ -76,16 +81,37 @@ def disp_rel_asym_1var(W):
 def disp_rel_asym_2var(W, K):
     return sf.disp_rel_asym(W, K, R1)
 
+
+Wrange = np.linspace(0., sf.c2, 51)
+Woptions = tool.point_finder_scipy(disp_rel_asym_2var, np.array(K), Wrange, args=None).transpose()
+Woptions = np.real(Woptions)
+tol = 1e-2
+indices_to_rm = []
+for i in range(len(Woptions)):
+    w = Woptions[i]
+    print(type(Woptions[i]))
+    print(i)
+    if min(abs(np.array([w, w - sf.c0, w - sf.c1(R1), w - sf.c2, w - sf.vA]))) < tol or w < 0 or w > max(sf.c0, sf.vA, sf.c1, sf.c2):
+        indices_to_rm.append(i)
+Woptions = np.delete(Woptions, indices_to_rm)
+Woptions = Woptions.sort()
+
+#Something is wrong below. Fix on 2/2/17 pls
+for i in range(len(mode_options)):
+    if mode == mode_options[i]:
+        W = Woptions[i]
+        break
+
 # Find a solution for W
 ntries = 50
 #
 
 # Slow kink Surface
-W_init = 0.2
-W_end = sf.cT
-W = W_init
-
-W = solver.solver_forwards(disp_rel_asym_1var, W_init, W_end, ntries)
+#W_init = 0.2
+#W_end = sf.cT
+#W = W_init
+#
+#W = solver.solver_forwards(disp_rel_asym_1var, W_init, W_end, ntries)
 
 ## Slow kink body 1
 #W_init = 0.760431
@@ -95,11 +121,11 @@ W = solver.solver_forwards(disp_rel_asym_1var, W_init, W_end, ntries)
 #W = solver.solver_forwards(disp_rel_asym_1var, W_init, W_end, ntries)
 
 ## Slow kink body 2
-#W_init = 0.68336
-#W_end = 0.68338
-#W = W_init
-#
-#W = solver.solver_forwards(disp_rel_asym_1var, W_init, W_end, ntries)
+W_init = 0.68336
+W_end = 0.68338
+W = W_init
+
+W = solver.solver_forwards(disp_rel_asym_1var, W_init, W_end, ntries)
 
 
 #

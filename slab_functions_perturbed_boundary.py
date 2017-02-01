@@ -59,10 +59,24 @@ def me(W):
 #        constant = 0.05 # for surface modes
 #    return constant
 
-const = 0.05 #for surface
-#const = 0.3 # Body
+#def surf_or_body(W):
+#    if m0(W)**2 < 0:
+#        return 'body'
+#    elif m0(W)**2 > 0:
+#        return 'surf'
+#    else:
+#        return 'not a mode'
+#
+#if surf_or_body(W) == 'body':
+#    const = 0.3 # Body 1
+#else:
+#    const = 0.05 #for surface
+##
+const = 0.3 # Body 1
 
-# MAKE THESE GUYS FUCTIONS!
+#const = 0.05 #for surface
+
+# MAKE THESE GUYS FUCTIONS! NO
 constC_s = const
 constB_kink = const
 constC_s_sym = const
@@ -505,7 +519,7 @@ def xix_kink(x, z, t, W, K, R1):
     
 def xiz_kink(x, z, t, W, K, R1):
     if type(vzhat_kink(x, W, K, R1)) == np.complex128:
-        return (1j * vzhat_kink(x, W, K, R1) /W) * np.exp(1j*(z-t))
+        return (1j * vzhat_kink(x, W, K, R1) / W) * np.exp(1j*(z-t))
     else:
         return np.outer(1j * vzhat_kink(x, W, K, R1) / W, np.exp(1j*(z-t)))
     
@@ -519,7 +533,7 @@ def xihat_boundary_kink(W, K, R1, boundary='r'):
                                  constC_kink(W, K, R1)*sc.sinh(m0(W)*K))
     if boundary == 'l' or boundary == 'left':
         xihat_kink = (1j / W) * (constB_kink*sc.cosh(m0(W)*-K) + 
-                                 constC_kink(W, K, R1)*sc.sinh(m0(W)*-K))   
+                                 constC_kink(W, K, R1)*sc.sinh(m0(W)*-K))
     return xihat_kink
 
 def xi_boundary_kink(z, t, W, K, R1, boundary='r'):           
@@ -581,7 +595,7 @@ def rho_hat_kink(x, W, K, R1):
     indices = np.where(truth == True)
     rho_hatfunction = np.zeros(len(x), dtype=complex)
     for i in indices:
-        rho_hatfunction[i] = m0(W)*(constB_kink*sc.sinh(m0(W)*x[i]) +
+        rho_hatfunction[i] = -m0(W)*(constB_kink*sc.sinh(m0(W)*x[i]) +
                              constC_kink(W, K, R1)*sc.cosh(m0(W)*x[i])) * lamb00(W) / (c0**2 * m00(W))
     truth2 = np.array(x < -K*np.ones(len(x)))
     indices2 = np.where(truth2 == True)

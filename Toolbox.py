@@ -35,16 +35,36 @@ from functools import partial
 # Your output will be a numpy array called y_pts.
 # You may then use plot(x_range, y_pts).
 
+#Mihai's original
+#def point_finder_scipy(func, x_range, y_range, args=None):
+#    y_pts = []
+#    if args is None:
+#        args = [None]
+#    for x in x_range:
+#        out = []
+#        for a in args:
+#            if a is None:
+#                a = x
+#            out.append(a)
+#        root_temp = []
+#        for y in y_range:
+#            try:
+#                root = sp.newton(func, y, args = tuple(out), tol = 1e-20)
+#                root_temp = t.check(root, root_temp, 10**(-6))
+#            except RuntimeError:
+#                pass
+#        y_pts.append(root_temp)
+#    y_array = t.list_to_array(y_pts)
+#    return y_array
+
 def point_finder_scipy(func, x_range, y_range, args=None):
     y_pts = []
     if args is None:
         args = [None]
-    for x in x_range:
+    if x_range.shape == ():
         out = []
         for a in args:
-            if a is None:
-                a = x
-            out.append(a)
+            out.append(float(x_range))
         root_temp = []
         for y in y_range:
             try:
@@ -53,6 +73,21 @@ def point_finder_scipy(func, x_range, y_range, args=None):
             except RuntimeError:
                 pass
         y_pts.append(root_temp)
+    else:
+        for x in x_range:
+            out = []
+            for a in args:
+                if a is None:
+                    a = x
+                out.append(a)
+            root_temp = []
+            for y in y_range:
+                try:
+                    root = sp.newton(func, y, args = tuple(out), tol = 1e-20)
+                    root_temp = t.check(root, root_temp, 10**(-6))
+                except RuntimeError:
+                    pass
+            y_pts.append(root_temp)
     y_array = t.list_to_array(y_pts)
     return y_array
 
