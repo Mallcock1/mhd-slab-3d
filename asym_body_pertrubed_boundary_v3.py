@@ -13,7 +13,7 @@ import Toolbox as tool
 from scipy.optimize import newton
 import solver
 
-import slab_functions_perturbed_boundary as sf
+import slab_functions_perturbed_boundary_v3 as sf
 from pysac.plot.mayavi_seed_streamlines import SeedStreamline
 
 from mayavi import mlab
@@ -22,9 +22,9 @@ from mayavi.modules.image_plane_widget import ImagePlaneWidget
 ###############################################################################
 
 # What mode do you want? OPTIONS:
-mode_options = ['slow kink surf', 'slow saus surf', 'slow kink body 1',
-                'slow saus body 1', 'slow kink body 2', 'slow saus body 2']
-mode = mode_options[2]
+mode_options = ['slow kink surf', 'slow saus surf', 'slow saus body 2',
+                'slow kink body 2', 'slow saus body 1', 'slow kink body 1', 'fast saus body 1']
+mode = mode_options[5]
 
 
 # Which angle shall we view from?
@@ -57,10 +57,7 @@ show_axes = False
 show_boundary = False
 
 show_density = True
-#show_density_lagrang = True
 #show_density_pert = True
-#show_density_pert2 = True #THIS ONE WORKS
-#show_pressure = True
 show_mag = True
 #show_mag_scale = True
 #show_mag_vec = True
@@ -84,7 +81,7 @@ def disp_rel_asym_2var(W, K):
     return sf.disp_rel_asym(W, K, R1)
 
 # find eigenfrequencies W (= omega/k) withing the range Wrange for the given parameters.
-Wrange = np.linspace(0., sf.c2, 51)
+Wrange = np.linspace(0., sf.c2, 501)
 Woptions = tool.point_finder_scipy(disp_rel_asym_2var, np.array(K), Wrange, args=None).transpose()
 Woptions = np.real(Woptions)
 
@@ -173,12 +170,12 @@ x_spacing = max(nx, ny, nz) / nx
 y_spacing = max(nx, ny, nz) / ny
 z_spacing = max(nx, ny, nz) / nz
 
-if show_disp_top==True or show_disp_front==True:
-    xixvals = np.real(np.repeat(sf.xix_kink(xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
-    xizvals = np.real(np.repeat(sf.xiz_kink(xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
+if show_disp_top == True or show_disp_front == True:
+    xixvals = np.real(np.repeat(sf.xix(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
+    xizvals = np.real(np.repeat(sf.xiz(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
     xiyvals = np.zeros_like(xixvals)
     
-    if show_disp_top==True:    
+    if show_disp_top == True:    
         mod = 4
         mod_top = np.ceil(4 / y_spacing)
                                 
@@ -192,7 +189,7 @@ if show_disp_top==True or show_disp_front==True:
                     if (i%mod)!=0 or (k%1)!=0:
                         xixvals_mask_top[i,j,k] = 0
                         xizvals_mask_top[i,j,k] = 0
-    if show_disp_front==True:
+    if show_disp_front == True:
         xixvals_mask_front = np.copy(xixvals)
         xiyvals_mask_front = np.copy(xiyvals)
         xizvals_mask_front = np.copy(xizvals)
@@ -205,10 +202,10 @@ if show_disp_top==True or show_disp_front==True:
                         xizvals_mask_front[i,j,k] = 0
                         
 if show_vel_front == True or show_vel_top == True:
-    vxvals = np.real(np.repeat(sf.vx_kink(xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
+    vxvals = np.real(np.repeat(sf.vx(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
     #vzvals = np.real((1j * sf.c0**2 / (sf.c0**2 - W**2)) * 
     #                 np.repeat(sf.vx_dash_kink(xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
-    vzvals = np.real(np.repeat(sf.vz_kink(xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
+    vzvals = np.real(np.repeat(sf.vz(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
     
     vyvals = np.zeros_like(vxvals)
     
@@ -217,9 +214,9 @@ if show_vel_front == True or show_vel_top == True:
     vzvals_mask = np.copy(vzvals)
     
 if show_vel_front_pert == True or show_vel_top_pert == True:
-    vxvals = np.real(np.repeat(sf.vx_kink_pert(xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
+    vxvals = np.real(np.repeat(sf.vx_pert(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
 
-    vzvals = np.real(np.repeat(sf.vz_kink_pert(xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
+    vzvals = np.real(np.repeat(sf.vz_pert(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
     
     vyvals = np.zeros_like(vxvals)
     
@@ -267,11 +264,11 @@ if np.array([show_vel_front, show_vel_top, show_vel_front_pert, show_vel_top_per
 #            bz_eq3d))
 # Maybe there should be a - in bzvals? Seems to work without though.
 
-bxvals = np.real(np.repeat(sf.bx_kink(xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
+bxvals = np.real(np.repeat(sf.bx(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
 #bz_eq2d = np.repeat(sf.bz_eq(xvals, K)[:, np.newaxis], nz, axis=1)
-bz_eq3d = np.repeat(sf.bz_eq(xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2)
+bz_eq3d = np.repeat(sf.bz_eq(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2)
 #bz_eq3d = sf.B0*np.ones_like(bxvals)
-bzvals = np.real(np.repeat(-sf.bz_kink(xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2) +
+bzvals = np.real(np.repeat(-sf.bz(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2) +
                  bz_eq3d)
                  
                  
@@ -288,26 +285,17 @@ for i in range(bxvals.shape[0]):
                 bxvals_mask_front[i,j,k] = 0
                 bzvals_mask_front[i,j,k] = 0
 
-if show_pressure == True:
-    p_totvals = np.real(np.repeat(sf.p_tot_kink(xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
-
 if show_boundary == True:
-    xi_boundary_r_vals = np.real(np.repeat(K + sf.xi_boundary_kink(zvals, t, W, K, R1, boundary='r')[:, np.newaxis], ny, axis=1))
-    xi_boundary_l_vals = np.real(np.repeat(-K + sf.xi_boundary_kink(zvals, t, W, K, R1, boundary='l')[:, np.newaxis], ny, axis=1))
+    xix_boundary_r_vals = np.real(np.repeat(K + sf.xix_boundary(mode, zvals, t, W, K, R1, boundary='r')[:, np.newaxis], ny, axis=1))
+    xix_boundary_l_vals = np.real(np.repeat(-K + sf.xix_boundary(mode, zvals, t, W, K, R1, boundary='l')[:, np.newaxis], ny, axis=1))
 
 #xi_boundary_r_vals = np.real(np.repeat(K*np.ones_like(sf.xi_boundary_kink(zvals, t, W, K, R1, boundary='r'))[:, np.newaxis], ny, axis=1))
 #xi_boundary_l_vals = np.real(np.repeat(-K*np.ones_like(sf.xi_boundary_kink(zvals, t, W, K, R1, boundary='r'))[:, np.newaxis], ny, axis=1))
 if show_density == True:
-    rho_vals = np.real(np.repeat(sf.rho_kink(xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
+    rho_vals = np.real(np.repeat(sf.rho(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
 
-if show_density_lagrang == True:
-    rho_vals_lagrang = np.real(np.repeat(sf.rho_kink_lagrang(xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
-    
 if show_density_pert == True:
-    rho_vals_pert = np.real(np.repeat(sf.rho_kink_pert(xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
-    
-if show_density_pert2 == True:
-    rho_vals_pert2 = np.real(np.repeat(sf.rho_kink_pert2(xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
+    rho_vals_pert = np.real(np.repeat(sf.rho_pert(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
 
 #zvals, yvals = np.mgrid[zmin:zmax:(nx)*1j,
 #                        ymin:ymax:(ny)*1j]
@@ -330,18 +318,18 @@ fig = mlab.figure(size=tuple(100 * np.array((16,9)))) #16:9 aspect ratio for vid
 spacing =  np.array([x_spacing, z_spacing, y_spacing])
 
 if show_boundary == True:
-    ext_min_r = ((nx+1) * (xi_boundary_r_vals.min() - xmin) / (xmax - xmin)) * x_spacing
-    ext_max_r = ((nx+1) * (xi_boundary_r_vals.max() - xmin) / (xmax - xmin)) * x_spacing
+    ext_min_r = ((nx+1) * (xix_boundary_r_vals.min() - xmin) / (xmax - xmin)) * x_spacing
+    ext_max_r = ((nx+1) * (xix_boundary_r_vals.max() - xmin) / (xmax - xmin)) * x_spacing
     
-    ext_min_l = ((nx+1) * (xi_boundary_l_vals.min() - xmin) / (xmax - xmin)) * x_spacing #plus 2 after (xmax-xmin)?
-    ext_max_l = ((nx+1) * (xi_boundary_l_vals.max() - xmin) / (xmax - xmin)) * x_spacing #plus 2 after (xmax-xmin)?
+    ext_min_l = ((nx+1) * (xix_boundary_l_vals.min() - xmin) / (xmax - xmin)) * x_spacing #plus 2 after (xmax-xmin)?
+    ext_max_l = ((nx+1) * (xix_boundary_l_vals.max() - xmin) / (xmax - xmin)) * x_spacing #plus 2 after (xmax-xmin)?
     
     
-    boundary_r = mlab.mesh(xi_boundary_r_vals, zvals, yvals,
+    boundary_r = mlab.mesh(xix_boundary_r_vals, zvals, yvals,
                            extent=[ext_min_r, ext_max_r, 0, nz, 0, (ny-1) * y_spacing],
                            color=(0.5,0.5,0.5), opacity=0.7)
     
-    boundary_l = mlab.mesh(xi_boundary_l_vals, zvals, yvals,
+    boundary_l = mlab.mesh(xix_boundary_l_vals, zvals, yvals,
                            extent=[ext_min_l, ext_max_l, 0, nz, 0, (ny-1) * y_spacing],
                            color=(0.5,0.5,0.5), opacity=0.7)
 
@@ -411,71 +399,6 @@ if show_density == True:
     rvol2.volume_property.shade = False
     rvol2.volume_property.scalar_opacity_unit_distance = 2.0
 
-if show_density_lagrang == True:
-    # Scalar field density   
-    rho_lagrang = mlab.pipeline.scalar_field(rho_vals_lagrang, name="density", figure=fig)
-    #scalar_cut_plane = ScalarCutPlane()
-    #fig.parent.add_filter(scalar_cut_plane, sca)
-    rho_lagrang.spacing = spacing
-    minr = rho_vals_lagrang.min()
-    maxr = rho_vals_lagrang.max()
-    
-    #Volume for high pressure
-    rvmin1 = 0.01 #minr + 0.501 * (maxr - minr)
-    rvmax1 = 0.5 #minr + 0.51 * (maxr - minr)
-    rvol1 = mlab.pipeline.volume(rho_lagrang, vmin=rvmin1, vmax=rvmax1)
-    
-    # Changing the ctf:
-    from tvtk.util.ctf import ColorTransferFunction
-    ctf1 = ColorTransferFunction()
-    ctf1.add_rgb_point(rvmin1, 1., 1., 0.5)
-    ctf1.add_rgb_point(rvmin1 + 0.5 * (rvmax1 - rvmin1), 1, 0.3, 0.1)
-    ctf1.add_rgb_point(rvmax1, 1., 0., 0.)
-    # ...
-    rvol1._volume_property.set_color(ctf1)
-    rvol1._ctf = ctf1
-    rvol1.update_ctf = True
-    
-    #Changing the opacity of the volume vol1
-    ## Changing the otf:
-    from tvtk.util.ctf import PiecewiseFunction
-    otf = PiecewiseFunction()
-    otf.add_point(rvmin1, 0)
-    otf.add_point(rvmax1, 0.10)
-    ##vol1._otf = otf
-    rvol1._volume_property.set_scalar_opacity(otf)
-    
-    # exempt volume from shading and improve overall look by increasing opacity
-    rvol1.volume_property.shade = False
-    rvol1.volume_property.scalar_opacity_unit_distance = 2.0
-    
-    
-    #Volume for low pressure
-    rvmin2 = -0.5 #minr + 0.49 * (maxr - minr)
-    rvmax2 = -0.01 #minr + 0.499 * (maxr - minr)
-    rvol2 = mlab.pipeline.volume(rho_lagrang, vmin=rvmin2, vmax=rvmax2)
-    
-    # Changing the ctf:
-    ctf2 = ColorTransferFunction()
-    ctf2.add_rgb_point(rvmin2, 0., 0.5, 1.)
-    ctf2.add_rgb_point(rvmin2 + 0.5 * (rvmax2 - rvmin2), 0.1, 0.7, 1.)
-    ctf2.add_rgb_point(rvmax2, 0.5, 1., 1.)
-    # ...
-    rvol2._volume_property.set_color(ctf2)
-    rvol2._ctf = ctf2
-    rvol2.update_ctf = True
-    
-    #Changing the opacity of the volume vol1
-    ## Changing the otf:
-    otf = PiecewiseFunction()
-    otf.add_point(rvmax2, 0)
-    otf.add_point(rvmin2, 0.10)
-    ##vol1._otf = otf
-    rvol2._volume_property.set_scalar_opacity(otf)
-
-    # exempt volume from shading and improve overall look by increasing opacity
-    rvol2.volume_property.shade = False
-    rvol2.volume_property.scalar_opacity_unit_distance = 2.0
     
 if show_density_pert == True:
     # Scalar field density   
@@ -542,145 +465,7 @@ if show_density_pert == True:
     # exempt volume from shading and improve overall look by increasing opacity
     rvol2.volume_property.shade = False
     rvol2.volume_property.scalar_opacity_unit_distance = 2.0
-    
-if show_density_pert2 == True:
-    # Scalar field density   
-    rho_pert2 = mlab.pipeline.scalar_field(rho_vals_pert2, name="density", figure=fig)
-    #scalar_cut_plane = ScalarCutPlane()
-    #fig.parent.add_filter(scalar_cut_plane, sca)
-    rho_pert2.spacing = spacing
-    minr = rho_vals_pert2.min()
-    maxr = rho_vals_pert2.max()
-    
-    #Volume for high pressure
-    rvmin1 = minr + 0.55 * (maxr - minr)
-    rvmax1 = minr + 1. * (maxr - minr)
-    rvol1 = mlab.pipeline.volume(rho_pert2, vmin=rvmin1, vmax=rvmax1)
-    
-    # Changing the ctf:
-    from tvtk.util.ctf import ColorTransferFunction
-    ctf1 = ColorTransferFunction()
-    ctf1.add_rgb_point(rvmin1, 1., 1., 0.5)
-    ctf1.add_rgb_point(rvmin1 + 0.5 * (rvmax1 - rvmin1), 1, 0.3, 0.1)
-    ctf1.add_rgb_point(rvmax1, 1., 0., 0.)
-    # ...
-    rvol1._volume_property.set_color(ctf1)
-    rvol1._ctf = ctf1
-    rvol1.update_ctf = True
-    
-    #Changing the opacity of the volume vol1
-    ## Changing the otf:
-    from tvtk.util.ctf import PiecewiseFunction
-    otf = PiecewiseFunction()
-    otf.add_point(rvmin1, 0)
-    otf.add_point(rvmax1, 0.10)
-    ##vol1._otf = otf
-    rvol1._volume_property.set_scalar_opacity(otf)
-    
-    # exempt volume from shading and improve overall look by increasing opacity
-    rvol1.volume_property.shade = False
-    rvol1.volume_property.scalar_opacity_unit_distance = 2.0
-    
-    
-    #Volume for low pressure
-    rvmin2 = minr + 0. * (maxr - minr)
-    rvmax2 = minr + 0.45 * (maxr - minr)
-    rvol2 = mlab.pipeline.volume(rho_pert2, vmin=rvmin2, vmax=rvmax2)
-    
-    # Changing the ctf:
-    ctf2 = ColorTransferFunction()
-    ctf2.add_rgb_point(rvmin2, 0., 0.5, 1.)
-    ctf2.add_rgb_point(rvmin2 + 0.5 * (rvmax2 - rvmin2), 0.1, 0.7, 1.)
-    ctf2.add_rgb_point(rvmax2, 0.5, 1., 1.)
-    # ...
-    rvol2._volume_property.set_color(ctf2)
-    rvol2._ctf = ctf2
-    rvol2.update_ctf = True
-    
-    #Changing the opacity of the volume vol1
-    ## Changing the otf:
-    otf = PiecewiseFunction()
-    otf.add_point(rvmax2, 0)
-    otf.add_point(rvmin2, 0.10)
-    ##vol1._otf = otf
-    rvol2._volume_property.set_scalar_opacity(otf)
-    
-    # exempt volume from shading and improve overall look by increasing opacity
-    rvol2.volume_property.shade = False
-    rvol2.volume_property.scalar_opacity_unit_distance = 2.0
 
-if show_pressure == True:
-    # Scalar field p_tot    
-    sca = mlab.pipeline.scalar_field(p_totvals, name="p_tot", figure=fig)
-    #scalar_cut_plane = ScalarCutPlane()
-    #fig.parent.add_filter(scalar_cut_plane, sca)
-    sca.spacing = spacing
-    minp = p_totvals.min()
-    maxp = p_totvals.max()
-    
-    #Volume for high pressure
-    pvmin1 = minp+ 0.55 * (maxp - minp)
-    pvmax1 = minp + 1. * (maxp - minp)
-    vol1 = mlab.pipeline.volume(sca, vmin=pvmin1, vmax=pvmax1)
-    
-    # Changing the ctf:
-    from tvtk.util.ctf import ColorTransferFunction
-    ctf1 = ColorTransferFunction()
-    ctf1.add_rgb_point(pvmin1, 1., 1., 0.5)
-    ctf1.add_rgb_point(pvmin1 + 0.5 * (pvmax1 - pvmin1), 1, 0.3, 0.1)
-    ctf1.add_rgb_point(pvmax1, 1., 0., 0.)
-    # ...
-    vol1._volume_property.set_color(ctf1)
-    vol1._ctf = ctf1
-    vol1.update_ctf = True
-    
-    #Changing the opacity of the volume vol1
-    ## Changing the otf:
-    from tvtk.util.ctf import PiecewiseFunction
-    otf = PiecewiseFunction()
-    otf.add_point(pvmin1, 0)
-    otf.add_point(pvmax1, 0.1)
-    ##vol1._otf = otf
-    vol1._volume_property.set_scalar_opacity(otf)
-    
-    
-    #Volume for low pressure
-    pvmin2 = minp+ 0. * (maxp - minp)
-    pvmax2 = minp + 0.45 * (maxp - minp)
-    vol2 = mlab.pipeline.volume(sca, vmin=pvmin2, vmax=pvmax2)
-    
-    # Changing the ctf:
-    ctf2 = ColorTransferFunction()
-    ctf2.add_rgb_point(pvmin2, 0., 0.5, 1.)
-    ctf2.add_rgb_point(pvmin2 + 0.5 * (pvmax2 - pvmin2), 0.1, 0.7, 1.)
-    ctf2.add_rgb_point(pvmax2, 0.5, 1., 1.)
-    # ...
-    vol2._volume_property.set_color(ctf2)
-    vol2._ctf = ctf2
-    vol2.update_ctf = True
-    
-    #Changing the opacity of the volume vol1
-    ## Changing the otf:
-    otf = PiecewiseFunction()
-    otf.add_point(pvmax2, 0)
-    otf.add_point(pvmin2, 0.10)
-    ##vol1._otf = otf
-    vol2._volume_property.set_scalar_opacity(otf)
-
-
-
-                                   
-#image_plane_widget = ImagePlaneWidget()
-#fig.parent.add_filter(image_plane_widget, sca)
-#image_plane_widget.ipw.plane_orientation = 'y_axes'
-#
-#image_plane_widget2 = ImagePlaneWidget()
-#fig.parent.add_filter(image_plane_widget2, sca)
-#image_plane_widget2.ipw.plane_orientation = 'z_axes'
-#
-#module_manager = image_plane_widget.parent
-#module_manager.scalar_lut_manager.lut_mode = 'RdBu'
-#module_manager.scalar_lut_manager.reverse_lut = True
     
 
 # Vector field bxvals, bzvals, byvals
@@ -852,45 +637,45 @@ if show_axes == True:
     axes.axes.z_label = ''
     axes.axes.label_format = ''
 
-#if uniform_light == True:
-#    #uniform lighting
-#    field.scene.light_manager.number_of_lights = 6
-#    
-#    camera_light1 = field.scene.light_manager.lights[0]
-#    camera_light1.activate = True
-#    camera_light1.intensity = 0.7
-#    camera_light1.elevation = 90.
-#    camera_light1.azimuth = 0.
-#
-#    camera_light2 = field.scene.light_manager.lights[1]
-#    camera_light2.activate = True
-#    camera_light2.intensity = 0.7
-#    camera_light2.elevation = -90.
-#    camera_light2.azimuth = 0.
-#
-#    camera_light3 = field.scene.light_manager.lights[2]
-#    camera_light3.activate = True
-#    camera_light3.intensity = 0.7
-#    camera_light3.elevation = 0.
-#    camera_light3.azimuth = -90
-#
-#    camera_light4 = field.scene.light_manager.lights[3]
-#    camera_light4.activate = True
-#    camera_light4.intensity = 0.7
-#    camera_light4.elevation = 0.
-#    camera_light4.azimuth = 0.
-#
-#    camera_light5 = field.scene.light_manager.lights[4]
-#    camera_light5.activate = True
-#    camera_light5.intensity = 0.7
-#    camera_light5.elevation = 0.
-#    camera_light5.azimuth = 90.
-#
-#    camera_light6 = field.scene.light_manager.lights[5]
-#    camera_light6.activate = True
-#    camera_light6.intensity = 0.7
-#    camera_light6.elevation = 0.
-#    camera_light6.azimuth = 180.
+if uniform_light == True:
+    #uniform lighting
+    field.scene.light_manager.number_of_lights = 6
+    
+    camera_light1 = field.scene.light_manager.lights[0]
+    camera_light1.activate = True
+    camera_light1.intensity = 0.7
+    camera_light1.elevation = 90.
+    camera_light1.azimuth = 0.
+
+    camera_light2 = field.scene.light_manager.lights[1]
+    camera_light2.activate = True
+    camera_light2.intensity = 0.7
+    camera_light2.elevation = -90.
+    camera_light2.azimuth = 0.
+
+    camera_light3 = field.scene.light_manager.lights[2]
+    camera_light3.activate = True
+    camera_light3.intensity = 0.7
+    camera_light3.elevation = 0.
+    camera_light3.azimuth = -90
+
+    camera_light4 = field.scene.light_manager.lights[3]
+    camera_light4.activate = True
+    camera_light4.intensity = 0.7
+    camera_light4.elevation = 0.
+    camera_light4.azimuth = 0.
+
+    camera_light5 = field.scene.light_manager.lights[4]
+    camera_light5.activate = True
+    camera_light5.intensity = 0.7
+    camera_light5.elevation = 0.
+    camera_light5.azimuth = 90.
+
+    camera_light6 = field.scene.light_manager.lights[5]
+    camera_light6.activate = True
+    camera_light6.intensity = 0.7
+    camera_light6.elevation = 0.
+    camera_light6.azimuth = 180.
 
 #Black background
 field.scene.background = (0., 0., 0.)

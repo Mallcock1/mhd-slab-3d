@@ -80,7 +80,7 @@ def disp_rel_asym_2var(W, K):
     return sf.disp_rel_asym(W, K, R1)
 
 
-Wrange = np.linspace(0., sf.c2, 51)
+Wrange = np.linspace(0., sf.c2, 501)
 Wvals = tool.point_finder_scipy(disp_rel_asym_2var, np.array(K), Wrange, args=None).transpose()
 tol = 1e-2
 indices_to_rm = []
