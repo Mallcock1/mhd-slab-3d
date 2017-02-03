@@ -60,19 +60,19 @@ show_disp_front = False
 show_axes = False
 show_boundary = False
 
-show_density = True
+#show_density = True
 #show_density_pert = True
 show_mag = True
 #show_mag_scale = True
 #show_mag_vec = True
-show_vel_front = True
+#show_vel_front = True
 #show_vel_front_pert = True
 #show_vel_top = True
 #show_vel_top_pert = True
 #show_disp_top = True
 #show_disp_front = True
 show_axes = True
-show_boundary = True
+#show_boundary = True
 
 # Specify oscillation parameters
 K = 2.
@@ -140,8 +140,8 @@ y_spacing = max(nx, ny, nz) / ny
 z_spacing = max(nx, ny, nz) / nz
 
 if show_disp_top == True or show_disp_front == True:
-    xixvals = np.real(np.repeat(sf.xix(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
-    xizvals = np.real(np.repeat(sf.xiz(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
+    xixvals = np.repeat(sf.xix(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2)
+    xizvals = np.repeat(sf.xiz(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2)
     xiyvals = np.zeros_like(xixvals)
     
     if show_disp_top == True:    
@@ -171,10 +171,10 @@ if show_disp_top == True or show_disp_front == True:
                         xizvals_mask_front[i,j,k] = 0
                         
 if show_vel_front == True or show_vel_top == True:
-    vxvals = np.real(np.repeat(sf.vx(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
+    vxvals = np.repeat(sf.vx(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2)
     #vzvals = np.real((1j * sf.c0**2 / (sf.c0**2 - W**2)) * 
     #                 np.repeat(sf.vx_dash_kink(xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
-    vzvals = np.real(np.repeat(sf.vz(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
+    vzvals = np.repeat(sf.vz(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2)
     
     vyvals = np.zeros_like(vxvals)
     
@@ -183,9 +183,9 @@ if show_vel_front == True or show_vel_top == True:
     vzvals_mask = np.copy(vzvals)
     
 if show_vel_front_pert == True or show_vel_top_pert == True:
-    vxvals = np.real(np.repeat(sf.vx_pert(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
+    vxvals = np.repeat(sf.vx_pert(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2)
 
-    vzvals = np.real(np.repeat(sf.vz_pert(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
+    vzvals = np.repeat(sf.vz_pert(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2)
     
     vyvals = np.zeros_like(vxvals)
     
@@ -233,11 +233,11 @@ if np.array([show_vel_front, show_vel_top, show_vel_front_pert, show_vel_top_per
 #            bz_eq3d))
 # Maybe there should be a - in bzvals? Seems to work without though.
 
-bxvals = np.real(np.repeat(sf.bx(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
+bxvals = np.repeat(sf.bx(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2)
 #bz_eq2d = np.repeat(sf.bz_eq(xvals, K)[:, np.newaxis], nz, axis=1)
 bz_eq3d = np.repeat(sf.bz_eq(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2)
 #bz_eq3d = sf.B0*np.ones_like(bxvals)
-bzvals = np.real(np.repeat(-sf.bz(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2) +
+bzvals = (np.repeat(-sf.bz(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2) +
                  bz_eq3d)
                  
                  
@@ -255,18 +255,123 @@ for i in range(bxvals.shape[0]):
                 bzvals_mask_front[i,j,k] = 0
 
 if show_boundary == True:
-    xix_boundary_r_vals = np.real(np.repeat(K + sf.xix_boundary(mode, zvals, t, W, K, R1, boundary='r')[:, np.newaxis], ny, axis=1))
-    xix_boundary_l_vals = np.real(np.repeat(-K + sf.xix_boundary(mode, zvals, t, W, K, R1, boundary='l')[:, np.newaxis], ny, axis=1))
+    xix_boundary_r_vals = np.repeat(K + sf.xix_boundary(mode, zvals, t, W, K, R1, boundary='r')[:, np.newaxis], ny, axis=1)
+    xix_boundary_l_vals = np.repeat(-K + sf.xix_boundary(mode, zvals, t, W, K, R1, boundary='l')[:, np.newaxis], ny, axis=1)
 
 #xi_boundary_r_vals = np.real(np.repeat(K*np.ones_like(sf.xi_boundary_kink(zvals, t, W, K, R1, boundary='r'))[:, np.newaxis], ny, axis=1))
 #xi_boundary_l_vals = np.real(np.repeat(-K*np.ones_like(sf.xi_boundary_kink(zvals, t, W, K, R1, boundary='r'))[:, np.newaxis], ny, axis=1))
 if show_density == True:
-    rho_vals = np.real(np.repeat(sf.rho(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
+    rho_vals = np.repeat(sf.rho(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2)
 
 if show_density_pert == True:
-    rho_vals_pert = np.real(np.repeat(sf.rho_pert(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
+    rho_vals_pert = np.repeat(sf.rho_pert(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2)
 
 for t_ind in range(nt):
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+                            
+        
+    if show_vel_front_pert == True or show_vel_top_pert == True:
+        vxvals_t = np.real(vxvals * np.exp(-1j*t))
+    
+        vzvals_t = np.real(vzvals * np.exp(-1j*t))
+        
+        vyvals_t = np.zeros_like(vxvals_t)
+        
+        vxvals_mask_t = np.copy(vxvals_t)
+        vyvals_mask_t = np.copy(vyvals_t)
+        vzvals_mask_t = np.copy(vzvals_t)
+    
+    if np.array([show_vel_front_pert, show_vel_top_pert]).any() == True:
+        mod = 4
+        mod_top = np.ceil(4. / y_spacing)
+        
+        for i in range(vxvals_t.shape[0]):
+            for j in range(vxvals_t.shape[1]):
+                for k in range(vxvals_t.shape[2]):
+                    if (i%mod)!=0 or (j%mod)!=0 or (k%mod)!=0:
+                        vxvals_mask_t[i,j,k] = 0
+                        vzvals_mask_t[i,j,k] = 0
+                        
+        vxvals_mask_top_t = np.copy(vxvals_t)
+        vyvals_mask_top_t = np.copy(vyvals_t)
+        vzvals_mask_top_t = np.copy(vzvals_t)
+        
+        for i in range(vxvals_t.shape[0]):
+            for j in range(vxvals_t.shape[1]):
+                for k in range(vxvals_t.shape[2]):
+                    if (i%mod)!=0 or (k%mod_top)!=0:
+                        vxvals_mask_top_t[i,j,k] = 0
+                        vzvals_mask_top_t[i,j,k] = 0
+                        
+        vxvals_mask_front_t = np.copy(vxvals_t)
+        vyvals_mask_front_t = np.copy(vyvals_t)
+        vzvals_mask_front_t = np.copy(vzvals_t)
+        
+        for i in range(vxvals_t.shape[0]):
+            for j in range(vxvals_t.shape[1]):
+                for k in range(vxvals_t.shape[2]):
+                    if (i%mod)!=0 or (j%mod)!=0:
+                        vxvals_mask_front_t[i,j,k] = 0
+                        vzvals_mask_front_t[i,j,k] = 0
+    
+    if show_density_pert == True:
+        rho_vals_pert_t = np.real(rho_vals * np.exp(-1j*t))
+
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
     
     #zvals, yvals = np.mgrid[zmin:zmax:(nx)*1j,
     #                        ymin:ymax:(ny)*1j]
