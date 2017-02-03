@@ -21,16 +21,20 @@ cT = sc.sqrt(c0**2 * vA**2*(c0**2 + vA**2)**(-1))
 
 
 mode_options = ['slow kink surf', 'slow saus surf', 'slow kink body 1',
-                'slow saus body 1', 'slow kink body 2', 'slow saus body 2']
+                'slow saus body 1', 'slow kink body 2', 'slow saus body 2',
+                'fast saus body 1']
 kink_mode_options = ['slow kink surf', 'slow kink body 1', 'slow kink body 2']
 
-saus_mode_options = ['slow saus surf', 'slow saus body 1','slow saus body 2']
+saus_mode_options = ['slow saus surf', 'slow saus body 1', 'slow saus body 2',
+                     'fast saus body 1']
 
-surf_mode_options = ['slow kink surf', 'slow saus surf']
+slow_surf_mode_options = ['slow kink surf', 'slow saus surf']
 
-body1_mode_options = ['slow kink body 1', 'slow saus body 1']
+slow_body_1_mode_options = ['slow kink body 1', 'slow saus body 1']
 
-body2_mode_options = ['slow kink body 2', 'slow saus body 2']
+slow_body_2_mode_options = ['slow kink body 2', 'slow saus body 2']
+
+fast_body_1_mode_options = ['fast saus body 1']
 
 R2 = 2.
 
@@ -63,12 +67,14 @@ def m2(W):
 
     
 def const(mode):
-    if mode in surf_mode_options:
+    if mode in slow_surf_mode_options:
         return 0.05
-    elif mode in body1_mode_options:
-        return 0.5
-    elif mode in body2_mode_options:
-        return 0.2
+    elif mode in slow_body_1_mode_options:
+        return 0.23
+    elif mode in slow_body_2_mode_options:
+        return 0.1
+    elif mode in fast_body_1_mode_options:
+        return 0.9
 
 #def constC_s(mode):
 #    return const(mode)
@@ -348,8 +354,10 @@ def rho_hat(mode, x, W, K, R1):
     indices = np.where(truth == True)
     rho_hatfunction = np.zeros(len(x), dtype=complex)
     for i in indices:
-        rho_hatfunction[i] = -m0(W)*(constB(mode, W, K, R1)*sc.sinh(m0(W)*x[i]) +
+        rho_hatfunction[i] = m0(W)*(constB(mode, W, K, R1)*sc.sinh(m0(W)*x[i]) +
                              constC(mode, W, K, R1)*sc.cosh(m0(W)*x[i])) * lamb00(W) / (c0**2 * m00(W))
+#        if mode in slow_surf_mode_options + slow_body_1_mode_options + slow_body_2_mode_options:
+#            rho_hatfunction[i] = -rho_hatfunction[i]
     truth2 = np.array(x < -K*np.ones(len(x)))
     indices2 = np.where(truth2 == True)
     for i in indices2:
@@ -377,8 +385,10 @@ def rho_pert(mode, x, z, t, W, K, R1):
                         r[1] - z[j] + xiz(mode, r[0], r[1], t, W, K, R1)]
             sol = np.real(fsolve(func, [x[i],z[j]], xtol=1e-03))
             if abs(sol[0]) <= K:
-                rho_hat_vals[i,j] = -m0(W)*(constB(mode, W, K, R1)*sc.sinh(m0(W)*sol[0]) +
+                rho_hat_vals[i,j] = m0(W)*(constB(mode, W, K, R1)*sc.sinh(m0(W)*sol[0]) +
                                 constC(mode, W, K, R1)*sc.cosh(m0(W)*sol[0])) * lamb00(W) / (c0**2 * m00(W))
+                if mode in slow_surf_mode_options + slow_body_1_mode_options + slow_body_2_mode_options:
+                    rho_hat_vals[i,j] = -rho_hat_vals[i,j]
             elif sol[0] < -K:
                 rho_hat_vals[i,j] = constA(mode, W, K, R1)*(sc.sinh(m1(W, R1)*sol[0]) +
                                 sc.cosh(m1(W, R1)*sol[0])) * lamb1(W, R1) / c1(R1)**2

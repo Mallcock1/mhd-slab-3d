@@ -23,8 +23,9 @@ from mayavi.modules.image_plane_widget import ImagePlaneWidget
 
 # What mode do you want? OPTIONS:
 mode_options = ['slow kink surf', 'slow saus surf', 'slow saus body 2',
-                'slow kink body 2', 'slow saus body 1', 'slow kink body 1', 'fast saus body 1']
-mode = mode_options[5]
+                'slow kink body 2', 'slow saus body 1', 'slow kink body 1',
+                'fast saus body 1']
+mode = mode_options[1]
 
 
 # Which angle shall we view from?
@@ -56,13 +57,13 @@ show_disp_front = False
 show_axes = False
 show_boundary = False
 
-show_density = True
-#show_density_pert = True
+#show_density = True
+show_density_pert = True
 show_mag = True
 #show_mag_scale = True
 #show_mag_vec = True
-show_vel_front = True
-#show_vel_front_pert = True
+#show_vel_front = True
+show_vel_front_pert = True
 #show_vel_top = True
 #show_vel_top_pert = True
 #show_disp_top = True
@@ -158,7 +159,7 @@ zmax = 2*np.pi
 nx = 100
 ny = 20
 nz = 100
-nt = 20                          
+nt = 20
 
 t = 0.
 
