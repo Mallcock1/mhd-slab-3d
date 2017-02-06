@@ -28,7 +28,7 @@ import img2vid as i2v
 mode_options = ['slow kink surf', 'slow saus surf', 'slow saus body 2',
                 'slow kink body 2', 'slow saus body 1', 'slow kink body 1',
                 'fast saus body 1']
-mode = mode_options[1]
+mode = mode_options[0]
 
 
 # Which angle shall we view from?
@@ -60,7 +60,7 @@ show_disp_front = False
 show_axes = False
 show_boundary = False
 
-#show_density = True
+show_density = True
 #show_density_pert = True
 show_mag = True
 #show_mag_scale = True
@@ -124,7 +124,7 @@ zmax = 2*np.pi
 nx = 100
 ny = 20
 nz = 100
-nt = 2
+nt = 10
 
 t_start = 0.
 t_end = zmax
@@ -140,8 +140,8 @@ y_spacing = max(nx, ny, nz) / ny
 z_spacing = max(nx, ny, nz) / nz
 
 if show_disp_top == True or show_disp_front == True:
-    xixvals = np.repeat(sf.xix(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2)
-    xizvals = np.repeat(sf.xiz(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2)
+    xixvals = np.real(np.repeat(sf.xix(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
+    xizvals = np.real(np.repeat(sf.xiz(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
     xiyvals = np.zeros_like(xixvals)
     
     if show_disp_top == True:    
@@ -171,10 +171,10 @@ if show_disp_top == True or show_disp_front == True:
                         xizvals_mask_front[i,j,k] = 0
                         
 if show_vel_front == True or show_vel_top == True:
-    vxvals = np.repeat(sf.vx(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2)
+    vxvals = np.real(np.repeat(sf.vx(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
     #vzvals = np.real((1j * sf.c0**2 / (sf.c0**2 - W**2)) * 
     #                 np.repeat(sf.vx_dash_kink(xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
-    vzvals = np.repeat(sf.vz(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2)
+    vzvals = np.real(np.repeat(sf.vz(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
     
     vyvals = np.zeros_like(vxvals)
     
@@ -183,9 +183,9 @@ if show_vel_front == True or show_vel_top == True:
     vzvals_mask = np.copy(vzvals)
     
 if show_vel_front_pert == True or show_vel_top_pert == True:
-    vxvals = np.repeat(sf.vx_pert(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2)
+    vxvals = np.real(np.repeat(sf.vx_pert(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
 
-    vzvals = np.repeat(sf.vz_pert(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2)
+    vzvals = np.real(np.repeat(sf.vz_pert(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
     
     vyvals = np.zeros_like(vxvals)
     
@@ -246,7 +246,8 @@ byvals = np.zeros_like(bxvals)
 bxvals_mask_front = np.copy(bxvals)
 byvals_mask_front = np.copy(byvals)
 bzvals_mask_front = np.copy(bzvals)
-
+mod = 4
+mod_top = np.ceil(4 / y_spacing)
 for i in range(bxvals.shape[0]):
     for j in range(bxvals.shape[1]):
         for k in range(bxvals.shape[2]):
@@ -255,16 +256,16 @@ for i in range(bxvals.shape[0]):
                 bzvals_mask_front[i,j,k] = 0
 
 if show_boundary == True:
-    xix_boundary_r_vals = np.repeat(K + sf.xix_boundary(mode, zvals, t, W, K, R1, boundary='r')[:, np.newaxis], ny, axis=1)
-    xix_boundary_l_vals = np.repeat(-K + sf.xix_boundary(mode, zvals, t, W, K, R1, boundary='l')[:, np.newaxis], ny, axis=1)
+    xix_boundary_r_vals = np.real(np.repeat(K + sf.xix_boundary(mode, zvals, t, W, K, R1, boundary='r')[:, np.newaxis], ny, axis=1))
+    xix_boundary_l_vals = np.real(np.repeat(-K + sf.xix_boundary(mode, zvals, t, W, K, R1, boundary='l')[:, np.newaxis], ny, axis=1))
 
 #xi_boundary_r_vals = np.real(np.repeat(K*np.ones_like(sf.xi_boundary_kink(zvals, t, W, K, R1, boundary='r'))[:, np.newaxis], ny, axis=1))
 #xi_boundary_l_vals = np.real(np.repeat(-K*np.ones_like(sf.xi_boundary_kink(zvals, t, W, K, R1, boundary='r'))[:, np.newaxis], ny, axis=1))
 if show_density == True:
-    rho_vals = np.repeat(sf.rho(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2)
+    rho_vals = np.real(np.repeat(sf.rho(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
 
 if show_density_pert == True:
-    rho_vals_pert = np.repeat(sf.rho_pert(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2)
+    rho_vals_pert = np.real(np.repeat(sf.rho_pert(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
 
 for t_ind in range(nt):
     
@@ -285,8 +286,10 @@ for t_ind in range(nt):
     
     
     
-    
-                            
+    if show_mag == True:
+        bxvals_t = np.real(bxvals * np.exp(-1j*t))
+        bzvals_t = np.real(bzvals * np.exp(-1j*t))
+        byvals_t = np.real(byvals)
         
     if show_vel_front_pert == True or show_vel_top_pert == True:
         vxvals_t = np.real(vxvals * np.exp(-1j*t))
@@ -331,9 +334,11 @@ for t_ind in range(nt):
                     if (i%mod)!=0 or (j%mod)!=0:
                         vxvals_mask_front_t[i,j,k] = 0
                         vzvals_mask_front_t[i,j,k] = 0
+    if show_density == True:
+        rho_vals_t = np.real(rho_vals * np.exp(-1j*t))
     
     if show_density_pert == True:
-        rho_vals_pert_t = np.real(rho_vals * np.exp(-1j*t))
+        rho_vals_pert_t = np.real(rho_vals_pert * np.exp(-1j*t))
 
     
     
@@ -411,7 +416,7 @@ for t_ind in range(nt):
     
     if show_density == True:
         # Scalar field density   
-        rho = mlab.pipeline.scalar_field(rho_vals, name="density", figure=fig)
+        rho = mlab.pipeline.scalar_field(rho_vals_t, name="density", figure=fig)
         #scalar_cut_plane = ScalarCutPlane()
         #fig.parent.add_filter(scalar_cut_plane, sca)
         rho.spacing = spacing
@@ -545,7 +550,7 @@ for t_ind in range(nt):
         
     
     # Vector field bxvals, bzvals, byvals
-    field = mlab.pipeline.vector_field(bxvals, bzvals, byvals, name="B field", 
+    field = mlab.pipeline.vector_field(bxvals_t, bzvals_t, byvals_t, name="B field", 
                                            figure=fig)
     field.spacing = spacing
         
@@ -572,7 +577,7 @@ for t_ind in range(nt):
             for j in range(0,ny_seed):
                 x = start_x + (i * dx_res) * x_spacing
                 y = start_y + (j * dy_res) * y_spacing
-                z = 1.
+                z = 1. + (t_start + t_ind*(t_end - t_start)/nt)/zmax * nz
                 seeds.append((x,z,y))
                                                      
         field_lines = SeedStreamline(seed_points=seeds)
@@ -761,6 +766,6 @@ for t_ind in range(nt):
 #                 + str(t_ind+1) + '.png')
 
 #    mlab.close()
-    t = t + (t_end - t_start)/nt
+    t = t + (t_end - t_start) / nt
 
 #i2v.img2vid(prefix='pic%d', output_name='video', out_extension='mp4', fps=15, n_loops=4)

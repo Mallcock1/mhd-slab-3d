@@ -57,13 +57,13 @@ show_disp_front = False
 show_axes = False
 show_boundary = False
 
-#show_density = True
-show_density_pert = True
+show_density = True
+#show_density_pert = True
 show_mag = True
 #show_mag_scale = True
 #show_mag_vec = True
-#show_vel_front = True
-show_vel_front_pert = True
+show_vel_front = True
+#show_vel_front_pert = True
 #show_vel_top = True
 #show_vel_top_pert = True
 #show_disp_top = True
