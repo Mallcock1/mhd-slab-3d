@@ -3,22 +3,22 @@ import numpy as np
 import scipy as sc
 from scipy.optimize import fsolve
 
-# SBB
-# Define the sound speeds and alfven speeds.
-c2 = 1.2
-c0 = 1.
-vA = 0.9
-cT = sc.sqrt(c0**2 * vA**2*(c0**2 + vA**2)**(-1))
-#ce = 1.2 #0.7
-
-
-## SBS
+## SBB
 ## Define the sound speeds and alfven speeds.
 #c2 = 1.2
 #c0 = 1.
-#vA = 1.3
+#vA = 0.9
 #cT = sc.sqrt(c0**2 * vA**2*(c0**2 + vA**2)**(-1))
-#ce = 1.2
+##ce = 1.2 #0.7
+
+
+# SBS
+# Define the sound speeds and alfven speeds.
+c2 = 1.2
+c0 = 1.
+vA = 1.3
+cT = sc.sqrt(c0**2 * vA**2*(c0**2 + vA**2)**(-1))
+ce = 1.2
 
 R2 = 2.
 Re = 2.

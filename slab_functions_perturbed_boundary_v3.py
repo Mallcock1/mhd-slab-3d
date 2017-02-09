@@ -3,26 +3,27 @@ import numpy as np
 import scipy as sc
 from scipy.optimize import fsolve
 
-# SBB
-# Define the sound speeds and alfven speeds.
-c2 = 1.2
-c0 = 1.
-vA = 0.9
-cT = sc.sqrt(c0**2 * vA**2*(c0**2 + vA**2)**(-1))
+## SBB
+## Define the sound speeds and alfven speeds.
+#c2 = 1.2
+#c0 = 1.
+#vA = 0.9
+
 
 ## for xi of x slow surface sf GS and maybe others
 #c2 = 0.7
 #c0 = 1.
 #vA = 0.4
-#cT = sc.sqrt(c0**2 * vA**2*(c0**2 + vA**2)**(-1))
 
-## SBS
-## Define the sound speeds and alfven speeds.
-#c2 = 1.2
-#c0 = 1.
-#vA = 1.3
-#cT = sc.sqrt(c0**2 * vA**2*(c0**2 + vA**2)**(-1))
-#ce = 1.2
+
+# SBS
+# Define the sound speeds and alfven speeds.
+c2 = 1.2
+c0 = 1.
+vA = 1.3
+
+cT = sc.sqrt(c0**2 * vA**2*(c0**2 + vA**2)**(-1))
+
 
 
 mode_options = ['slow kink surf', 'slow saus surf', 'slow saus body 3',
@@ -91,14 +92,22 @@ def lamb2(W):
 def required_xi(mode, K):
     if mode in slow_surf_mode_options:
         return K / 3.
-    if mode in slow_body_1_mode_options:
+    elif mode in slow_body_1_mode_options:
         return K / 90. #30.
-    if mode in slow_body_2_mode_options:
+    elif mode in slow_body_2_mode_options:
         return K / 110. #90.
-    if mode in slow_body_3_mode_options:
+    elif mode in slow_body_3_mode_options:
         return K / 250.
-    if mode in fast_body_1_mode_options:
+    elif mode in fast_body_1_mode_options:
         return K / 50.
+    elif mode in fast_body_2_mode_options:
+        return K / 180.
+    elif mode in fast_body_3_mode_options:
+        return K / 400. #250.
+    elif mode in fast_surf_mode_options:
+        return K / 30. #40.
+    else:
+        print('Not a recognised mode')
 
 def const(mode, W, K, R1):
     const_val_r = (W * required_xi(mode, K) / (constB_dash(mode, W, K, R1)*sc.cosh(m0(W)*K) +

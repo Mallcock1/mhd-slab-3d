@@ -70,7 +70,7 @@ show_axes = True
 show_boundary = True
 
 # Specify oscillation parameters
-K = 8. #2.
+K = 21. #2.
 R1 = 1.8 #1.8 #2.
 
 def disp_rel_asym_1var(W):

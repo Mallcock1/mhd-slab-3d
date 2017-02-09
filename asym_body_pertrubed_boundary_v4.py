@@ -25,8 +25,8 @@ from mayavi.modules.image_plane_widget import ImagePlaneWidget
 mode_options = ['slow kink surf', 'slow saus surf', 'slow saus body 3',
                 'slow kink body 3', 'slow saus body 2', 'slow kink body 2', 
                 'slow saus body 1', 'slow kink body 1', 'fast saus body 1',
-                'fast kink body 1', 'fast saus body 2', 'fast kink body 1',
-                'fast saus body 3', 'fast saus body 3', 'fast kink surf',
+                'fast kink body 1', 'fast saus body 2', 'fast kink body 2',
+                'fast saus body 3', 'fast kink body 3', 'fast kink surf',
                 'fast saus surf']
                 
 kink_mode_options = ['slow kink surf', 'slow kink body 1', 'slow kink body 2',
@@ -37,6 +37,10 @@ saus_mode_options = ['slow saus surf', 'slow saus body 1', 'slow saus body 2',
                      'fast saus body 3', 'fast saus surf']
 slow_surf_mode_options = ['slow kink surf', 'slow saus surf']
 fast_surf_mode_options = ['fast kink surf', 'fast saus surf']
+fast_kink_mode_options = ['fast kink surf', 'fast kink body 3', 'fast kink body 2', 
+                          'fast kink body 1']
+fast_saus_mode_options = ['fast saus surf', 'fast saus body 3', 'fast saus body 2', 
+                          'fast saus body 1']
 slow_body_1_mode_options = ['slow kink body 1', 'slow saus body 1']
 slow_body_2_mode_options = ['slow kink body 2', 'slow saus body 2']
 slow_body_3_mode_options = ['slow kink body 3', 'slow saus body 3']
@@ -44,8 +48,9 @@ fast_body_1_mode_options = ['fast kink body 1', 'fast saus body 1']
 fast_body_2_mode_options = ['fast kink body 2', 'fast saus body 2']
 fast_body_3_mode_options = ['fast kink body 3', 'fast saus body 3']
 
-
-mode = mode_options[8] #works up to 8
+# choose your mode (note that fast surface modes, i.e. 14 and 15, can only be 
+# found with SBS parameters in slab_functions...):
+mode = mode_options[15] #All working, 0-15
 
 
 # Which angle shall we view from?
@@ -77,14 +82,14 @@ show_disp_front = False
 show_axes = False
 show_boundary = False
 
-#show_density = True
+show_density = True
 #show_density_pert = True
 show_mag = True
 #show_mag_scale = True
 #show_mag_vec = True
 show_vel_front = True
 #show_vel_front_pert = True
-show_vel_top = True
+#show_vel_top = True
 #show_vel_top_pert = True
 #show_disp_top = True
 #show_disp_front = True
@@ -92,16 +97,18 @@ show_axes = True
 show_boundary = True
 
 # Specify oscillation parameters
-if mode in slow_surf_mode_options + fast_surf_mode_options:
+if mode in slow_surf_mode_options:
     K = 2.
 elif mode in slow_body_1_mode_options + slow_body_2_mode_options + slow_body_3_mode_options:
     K = 8.
 elif mode in fast_body_1_mode_options:
     K = 8.
 elif mode in fast_body_2_mode_options:
-    K = 14. 
+    K = 15.
 elif mode in fast_body_3_mode_options:
     K = 21.
+elif mode in fast_surf_mode_options:
+    K = 8. #6.
 else:
     print('mode not found')
         
@@ -160,6 +167,10 @@ for i in range(len(Woptions_fast)):
 Woptions_fast = np.delete(Woptions_fast, indices_to_rm)
 Woptions_fast.sort()
 
+#print(Woptions_slow_body.shape)
+#print(Woptions_fast)
+#pdb.set_trace()
+
 # remove any higher order slow body modes
 if len(Woptions_slow_body) > 6:
     Woptions_slow_body = np.delete(Woptions_slow_body, range(len(Woptions_slow_body) - 6))
@@ -168,14 +179,14 @@ Woptions = np.concatenate((Woptions_slow_surf, Woptions_slow_body, Woptions_fast
 
 #print(Woptions_slow_surf.shape)
 #print(Woptions_slow_body.shape)
-#print(Woptions_fast.shape)
+#print(Woptions)
 #
 #pdb.set_trace()
 
 # set W to be the eigenfrequency for the requested mode
-if mode == 'fast kink surf':
+if mode in ['fast saus body 1', 'fast saus body 2', 'fast saus body 3', 'fast kink surf']:
     W = Woptions[-2]
-elif mode == 'fast saus surf':
+elif mode in ['fast kink body 1', 'fast kink body 2', 'fast kink body 3', 'fast saus surf']:
     W = Woptions[-1]
 else:
     for i in range(len(mode_options)):
