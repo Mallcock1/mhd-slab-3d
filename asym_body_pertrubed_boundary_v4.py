@@ -22,10 +22,30 @@ from mayavi.modules.image_plane_widget import ImagePlaneWidget
 ###############################################################################
 
 # What mode do you want? OPTIONS:
-mode_options = ['slow kink surf', 'slow saus surf', 'slab saus body 3',
+mode_options = ['slow kink surf', 'slow saus surf', 'slow saus body 3',
                 'slow kink body 3', 'slow saus body 2', 'slow kink body 2', 
-                'slow saus body 1', 'slow kink body 1', 'fast saus body 1']
-mode = mode_options[1]
+                'slow saus body 1', 'slow kink body 1', 'fast saus body 1',
+                'fast kink body 1', 'fast saus body 2', 'fast kink body 1',
+                'fast saus body 3', 'fast saus body 3', 'fast kink surf',
+                'fast saus surf']
+                
+kink_mode_options = ['slow kink surf', 'slow kink body 1', 'slow kink body 2',
+                     'slow kink body 3', 'fast kink body 1', 'fast kink body 2',
+                     'fast kink body 3', 'fast kink surf']
+saus_mode_options = ['slow saus surf', 'slow saus body 1', 'slow saus body 2',
+                     'slow saus body 3', 'fast saus body 1', 'fast saus body 2',
+                     'fast saus body 3', 'fast saus surf']
+slow_surf_mode_options = ['slow kink surf', 'slow saus surf']
+fast_surf_mode_options = ['fast kink surf', 'fast saus surf']
+slow_body_1_mode_options = ['slow kink body 1', 'slow saus body 1']
+slow_body_2_mode_options = ['slow kink body 2', 'slow saus body 2']
+slow_body_3_mode_options = ['slow kink body 3', 'slow saus body 3']
+fast_body_1_mode_options = ['fast kink body 1', 'fast saus body 1']
+fast_body_2_mode_options = ['fast kink body 2', 'fast saus body 2']
+fast_body_3_mode_options = ['fast kink body 3', 'fast saus body 3']
+
+
+mode = mode_options[8] #works up to 8
 
 
 # Which angle shall we view from?
@@ -72,7 +92,19 @@ show_axes = True
 show_boundary = True
 
 # Specify oscillation parameters
-K = 2.
+if mode in slow_surf_mode_options + fast_surf_mode_options:
+    K = 2.
+elif mode in slow_body_1_mode_options + slow_body_2_mode_options + slow_body_3_mode_options:
+    K = 8.
+elif mode in fast_body_1_mode_options:
+    K = 8.
+elif mode in fast_body_2_mode_options:
+    K = 14. 
+elif mode in fast_body_3_mode_options:
+    K = 21.
+else:
+    print('mode not found')
+        
 R1 = 1.8 #1.8 #2.
 
 def disp_rel_asym_1var(W):
@@ -87,68 +119,70 @@ Wrange1 = np.linspace(0., sf.cT, 11)
 Wrange2 = np.linspace(sf.cT, sf.c0, 401)
 Wrange3 = np.linspace(sf.c0, sf.c2, 11)
 
-Wvals = tool.point_finder_scipy(disp_rel_asym_2var, np.array(K), Wrange1, args=None).transpose()
-Wvals = np.append(Wvals, tool.point_finder_scipy(disp_rel_asym_2var, np.array(K), Wrange2, args=None).transpose())
-Wvals = np.append(Wvals, tool.point_finder_scipy(disp_rel_asym_2var, np.array(K), Wrange3, args=None).transpose())
+Woptions_slow_surf = np.real(tool.point_finder_scipy(disp_rel_asym_2var, np.array(K), Wrange1, args=None).transpose())
+Woptions_slow_body = np.real(tool.point_finder_scipy(disp_rel_asym_2var, np.array(K), Wrange2, args=None).transpose())
+Woptions_fast = np.real(tool.point_finder_scipy(disp_rel_asym_2var, np.array(K), Wrange3, args=None).transpose())
 
+#print(Woptions_slow_surf.shape)
+#print(Woptions_slow_body.shape)
+#print(Woptions_fast)
+#
+#pdb.set_trace()
 
-#Wrange = np.linspace(0., sf.c2, 501)
-#Woptions = tool.point_finder_scipy(disp_rel_asym_2var, np.array(K), Wrange, args=None).transpose()
-#Woptions = np.real(Woptions)
+#Woptions = tool.point_finder_scipy(disp_rel_asym_2var, np.array(K), Wrange1, args=None).transpose()
+#Woptions = np.append(Woptions, tool.point_finder_scipy(disp_rel_asym_2var, np.array(K), Wrange2, args=None).transpose())
+#Woptions = np.append(Woptions, tool.point_finder_scipy(disp_rel_asym_2var, np.array(K), Wrange3, args=None).transpose())
 
+# remove W values that are very close to characteristic speeds
 tol = 1e-2
 indices_to_rm = []
-for i in range(len(Woptions)):
-    w = Woptions[i]
-    if min(abs(np.array([w, w - sf.c0, w - sf.c1(R1), w - sf.c2, w - sf.vA]))) < tol or w < 0 or w > max(sf.c0, sf.vA, sf.c1, sf.c2):
-        indices_to_rm.append(i)
 
-Woptions = np.delete(Woptions.transpose(), indices_to_rm)
-Woptions.sort()
+for i in range(len(Woptions_slow_surf)):
+    w = Woptions_slow_surf[i]
+    if min(abs(np.array([w, w - sf.c0, w - sf.c1(R1), w - sf.c2, w - sf.vA]))) < tol or w < 0 or w > sf.cT:
+        indices_to_rm.append(i)
+Woptions_slow_surf = np.delete(Woptions_slow_surf, indices_to_rm)
+Woptions_slow_surf.sort()
+
+indices_to_rm = []
+for i in range(len(Woptions_slow_body)):
+    w = Woptions_slow_body[i]
+    if min(abs(np.array([w, w - sf.c0, w - sf.c1(R1), w - sf.c2, w - sf.vA]))) < tol or w < sf.cT or w > sf.c0:
+        indices_to_rm.append(i)
+Woptions_slow_body = np.delete(Woptions_slow_body, indices_to_rm)
+Woptions_slow_body.sort()
+
+indices_to_rm = []
+for i in range(len(Woptions_fast)):
+    w = Woptions_fast[i]
+    if min(abs(np.array([w, w - sf.c0, w - sf.c1(R1), w - sf.c2, w - sf.vA]))) < tol or w < sf.c0 or w > min(sf.c1, sf.c2):
+        indices_to_rm.append(i)
+Woptions_fast = np.delete(Woptions_fast, indices_to_rm)
+Woptions_fast.sort()
+
+# remove any higher order slow body modes
+if len(Woptions_slow_body) > 6:
+    Woptions_slow_body = np.delete(Woptions_slow_body, range(len(Woptions_slow_body) - 6))
+
+Woptions = np.concatenate((Woptions_slow_surf, Woptions_slow_body, Woptions_fast))
+
+#print(Woptions_slow_surf.shape)
+#print(Woptions_slow_body.shape)
+#print(Woptions_fast.shape)
+#
+#pdb.set_trace()
 
 # set W to be the eigenfrequency for the requested mode
-for i in range(len(mode_options)):
-    if mode == mode_options[i]:
-        W = Woptions[i]
-        break
+if mode == 'fast kink surf':
+    W = Woptions[-2]
+elif mode == 'fast saus surf':
+    W = Woptions[-1]
+else:
+    for i in range(len(mode_options)):
+        if mode == mode_options[i]:
+            W = np.real(Woptions[i])
+            break
 
-####################################
-# Old way to solve for W:
-## Find a solution for W
-#ntries = 50
-##
-#
-## Slow kink Surface
-##W_init = 0.2
-##W_end = sf.cT
-##W = W_init
-##
-##W = solver.solver_forwards(disp_rel_asym_1var, W_init, W_end, ntries)
-#
-### Slow kink body 1
-##W_init = 0.760431
-##W_end = 0.760531
-##W = W_init
-##
-##W = solver.solver_forwards(disp_rel_asym_1var, W_init, W_end, ntries)
-#
-### Slow kink body 2
-#W_init = 0.68336
-#W_end = 0.68338
-#W = W_init
-#
-#W = solver.solver_forwards(disp_rel_asym_1var, W_init, W_end, ntries)
-#
-#
-##
-##W, nothing = tool.point_finder_scipy(disp_rel_asym_2var, (2., 2.), (0.75, 0.8),
-##                                    args=(None))
-##W = W[0]
-#
-##W, nothing = tool.point_finder_scipy(disp_rel_asym_2var, (2., 2.), (0.683, 0.6834),
-##                                    args=(None))
-##W = W[0]
-#########################################
 
 # Dependent variables:
 # x = k*x

@@ -8,10 +8,10 @@
 #import pdb # pause code for debugging at pdb.set_trace()
 
 import numpy as np
-import scipy as sc
+#import scipy as sc
 
-from scipy.optimize import newton
-import solver
+#from scipy.optimize import newton
+#import solver
 
 import Toolbox as tool
 
@@ -19,7 +19,7 @@ import slab_functions_perturbed_boundary_v3 as sf
 from pysac.plot.mayavi_seed_streamlines import SeedStreamline
 
 from mayavi import mlab
-from mayavi.modules.image_plane_widget import ImagePlaneWidget
+#from mayavi.modules.image_plane_widget import ImagePlaneWidget
 
 import img2vid as i2v
 
@@ -62,19 +62,20 @@ show_disp_front = False
 show_axes = False
 show_boundary = False
 
+# Uncomment the parametrer you would like to see
 #show_density = True
 #show_density_pert = True
 show_mag = True
-#show_mag_scale = True
+#show_mag_scale = True #must also have show_mag = True
 #show_mag_vec = True
-#show_vel_front = True
-show_vel_front_pert = True
-#show_vel_top = True
+show_vel_front = True
+#show_vel_front_pert = True
+show_vel_top = True
 #show_vel_top_pert = True
 #show_disp_top = True
 #show_disp_front = True
 show_axes = True
-#show_boundary = True
+show_boundary = True
 
 # Specify oscillation parameters
 K = 2.
@@ -124,9 +125,12 @@ zmax = 2*np.pi
 
 # You can change ny but be careful changing nx, nz.
 nx = 100
-ny = 20
+ny = 20 #100
 nz = 100
-nt = 10
+nt = 3
+
+if nz % nt != 0:
+    print("nt doesnt divide nz so there may be a problem")
 
 t_start = 0.
 t_end = zmax
@@ -135,184 +139,154 @@ t = t_start
 
 xvals = np.linspace(xmin, xmax, nx)
 yvals = np.linspace(ymin, ymax, ny)
-zvals = np.linspace(zmin, zmax, nz)
+zvals = np.linspace(zmin, zmax, nz, endpoint=False)
 
 x_spacing = max(nx, ny, nz) / nx
 y_spacing = max(nx, ny, nz) / ny
 z_spacing = max(nx, ny, nz) / nz
 
+
+# For masking points
+mod = 4.
+mod_top = np.ceil(4. / y_spacing)
+
 if show_disp_top == True or show_disp_front == True:
     xixvals = np.real(np.repeat(sf.xix(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
     xizvals = np.real(np.repeat(sf.xiz(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
     xiyvals = np.zeros_like(xixvals)
-    
-    if show_disp_top == True:    
-        mod = 4
-        mod_top = np.ceil(4 / y_spacing)
-                                
-        xixvals_mask_top = np.copy(xixvals)
-        xiyvals_mask_top = np.copy(xiyvals)
-        xizvals_mask_top = np.copy(xizvals)
-        
-        for i in range(xixvals.shape[0]):
-            for j in range(xixvals.shape[1]):
-                for k in range(xixvals.shape[2]):
-                    if (i%mod)!=0 or (k%1)!=0:
-                        xixvals_mask_top[i,j,k] = 0.
-                        xizvals_mask_top[i,j,k] = 0.
-    if show_disp_front == True:
-        xixvals_mask_front = np.copy(xixvals)
-        xiyvals_mask_front = np.copy(xiyvals)
-        xizvals_mask_front = np.copy(xizvals)
-        
-        for i in range(xixvals.shape[0]):
-            for j in range(xixvals.shape[1]):
-                for k in range(xixvals.shape[2]):
-                    if (i%mod)!=0 or (j%mod)!=0:
-                        xixvals_mask_front[i,j,k] = 0.
-                        xizvals_mask_front[i,j,k] = 0.
+
                         
 if show_vel_front == True or show_vel_top == True:
-    vxvals = np.repeat(sf.vx(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2)
-    #vzvals = np.real((1j * sf.c0**2 / (sf.c0**2 - W**2)) * 
-    #                 np.repeat(sf.vx_dash_kink(xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
-    vzvals = np.repeat(sf.vz(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2)
-    
+    vxvals = np.real(np.repeat(sf.vx(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
+    vzvals = np.real(np.repeat(sf.vz(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
     vyvals = np.zeros_like(vxvals)
-    
-    vxvals_mask = np.copy(vxvals)
-    vyvals_mask = np.copy(vyvals)
-    vzvals_mask = np.copy(vzvals)
+
     
 if show_vel_front_pert == True or show_vel_top_pert == True:
-    vxvals = np.repeat(sf.vx_pert(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2)
-
-    vzvals = np.repeat(sf.vz_pert(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2)
-    
+    vxvals = np.real(np.repeat(sf.vx_pert(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
+    vzvals = np.real(np.repeat(sf.vz_pert(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
     vyvals = np.zeros_like(vxvals)
-    
-    vxvals_mask = np.copy(vxvals)
-    vyvals_mask = np.copy(vyvals)
-    vzvals_mask = np.copy(vzvals)
 
-if np.array([show_vel_front, show_vel_top, show_vel_front_pert, show_vel_top_pert]).any() == True:
-    mod = 4
-    mod_top = np.ceil(4. / y_spacing)
-    
-    for i in range(vxvals.shape[0]):
-        for j in range(vxvals.shape[1]):
-            for k in range(vxvals.shape[2]):
-                if (i%mod)!=0 or (j%mod)!=0 or (k%mod)!=0:
-                    vxvals_mask[i,j,k] = 0.
-                    vzvals_mask[i,j,k] = 0.
-                    
-    vxvals_mask_top = np.copy(vxvals)
-    vyvals_mask_top = np.copy(vyvals)
-    vzvals_mask_top = np.copy(vzvals)
-    
-    for i in range(vxvals.shape[0]):
-        for j in range(vxvals.shape[1]):
-            for k in range(vxvals.shape[2]):
-                if (i%mod)!=0 or (k%mod_top)!=0:
-                    vxvals_mask_top[i,j,k] = 0.
-                    vzvals_mask_top[i,j,k] = 0.
-                    
-    vxvals_mask_front = np.copy(vxvals)
-    vyvals_mask_front = np.copy(vyvals)
-    vzvals_mask_front = np.copy(vzvals)
-    
-    for i in range(vxvals.shape[0]):
-        for j in range(vxvals.shape[1]):
-            for k in range(vxvals.shape[2]):
-                if (i%mod)!=0 or (j%mod)!=0:
-                    vxvals_mask_front[i,j,k] = 0.
-                    vzvals_mask_front[i,j,k] = 0.
-
-#bxvals = sf.B0*vxvals / W
-#bz_eq2d = np.repeat(sf.bz_eq(xvals, K)[:, np.newaxis], nz+1, axis=1)
-#bz_eq3d = np.repeat(bz_eq2d[:, :, np.newaxis], ny+1, axis=2)
-#bzvals = np.real(((-1j*sf.B0 / W)*np.repeat(sf.vx_dash_kink(xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny+1, axis=2) +
-#            bz_eq3d))
-# Maybe there should be a - in bzvals? Seems to work without though.
-
-bxvals = np.repeat(sf.bx(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2)
+bxvals = np.real(np.repeat(sf.bx(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
 bz_eq3d = np.repeat(sf.bz_eq(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2)
-bz_pert_only_vals = np.repeat(-sf.bz(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2)
+bzvals = np.real(np.repeat(-sf.bz(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2) +
+                 bz_eq3d)
+                 
+                 
 byvals = np.zeros_like(bxvals)
 
 if show_boundary == True:
     xix_boundary_r_vals = np.real(np.repeat(K + sf.xix_boundary(mode, zvals, t, W, K, R1, boundary='r')[:, np.newaxis], ny, axis=1))
     xix_boundary_l_vals = np.real(np.repeat(-K + sf.xix_boundary(mode, zvals, t, W, K, R1, boundary='l')[:, np.newaxis], ny, axis=1))
 
-#xi_boundary_r_vals = np.real(np.repeat(K*np.ones_like(sf.xi_boundary_kink(zvals, t, W, K, R1, boundary='r'))[:, np.newaxis], ny, axis=1))
-#xi_boundary_l_vals = np.real(np.repeat(-K*np.ones_like(sf.xi_boundary_kink(zvals, t, W, K, R1, boundary='r'))[:, np.newaxis], ny, axis=1))
 if show_density == True:
     rho_vals = np.real(np.repeat(sf.rho(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
 
 if show_density_pert == True:
-    rho_vals_pert = np.real(np.repeat(sf.rho_pert(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
+    rho_vals = np.real(np.repeat(sf.rho_pert(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
+
+
+
 
 for t_ind in range(nt):
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    if show_mag == True or show_mag_vec == True:
-        bxvals_t = np.real(bxvals * np.exp(-1j*t))
-        bzvals_t = np.real(bz_pert_only_vals * np.exp(-1j*t) + bz_eq3d)
-        byvals_t = np.real(byvals)
+    if t_ind == 0:
+        bxvals_t = bxvals
+        byvals_t = byvals
+        bzvals_t = bzvals
         
-    if show_mag_vec == True:
-        bxvals_mask_front_t = np.copy(bxvals_t)
-        byvals_mask_front_t = np.copy(byvals_t)
-        bzvals_mask_front_t = np.copy(bzvals_t)
+        if show_disp_top == True or show_disp_front == True:
+            xixvals_t = xixvals
+            xiyvals_t = xiyvals
+            xizvals_t = xizvals
+            
+        if np.array([show_vel_top, show_vel_top_pert, show_vel_front, show_vel_front_pert]).any() == True:
+            vxvals_t = vxvals
+            vyvals_t = vyvals
+            vzvals_t = vzvals
         
-        mod = 4
-        mod_top = np.ceil(4 / y_spacing)
-        for i in range(bxvals_t.shape[0]):
-            for j in range(bxvals_t.shape[1]):
-                for k in range(bxvals_t.shape[2]):
+        if show_boundary == True:
+            xix_boundary_r_vals_t = xix_boundary_r_vals
+            xix_boundary_l_vals_t = xix_boundary_l_vals
+            
+        if show_density == True or show_density_pert == True:
+            rho_vals_t = np.real(np.repeat(sf.rho(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
+
+        
+    else:
+        bxvals_split = np.split(bxvals, [nz - (nz / nt) * t_ind], axis=1)
+        bzvals_split = np.split(bzvals, [nz - (nz / nt) * t_ind], axis=1)
+        
+        bxvals_t = np.concatenate((bxvals_split[1], bxvals_split[0]), axis=1)
+        byvals_t = byvals
+        bzvals_t = np.concatenate((bzvals_split[1], bzvals_split[0]), axis=1)
+        
+        
+        if show_disp_top == True or show_disp_front == True:            
+            xixvals_split = np.split(xixvals, [nz - (nz / nt) * t_ind], axis=1)
+            xizvals_split = np.split(xizvals, [nz - (nz / nt) * t_ind], axis=1)
+            
+            xixvals_t = np.concatenate((xixvals_split[1], xixvals_split[0]), axis=1)
+            xiyvals_t = xiyvals
+            xizvals_t = np.concatenate((xizvals_split[1], xizvals_split[0]), axis=1)
+                                
+        if np.array([show_vel_top, show_vel_top_pert, show_vel_front, show_vel_front_pert]).any() == True:            
+            vxvals_split = np.split(vxvals, [nz - (nz / nt) * t_ind], axis=1)
+            vzvals_split = np.split(vzvals, [nz - (nz / nt) * t_ind], axis=1)
+            
+            vxvals_t = np.concatenate((vxvals_split[1], vxvals_split[0]), axis=1)
+            vyvals_t = vyvals
+            vzvals_t = np.concatenate((vzvals_split[1], vzvals_split[0]), axis=1)
+        
+        if show_boundary == True:
+            xix_boundary_r_vals_split = np.split(xix_boundary_r_vals, [nz - (nz / nt) * t_ind], axis=0)
+            xix_boundary_l_vals_split = np.split(xix_boundary_l_vals, [nz - (nz / nt) * t_ind], axis=0)
+
+            xix_boundary_r_vals_t = np.concatenate((xix_boundary_r_vals_split[1], xix_boundary_r_vals_split[0]), axis=0)
+            xix_boundary_l_vals_t = np.concatenate((xix_boundary_l_vals_split[1], xix_boundary_l_vals_split[0]), axis=0)
+        
+        if show_density == True or show_density_pert == True:            
+            rho_vals_split = np.split(rho_vals, [nz - (nz / nt) * t_ind], axis=1)
+            
+            rho_vals_t = np.concatenate((rho_vals_split[1], rho_vals_split[0]), axis=1)                         
+        
+        
+    bxvals_mask_front_t = np.copy(bxvals_t)
+    byvals_mask_front_t = np.copy(byvals_t)
+    bzvals_mask_front_t = np.copy(bzvals_t)
+    
+    for i in range(bxvals_t.shape[0]):
+        for j in range(bxvals_t.shape[1]):
+            for k in range(bxvals_t.shape[2]):
+                if (i%mod) != 0 or (j%mod) != 0:
+                    bxvals_mask_front_t[i,j,k] = 0.
+                    bzvals_mask_front_t[i,j,k] = 0.
+
+
+    if show_disp_top == True:    
+        xixvals_mask_top_t = np.copy(xixvals_t)
+        xiyvals_mask_top_t = np.copy(xiyvals_t)
+        xizvals_mask_top_t = np.copy(xizvals_t)
+        
+        for i in range(xixvals_t.shape[0]):
+            for j in range(xixvals_t.shape[1]):
+                for k in range(xixvals_t.shape[2]):
+                    if (i%mod) != 0 or (k%mod_top) != 0:
+                        xixvals_mask_top_t[i,j,k] = 0.
+                        xizvals_mask_top_t[i,j,k] = 0.
+    if show_disp_front == True:
+        xixvals_mask_front_t = np.copy(xixvals_t)
+        xiyvals_mask_front_t = np.copy(xiyvals_t)
+        xizvals_mask_front_t = np.copy(xizvals_t)
+        
+        for i in range(xixvals_t.shape[0]):
+            for j in range(xixvals_t.shape[1]):
+                for k in range(xixvals_t.shape[2]):
                     if (i%mod)!=0 or (j%mod)!=0:
-                        bxvals_mask_front_t[i,j,k] = 0
-                        bzvals_mask_front_t[i,j,k] = 0
-        
-    if np.array([show_vel_front, show_vel_top, show_vel_front_pert, show_vel_top_pert]).any() == True:
-        vxvals_t = np.real(vxvals * np.exp(-1j*t))
-    
-        vzvals_t = np.real(vzvals * np.exp(-1j*t))
-        
-        vyvals_t = np.zeros_like(vxvals_t)
-        
-        vxvals_mask_t = np.copy(vxvals_t)
-        vyvals_mask_t = np.copy(vyvals_t)
-        vzvals_mask_t = np.copy(vzvals_t)
+                        xixvals_mask_front_t[i,j,k] = 0.
+                        xizvals_mask_front_t[i,j,k] = 0.    
     
     
-    if np.array([show_vel_front, show_vel_top, show_vel_front_pert, show_vel_top_pert]).any() == True:
-        mod = 4
-        mod_top = np.ceil(4. / y_spacing)
-        
-        for i in range(vxvals_t.shape[0]):
-            for j in range(vxvals_t.shape[1]):
-                for k in range(vxvals_t.shape[2]):
-                    if (i%mod)!=0 or (j%mod)!=0 or (k%mod)!=0:
-                        vxvals_mask_t[i,j,k] = 0
-                        vzvals_mask_t[i,j,k] = 0
-                        
+    if show_vel_top == True or show_vel_top_pert == True:    
         vxvals_mask_top_t = np.copy(vxvals_t)
         vyvals_mask_top_t = np.copy(vyvals_t)
         vzvals_mask_top_t = np.copy(vzvals_t)
@@ -320,10 +294,12 @@ for t_ind in range(nt):
         for i in range(vxvals_t.shape[0]):
             for j in range(vxvals_t.shape[1]):
                 for k in range(vxvals_t.shape[2]):
-                    if (i%mod)!=0 or (k%mod_top)!=0:
+                    if (i%mod) != 0 or (k%mod_top) != 0:
                         vxvals_mask_top_t[i,j,k] = 0
                         vzvals_mask_top_t[i,j,k] = 0
+                                          
                         
+    if show_vel_front == True or show_vel_front_pert == True:
         vxvals_mask_front_t = np.copy(vxvals_t)
         vyvals_mask_front_t = np.copy(vyvals_t)
         vzvals_mask_front_t = np.copy(vzvals_t)
@@ -331,59 +307,14 @@ for t_ind in range(nt):
         for i in range(vxvals_t.shape[0]):
             for j in range(vxvals_t.shape[1]):
                 for k in range(vxvals_t.shape[2]):
-                    if (i%mod)!=0 or (j%mod)!=0:
+                    if (i%mod) != 0 or (j%mod) != 0:
                         vxvals_mask_front_t[i,j,k] = 0
-                        vzvals_mask_front_t[i,j,k] = 0
-    if show_density == True:
-        rho_vals_t = np.real(rho_vals * np.exp(-1j*t))
+                        vzvals_mask_front_t[i,j,k] = 0   
     
-    if show_density_pert == True:
-        rho_vals_pert_t = np.real(rho_vals_pert * np.exp(-1j*t))
 
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    #zvals, yvals = np.mgrid[zmin:zmax:(nx)*1j,
-    #                        ymin:ymax:(ny)*1j]
-    
     zvals, yvals = np.mgrid[0:nz:(nz)*1j,
                             0:ny:(ny)*1j]
-    
+
     #
     ##
     ###
@@ -398,30 +329,30 @@ for t_ind in range(nt):
     
     spacing =  np.array([x_spacing, z_spacing, y_spacing])
     
-    if show_boundary == True:
-        ext_min_r = ((nx+1) * (xix_boundary_r_vals.min() - xmin) / (xmax - xmin)) * x_spacing
-        ext_max_r = ((nx+1) * (xix_boundary_r_vals.max() - xmin) / (xmax - xmin)) * x_spacing
+    if show_boundary == True: # maybe +1 after nx???? did have this, now removed. but still unsure.
+        ext_min_r = ((nx) * (xix_boundary_r_vals_t.min() - xmin) / (xmax - xmin)) * x_spacing
+        ext_max_r = ((nx) * (xix_boundary_r_vals_t.max() - xmin) / (xmax - xmin)) * x_spacing
         
-        ext_min_l = ((nx+1) * (xix_boundary_l_vals.min() - xmin) / (xmax - xmin)) * x_spacing #plus 2 after (xmax-xmin)?
-        ext_max_l = ((nx+1) * (xix_boundary_l_vals.max() - xmin) / (xmax - xmin)) * x_spacing #plus 2 after (xmax-xmin)?
+        ext_min_l = ((nx) * (xix_boundary_l_vals_t.min() - xmin) / (xmax - xmin)) * x_spacing #plus 2 after (xmax-xmin)?
+        ext_max_l = ((nx) * (xix_boundary_l_vals_t.max() - xmin) / (xmax - xmin)) * x_spacing #plus 2 after (xmax-xmin)?
         
         
-        boundary_r = mlab.mesh(xix_boundary_r_vals, zvals, yvals,
-                               extent=[ext_min_r, ext_max_r, 0, nz, 0, (ny-1) * y_spacing],
+        boundary_r = mlab.mesh(xix_boundary_r_vals_t, zvals, yvals,
+                               extent=[ext_min_r, ext_max_r, 1, nz, 0, (ny-1) * y_spacing],
                                color=(0.5,0.5,0.5), opacity=0.7)
         
-        boundary_l = mlab.mesh(xix_boundary_l_vals, zvals, yvals,
-                               extent=[ext_min_l, ext_max_l, 0, nz, 0, (ny-1) * y_spacing],
+        boundary_l = mlab.mesh(xix_boundary_l_vals_t, zvals, yvals,
+                               extent=[ext_min_l, ext_max_l, 1, nz, 0, (ny-1) * y_spacing],
                                color=(0.5,0.5,0.5), opacity=0.7)
     
-    if show_density == True:
+    if show_density == True or show_density_pert == True:
         # Scalar field density   
         rho = mlab.pipeline.scalar_field(rho_vals_t, name="density", figure=fig)
         #scalar_cut_plane = ScalarCutPlane()
         #fig.parent.add_filter(scalar_cut_plane, sca)
         rho.spacing = spacing
-        minr = rho_vals.min()
-        maxr = rho_vals.max()
+        minr = rho_vals_t.min()
+        maxr = rho_vals_t.max()
         
         #Volume for high pressure
         rvmin1 = minr + 0.55 * (maxr - minr)
@@ -468,73 +399,6 @@ for t_ind in range(nt):
         rvol2._ctf = ctf2
         rvol2.update_ctf = True
     
-        #Changing the opacity of the volume vol1
-        ## Changing the otf:
-        otf = PiecewiseFunction()
-        otf.add_point(rvmax2, 0)
-        otf.add_point(rvmin2, 0.10)
-        ##vol1._otf = otf
-        rvol2._volume_property.set_scalar_opacity(otf)
-        
-        # exempt volume from shading and improve overall look by increasing opacity
-        rvol2.volume_property.shade = False
-        rvol2.volume_property.scalar_opacity_unit_distance = 2.0
-    
-        
-    if show_density_pert == True:
-        # Scalar field density   
-        rho_pert = mlab.pipeline.scalar_field(rho_vals_pert, name="density", figure=fig)
-        #scalar_cut_plane = ScalarCutPlane()
-        #fig.parent.add_filter(scalar_cut_plane, sca)
-        rho_pert.spacing = spacing
-        minr = rho_vals_pert.min()
-        maxr = rho_vals_pert.max()
-        
-        #Volume for high pressure
-        rvmin1 = minr + 0.55 * (maxr - minr)
-        rvmax1 = minr + 1. * (maxr - minr)
-        rvol1 = mlab.pipeline.volume(rho_pert, vmin=rvmin1, vmax=rvmax1)
-        
-        # Changing the ctf:
-        from tvtk.util.ctf import ColorTransferFunction
-        ctf1 = ColorTransferFunction()
-        ctf1.add_rgb_point(rvmin1, 1., 1., 0.5)
-        ctf1.add_rgb_point(rvmin1 + 0.5 * (rvmax1 - rvmin1), 1, 0.3, 0.1)
-        ctf1.add_rgb_point(rvmax1, 1., 0., 0.)
-        # ...
-        rvol1._volume_property.set_color(ctf1)
-        rvol1._ctf = ctf1
-        rvol1.update_ctf = True
-        
-        #Changing the opacity of the volume vol1
-        ## Changing the otf:
-        from tvtk.util.ctf import PiecewiseFunction
-        otf = PiecewiseFunction()
-        otf.add_point(rvmin1, 0)
-        otf.add_point(rvmax1, 0.10)
-        ##vol1._otf = otf
-        rvol1._volume_property.set_scalar_opacity(otf)
-        
-        # exempt volume from shading and improve overall look by increasing opacity
-        rvol1.volume_property.shade = False
-        rvol1.volume_property.scalar_opacity_unit_distance = 2.0
-        
-        
-        #Volume for low pressure
-        rvmin2 = minr + 0. * (maxr - minr)
-        rvmax2 = minr + 0.45 * (maxr - minr)
-        rvol2 = mlab.pipeline.volume(rho_pert, vmin=rvmin2, vmax=rvmax2)
-        
-        # Changing the ctf:
-        ctf2 = ColorTransferFunction()
-        ctf2.add_rgb_point(rvmin2, 0., 0.5, 1.)
-        ctf2.add_rgb_point(rvmin2 + 0.5 * (rvmax2 - rvmin2), 0.1, 0.7, 1.)
-        ctf2.add_rgb_point(rvmax2, 0.5, 1., 1.)
-        # ...
-        rvol2._volume_property.set_color(ctf2)
-        rvol2._ctf = ctf2
-        rvol2.update_ctf = True
-        
         #Changing the opacity of the volume vol1
         ## Changing the otf:
         otf = PiecewiseFunction()
@@ -614,14 +478,8 @@ for t_ind in range(nt):
         vector_cut_plane_front.glyph.glyph_source.glyph_position = 'center'
     
     
-    #vdirfield = mlab.pipeline.vector_field(vxvals_mask, vzvals_mask, vyvals_mask,
-    #                                       name="V field", figure=fig)
-    #vectors = mlab.pipeline.vectors(vdirfield, scale_factor=15.)
-    ##vectors.glyph.glyph.orient = False
-    #vectors.glyph.color_mode = 'no_coloring'
-    
     if show_vel_top == True or show_vel_top_pert == True:
-        vdirfield_top = mlab.pipeline.vector_field(vxvals_mask_top_t, np.zeros_like(vxvals_mask_top_t),
+        vdirfield_top = mlab.pipeline.vector_field(vxvals_mask_top_t, vyvals_mask_top_t,
                                                     vyvals_mask_top_t, name="V field top",
                                                     figure=fig)
         vdirfield_top.spacing = spacing
@@ -649,8 +507,8 @@ for t_ind in range(nt):
         vector_cut_plane_front.glyph.glyph_source.glyph_position = 'center'
     
     if show_disp_top == True:
-        xidirfield_top = mlab.pipeline.vector_field(xixvals_mask_top, np.zeros_like(xixvals_mask_top),
-                                                    xiyvals_mask_top, name="Xi field top",
+        xidirfield_top = mlab.pipeline.vector_field(xixvals_mask_top_t, xiyvals_mask_top_t,
+                                                    xiyvals_mask_top_t, name="Xi field top",
                                                     figure=fig)
         xidirfield_top.spacing = spacing
         vector_cut_plane_top = mlab.pipeline.vector_cut_plane(xidirfield_top, 
@@ -663,8 +521,8 @@ for t_ind in range(nt):
         vector_cut_plane_top.glyph.glyph_source.glyph_position = 'center'
         
     if show_disp_front == True:
-        xidirfield_front = mlab.pipeline.vector_field(xixvals_mask_front, xizvals_mask_front,
-                                                     xiyvals_mask_front, name="Xi field front",
+        xidirfield_front = mlab.pipeline.vector_field(xixvals_mask_front_t, xizvals_mask_front_t,
+                                                     xiyvals_mask_front_t, name="Xi field front",
                                                      figure=fig)
         xidirfield_front.spacing = spacing
         vector_cut_plane_front = mlab.pipeline.vector_cut_plane(xidirfield_front, 
@@ -719,7 +577,7 @@ for t_ind in range(nt):
         axes.axes.label_format = ''
     
     if uniform_light == True:
-        #uniform lighting
+        #uniform lighting, but if we turn shading of volumes off, we are ok without
         field.scene.light_manager.number_of_lights = 6
         
         camera_light1 = field.scene.light_manager.lights[0]

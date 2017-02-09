@@ -25,21 +25,27 @@ cT = sc.sqrt(c0**2 * vA**2*(c0**2 + vA**2)**(-1))
 #ce = 1.2
 
 
-mode_options = ['slow kink surf', 'slow saus surf', 'slow kink body 1',
-                'slow saus body 1', 'slow kink body 2', 'slow saus body 2',
-                'fast saus body 1']
-kink_mode_options = ['slow kink surf', 'slow kink body 1', 'slow kink body 2']
-
+mode_options = ['slow kink surf', 'slow saus surf', 'slow saus body 3',
+                'slow kink body 3', 'slow saus body 2', 'slow kink body 2', 
+                'slow saus body 1', 'slow kink body 1', 'fast saus body 1',
+                'fast kink body 1', 'fast saus body 2', 'fast kink body 1',
+                'fast saus body 3', 'fast saus body 3', 'fast kink surf',
+                'fast saus surf']
+                
+kink_mode_options = ['slow kink surf', 'slow kink body 1', 'slow kink body 2',
+                     'slow kink body 3', 'fast kink body 1', 'fast kink body 2',
+                     'fast kink body 3', 'fast kink surf']
 saus_mode_options = ['slow saus surf', 'slow saus body 1', 'slow saus body 2',
-                     'fast saus body 1']
-
+                     'slow saus body 3', 'fast saus body 1', 'fast saus body 2',
+                     'fast saus body 3', 'fast saus surf']
 slow_surf_mode_options = ['slow kink surf', 'slow saus surf']
-
+fast_surf_mode_options = ['fast kink surf', 'fast saus surf']
 slow_body_1_mode_options = ['slow kink body 1', 'slow saus body 1']
-
 slow_body_2_mode_options = ['slow kink body 2', 'slow saus body 2']
-
-fast_body_1_mode_options = ['fast saus body 1']
+slow_body_3_mode_options = ['slow kink body 3', 'slow saus body 3']
+fast_body_1_mode_options = ['fast kink body 1', 'fast saus body 1']
+fast_body_2_mode_options = ['fast kink body 2', 'fast saus body 2']
+fast_body_3_mode_options = ['fast kink body 3', 'fast saus body 3']
 
 R2 = 2.
 
@@ -70,24 +76,6 @@ def m1(W, R1):
 def m2(W):
     return sc.sqrt(1 - W**2/c2**2)
 
-    
-def const(mode):
-    if mode in slow_surf_mode_options:
-        return 0.05
-    elif mode in slow_body_1_mode_options:
-        return 0.23
-    elif mode in slow_body_2_mode_options:
-        return 0.1
-    elif mode in fast_body_1_mode_options:
-        return 0.9
-    
-def disp_rel_asym(W, K, R1):
-    return ((W**4*m0(W)**2*R1*R2 + (vA**2 - W**2)**2*m1(W, R1)*m2(W) -
-            0.5*m0(W)*W**2*(vA**2 - W**2)*(R2*m1(W, R1) + R1*m2(W))*
-            (sc.tanh(m0(W)*K) + (sc.tanh(m0(W)*K))**(-1))) /
-            (vA**2 - W**2)*(c0**2 - W**2)*(cT**2 - W**2))
-    
-
 def lamb0(W):
     return -(vA**2-W**2)*1.j/(m0(W)*W)
 
@@ -99,6 +87,42 @@ def lamb1(W, R1):
     
 def lamb2(W):
     return R2*W*1.j/m2(W)
+
+def required_xi(mode, K):
+    if mode in slow_surf_mode_options:
+        return K / 3.
+    if mode in slow_body_1_mode_options:
+        return K / 90. #30.
+    if mode in slow_body_2_mode_options:
+        return K / 110. #90.
+    if mode in slow_body_3_mode_options:
+        return K / 250.
+    if mode in fast_body_1_mode_options:
+        return K / 50.
+
+def const(mode, W, K, R1):
+    const_val_r = (W * required_xi(mode, K) / (constB_dash(mode, W, K, R1)*sc.cosh(m0(W)*K) +
+                                     constC_dash(mode, W, K, R1)*sc.sinh(m0(W)*K)))
+    const_val_l = (W * required_xi(mode, K) / (constB_dash(mode, W, K, R1)*sc.cosh(m0(W)*-K) +
+                                     constC_dash(mode, W, K, R1)*sc.sinh(m0(W)*-K)))
+    return min(const_val_r, const_val_l)
+
+#def const(mode):
+#    if mode in slow_surf_mode_options:
+#        return 0.05
+#    elif mode in slow_body_1_mode_options:
+#        return 0.23
+#    elif mode in slow_body_2_mode_options:
+#        return 0.1
+#    elif mode in fast_body_1_mode_options:
+#        return 0.9
+#    
+def disp_rel_asym(W, K, R1):
+    return ((W**4*m0(W)**2*R1*R2 + (vA**2 - W**2)**2*m1(W, R1)*m2(W) -
+            0.5*m0(W)*W**2*(vA**2 - W**2)*(R2*m1(W, R1) + R1*m2(W))*
+            (sc.tanh(m0(W)*K) + (sc.tanh(m0(W)*K))**(-1))) /
+            (vA**2 - W**2)*(c0**2 - W**2)*(cT**2 - W**2))
+
     
 def bz_eq_1d(mode, x, z, t, W, K, R1):
     truth = np.array((x <= (K + xix_boundary(mode, z, t, W, K, R1, boundary='r'))*np.ones(len(x))) &
@@ -120,17 +144,17 @@ def bz_eq(mode, x, z, t, W, K, R1):
 
 def constB(mode, W, K, R1):
     if mode in kink_mode_options:
-        return const(mode)
+        return const(mode, W, K, R1)
     elif mode in saus_mode_options:
-        return const(mode)*((lamb0(W)*sc.cosh(m0(W)*K)+lamb1(W, R1)*sc.sinh(m0(W)*K)) /
+        return const(mode, W, K, R1)*((lamb0(W)*sc.cosh(m0(W)*K)+lamb1(W, R1)*sc.sinh(m0(W)*K)) /
                                (lamb1(W, R1)*sc.cosh(m0(W)*K)+lamb0(W)*sc.sinh(m0(W)*K)))
 
 def constC(mode, W, K, R1):
     if mode in kink_mode_options:
-        return const(mode)*((lamb1(W, R1)*sc.cosh(m0(W)*K)+lamb0(W)*sc.sinh(m0(W)*K)) /
+        return const(mode, W, K, R1)*((lamb1(W, R1)*sc.cosh(m0(W)*K)+lamb0(W)*sc.sinh(m0(W)*K)) /
                             (lamb0(W)*sc.cosh(m0(W)*K)+lamb1(W, R1)*sc.sinh(m0(W)*K)))
     elif mode in saus_mode_options:
-        return const(mode)
+        return const(mode, W, K, R1)
     
 def constA(mode, W, K, R1):
     return ((constB(mode, W, K, R1)*sc.cosh(m0(W)*K) - constC(mode, W, K, R1)*sc.sinh(m0(W)*K)) /
@@ -139,6 +163,21 @@ def constA(mode, W, K, R1):
 def constD(mode, W, K, R1):
     return ((constB(mode, W, K, R1)*sc.cosh(m0(W)*K) + constC(mode, W, K, R1)*sc.sinh(m0(W)*K)) /
             (sc.cosh(m2(W)*K) - sc.sinh(m2(W)*K)))
+
+# constants without const(mode). Used for finding appropriate value for const(mode)
+def constB_dash(mode, W, K, R1):
+    if mode in kink_mode_options:
+        return 1.
+    elif mode in saus_mode_options:
+        return ((lamb0(W)*sc.cosh(m0(W)*K)+lamb1(W, R1)*sc.sinh(m0(W)*K)) /
+                               (lamb1(W, R1)*sc.cosh(m0(W)*K)+lamb0(W)*sc.sinh(m0(W)*K)))
+
+def constC_dash(mode, W, K, R1):
+    if mode in kink_mode_options:
+        return ((lamb1(W, R1)*sc.cosh(m0(W)*K)+lamb0(W)*sc.sinh(m0(W)*K)) /
+                            (lamb0(W)*sc.cosh(m0(W)*K)+lamb1(W, R1)*sc.sinh(m0(W)*K)))
+    elif mode in saus_mode_options:
+        return 1.
 
 def vxhat(mode, x, W, K, R1):
     if type(x) == np.float64:
@@ -230,9 +269,7 @@ def vx_pert(mode, x, z, t, W, K, R1):
             elif sol[0] > K:
                 vx_hat_vals[i,j] = constD(mode, W, K, R1)*(sc.cosh(m2(W)*sol[0]) - 
                                                   sc.sinh(m2(W)*sol[0]))
-            
             vx_vals[i,j] = vx_hat_vals[i,j] * np.exp(1j*(z[j]-t))
-
     return vx_vals
     
 def vz_pert(mode, x, z, t, W, K, R1):

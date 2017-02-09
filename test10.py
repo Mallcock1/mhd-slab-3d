@@ -70,7 +70,7 @@ show_axes = True
 show_boundary = True
 
 # Specify oscillation parameters
-K = 2.
+K = 8. #2.
 R1 = 1.8 #1.8 #2.
 
 def disp_rel_asym_1var(W):
@@ -80,8 +80,29 @@ def disp_rel_asym_2var(W, K):
     return sf.disp_rel_asym(W, K, R1)
 
 
-Wrange = np.linspace(0., sf.c2, 501)
-Wvals = tool.point_finder_scipy(disp_rel_asym_2var, np.array(K), Wrange, args=None).transpose()
+#Wrange = np.linspace(0., sf.c2, 501)
+#Wvals = tool.point_finder_scipy(disp_rel_asym_2var, np.array(K), Wrange, args=None).transpose()
+#tol = 1e-2
+#indices_to_rm = []
+#for i in range(len(Wvals)):
+#    w = Wvals[i]
+#    if min(abs(np.array([w, w - sf.c0, w - sf.c1(R1), w - sf.c2, w - sf.vA]))) < tol or w < 0 or w > max(sf.c0, sf.vA, sf.c1, sf.c2):
+#        indices_to_rm.append(i)
+#Wvals = np.delete(Wvals, indices_to_rm)
+
+
+Wrange1 = np.linspace(0., sf.cT, 11)
+Wrange2 = np.linspace(sf.cT, sf.c0, 401)
+Wrange3 = np.linspace(sf.c0, sf.c2, 11)
+
+Wvals1 = tool.point_finder_scipy(disp_rel_asym_2var, np.array(K), Wrange1, args=None).transpose()
+Wvals2 = tool.point_finder_scipy(disp_rel_asym_2var, np.array(K), Wrange2, args=None).transpose()
+Wvals3 = tool.point_finder_scipy(disp_rel_asym_2var, np.array(K), Wrange3, args=None).transpose()
+
+Wvals = np.concatenate((Wvals1, Wvals2, Wvals3))
+#Wvals = Wvals3
+
+
 tol = 1e-2
 indices_to_rm = []
 for i in range(len(Wvals)):
@@ -91,14 +112,14 @@ for i in range(len(Wvals)):
 Wvals = np.delete(Wvals, indices_to_rm)
 
 
-Kvals = np.linspace(0., 3, 51)
+Kvals = np.linspace(0., 2*K, 51)
 
 plt.plot(K * np.ones_like(Wvals), Wvals, '.', color = 'b')
 plt.ylabel(r'$\omega/k c_0$', fontsize = 30)
 plt.xlabel(r'$k x_0$', fontsize = 30)
 
 plt.xlim(Kvals[0], Kvals[-1])
-plt.ylim(Wrange[0], Wrange[-1])
+plt.ylim(Wrange1[0], Wrange3[-1])
 
 plt.plot([Kvals[0], Kvals[-1]], [sf.vA, sf.vA], color = '0.5', linestyle='--', linewidth=2)
 plt.annotate(r'$v_A$', xy=(Kvals[-1] + 0.03, sf.vA - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
