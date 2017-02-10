@@ -50,7 +50,7 @@ fast_body_3_mode_options = ['fast kink body 3', 'fast saus body 3']
 
 # choose your mode (note that fast surface modes, i.e. 14 and 15, can only be 
 # found with SBS parameters in slab_functions...):
-mode = mode_options[15] #All working, 0-15
+mode = mode_options[8] #All working, 0-15 with R1 = 1.8
 
 
 # Which angle shall we view from?
@@ -112,7 +112,7 @@ elif mode in fast_surf_mode_options:
 else:
     print('mode not found')
         
-R1 = 1.8 #1.8 #2.
+R1 = 1.5 #1.8 #2.
 
 def disp_rel_asym_1var(W):
     return sf.disp_rel_asym(W, K, R1)
