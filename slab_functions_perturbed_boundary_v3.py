@@ -3,11 +3,11 @@ import numpy as np
 import scipy as sc
 from scipy.optimize import fsolve
 
-# SBB
-# Define the sound speeds and alfven speeds.
-c2 = 1.2
-c0 = 1.
-vA = 0.9
+## SBB
+## Define the sound speeds and alfven speeds.
+#c2 = 1.2
+#c0 = 1.
+#vA = 0.9
 
 
 ## for xi of x slow surface sf GS and maybe others
@@ -16,37 +16,39 @@ vA = 0.9
 #vA = 0.4
 
 
-## SBS
-## Define the sound speeds and alfven speeds.
-#c2 = 1.2
-#c0 = 1.
-#vA = 1.3
+# SBS
+# Define the sound speeds and alfven speeds.
+c2 = 1.2
+c0 = 1.
+vA = 1.3
 
 cT = sc.sqrt(c0**2 * vA**2*(c0**2 + vA**2)**(-1))
 
-
-
-mode_options = ['slow kink surf', 'slow saus surf', 'slow saus body 3',
-                'slow kink body 3', 'slow saus body 2', 'slow kink body 2', 
-                'slow saus body 1', 'slow kink body 1', 'fast saus body 1',
-                'fast kink body 1', 'fast saus body 2', 'fast kink body 1',
-                'fast saus body 3', 'fast saus body 3', 'fast kink surf',
-                'fast saus surf']
+mode_options = ['slow-kink-surf', 'slow-saus-surf', 'slow-saus-body-3',
+                'slow-kink-body-3', 'slow-saus-body-2', 'slow-kink-body-2', 
+                'slow-saus-body-1', 'slow-kink-body-1', 'fast-saus-body-1',
+                'fast-kink-body-1', 'fast-saus-body-2', 'fast-kink-body-2',
+                'fast-saus-body-3', 'fast-kink-body-3', 'fast-kink-surf',
+                'fast-saus-surf']
                 
-kink_mode_options = ['slow kink surf', 'slow kink body 1', 'slow kink body 2',
-                     'slow kink body 3', 'fast kink body 1', 'fast kink body 2',
-                     'fast kink body 3', 'fast kink surf']
-saus_mode_options = ['slow saus surf', 'slow saus body 1', 'slow saus body 2',
-                     'slow saus body 3', 'fast saus body 1', 'fast saus body 2',
-                     'fast saus body 3', 'fast saus surf']
-slow_surf_mode_options = ['slow kink surf', 'slow saus surf']
-fast_surf_mode_options = ['fast kink surf', 'fast saus surf']
-slow_body_1_mode_options = ['slow kink body 1', 'slow saus body 1']
-slow_body_2_mode_options = ['slow kink body 2', 'slow saus body 2']
-slow_body_3_mode_options = ['slow kink body 3', 'slow saus body 3']
-fast_body_1_mode_options = ['fast kink body 1', 'fast saus body 1']
-fast_body_2_mode_options = ['fast kink body 2', 'fast saus body 2']
-fast_body_3_mode_options = ['fast kink body 3', 'fast saus body 3']
+kink_mode_options = ['slow-kink-surf', 'slow-kink-body-1', 'slow-kink-body-2',
+                     'slow-kink-body-3', 'fast-kink-body-1', 'fast-kink-body-2',
+                     'fast-kink-body-3', 'fast-kink-surf']
+saus_mode_options = ['slow-saus-surf', 'slow-saus-body-1', 'slow-saus-body-2',
+                     'slow-saus-body-3', 'fast-saus-body-1', 'fast-saus-body-2',
+                     'fast-saus-body-3', 'fast-saus-surf']
+slow_surf_mode_options = ['slow-kink-surf', 'slow-saus-surf']
+fast_surf_mode_options = ['fast-kink-surf', 'fast-saus-surf']
+fast_kink_mode_options = ['fast-kink-surf', 'fast-kink-body-3', 'fast-kink-body-2', 
+                          'fast-kink-body 1']
+fast_saus_mode_options = ['fast-saus-surf', 'fast-saus-body-3', 'fast-saus-body-2', 
+                          'fast-saus-body-1']
+slow_body_1_mode_options = ['slow-kink-body-1', 'slow-saus-body-1']
+slow_body_2_mode_options = ['slow-kink-body-2', 'slow-saus-body-2']
+slow_body_3_mode_options = ['slow-kink-body-3', 'slow-saus-body-3']
+fast_body_1_mode_options = ['fast-kink-body-1', 'fast-saus-body-1']
+fast_body_2_mode_options = ['fast-kink-body-2', 'fast-saus-body-2']
+fast_body_3_mode_options = ['fast-kink-body-3', 'fast-saus-body-3']
 
 R2 = 2.
 
@@ -364,7 +366,6 @@ def bz(mode, x, z, t, W, K, R1):
         bz_array[:,i] = bzhat(mode, x, z[i], t, W, K, R1) * np.exp(1j*(z[i]-t))
     return bz_array
 
-# In the slab has an extra -1 factor to make it work. Not sure why it needs this.
 def rho_hat(mode, x, W, K, R1):
     truth = np.array(np.abs(x) <= K*np.ones(len(x)))
     indices = np.where(truth == True)
