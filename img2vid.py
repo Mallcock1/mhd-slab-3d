@@ -26,8 +26,8 @@ def image2video(filepath=None, prefix='', in_extension='png',
 
     delete_images_cmd = 'DEL "'+filepath+prefix+'*.'+in_extension+'"'
     
-    delete_old_videos_cmd = 'DEL "'+filepath+prefix+'.'+out_extension+'" \
-    "'+filepath+prefix+'_overlay.'+out_extension+'" "'+filepath+prefix+'_overlay2.'+out_extension+'"'
+    delete_old_videos_cmd = 'DEL "'+filepath+output_name+'.'+out_extension+'" \
+    "'+filepath+output_name+'_overlay.'+out_extension+'" "'+filepath+output_name+'_overlay2.'+out_extension+'"'
 
 #    image_2_video = 'ffmpeg -framerate '+str(in_fps)+' -s 1920x1080 -start_number '+str(start_frame)+' -i \
 #    '+filepath+prefix+'.'+in_extension+' \
@@ -81,13 +81,16 @@ def image2video(filepath=None, prefix='', in_extension='png',
 #    -c copy '+filepath+output_name+'.'+out_extension
     
     os.system(image_2_video)
-    if delete_images == True:
-        os.system(delete_images_cmd)
+
     os.system(overlay_image_sp2rc)
     os.system(overlay_image_swat)
     if n_loops!=1:
         os.system(loop_list)
         os.system(loop)
+    if delete_images == True:
+        os.system(delete_images_cmd)
+    if delete_old_videos == True:
+        os.system(delete_old_videos_cmd)
     
 
 #img2vid(prefix=prefix, output_name='video', out_extension='mp4', fps=20, n_loops=4, delete_images=True)

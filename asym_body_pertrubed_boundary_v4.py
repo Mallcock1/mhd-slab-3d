@@ -50,7 +50,7 @@ fast_body_3_mode_options = ['fast kink body 3', 'fast saus body 3']
 
 # choose your mode (note that fast surface modes, i.e. 14 and 15, can only be 
 # found with SBS parameters in slab_functions...):
-mode = mode_options[8] #All working, 0-15 with R1 = 1.8
+mode = mode_options[15] #All working, 0-15 with R1 = 1.8
 
 
 # Which angle shall we view from?
@@ -120,79 +120,60 @@ def disp_rel_asym_1var(W):
 def disp_rel_asym_2var(W, K):
     return sf.disp_rel_asym(W, K, R1)
 
-# find eigenfrequencies W (= omega/k) within the range Wrange for the given parameters.
-
-Wrange1 = np.linspace(0., sf.cT, 11)
-Wrange2 = np.linspace(sf.cT, sf.c0, 401)
-Wrange3 = np.linspace(sf.c0, sf.c2, 11)
-
-Woptions_slow_surf = np.real(tool.point_finder_scipy(disp_rel_asym_2var, np.array(K), Wrange1, args=None).transpose())
-Woptions_slow_body = np.real(tool.point_finder_scipy(disp_rel_asym_2var, np.array(K), Wrange2, args=None).transpose())
-Woptions_fast = np.real(tool.point_finder_scipy(disp_rel_asym_2var, np.array(K), Wrange3, args=None).transpose())
-
-#print(Woptions_slow_surf.shape)
-#print(Woptions_slow_body.shape)
-#print(Woptions_fast)
-#
-#pdb.set_trace()
-
-#Woptions = tool.point_finder_scipy(disp_rel_asym_2var, np.array(K), Wrange1, args=None).transpose()
-#Woptions = np.append(Woptions, tool.point_finder_scipy(disp_rel_asym_2var, np.array(K), Wrange2, args=None).transpose())
-#Woptions = np.append(Woptions, tool.point_finder_scipy(disp_rel_asym_2var, np.array(K), Wrange3, args=None).transpose())
-
-# remove W values that are very close to characteristic speeds
-tol = 1e-2
-indices_to_rm = []
-
-for i in range(len(Woptions_slow_surf)):
-    w = Woptions_slow_surf[i]
-    if min(abs(np.array([w, w - sf.c0, w - sf.c1(R1), w - sf.c2, w - sf.vA]))) < tol or w < 0 or w > sf.cT:
-        indices_to_rm.append(i)
-Woptions_slow_surf = np.delete(Woptions_slow_surf, indices_to_rm)
-Woptions_slow_surf.sort()
-
-indices_to_rm = []
-for i in range(len(Woptions_slow_body)):
-    w = Woptions_slow_body[i]
-    if min(abs(np.array([w, w - sf.c0, w - sf.c1(R1), w - sf.c2, w - sf.vA]))) < tol or w < sf.cT or w > sf.c0:
-        indices_to_rm.append(i)
-Woptions_slow_body = np.delete(Woptions_slow_body, indices_to_rm)
-Woptions_slow_body.sort()
-
-indices_to_rm = []
-for i in range(len(Woptions_fast)):
-    w = Woptions_fast[i]
-    if min(abs(np.array([w, w - sf.c0, w - sf.c1(R1), w - sf.c2, w - sf.vA]))) < tol or w < sf.c0 or w > min(sf.c1, sf.c2):
-        indices_to_rm.append(i)
-Woptions_fast = np.delete(Woptions_fast, indices_to_rm)
-Woptions_fast.sort()
-
-#print(Woptions_slow_body.shape)
-#print(Woptions_fast)
-#pdb.set_trace()
-
-# remove any higher order slow body modes
-if len(Woptions_slow_body) > 6:
-    Woptions_slow_body = np.delete(Woptions_slow_body, range(len(Woptions_slow_body) - 6))
-
-Woptions = np.concatenate((Woptions_slow_surf, Woptions_slow_body, Woptions_fast))
-
-#print(Woptions_slow_surf.shape)
-#print(Woptions_slow_body.shape)
-#print(Woptions)
-#
-#pdb.set_trace()
-
-# set W to be the eigenfrequency for the requested mode
-if mode in ['fast saus body 1', 'fast saus body 2', 'fast saus body 3', 'fast kink surf']:
-    W = Woptions[-2]
-elif mode in ['fast kink body 1', 'fast kink body 2', 'fast kink body 3', 'fast saus surf']:
-    W = Woptions[-1]
-else:
-    for i in range(len(mode_options)):
-        if mode == mode_options[i]:
-            W = np.real(Woptions[i])
-            break
+    # find eigenfrequencies W (= omega/k) within the range Wrange for the given parameters.
+    Wrange1 = np.linspace(0., sf.cT, 11)
+    Wrange2 = np.linspace(sf.cT, sf.c0, 401)
+    Wrange3 = np.linspace(sf.c0, sf.c2, 11)
+    
+    Woptions_slow_surf = np.real(tool.point_finder_scipy(disp_rel_asym_2var, np.array(K), Wrange1, args=None).transpose())
+    Woptions_slow_body = np.real(tool.point_finder_scipy(disp_rel_asym_2var, np.array(K), Wrange2, args=None).transpose())
+    Woptions_fast = np.real(tool.point_finder_scipy(disp_rel_asym_2var, np.array(K), Wrange3, args=None).transpose())
+    
+    # remove W values that are very close to characteristic speeds
+    tol = 1e-2
+    indices_to_rm = []
+    
+    for i in range(len(Woptions_slow_surf)):
+        w = Woptions_slow_surf[i]
+        if min(abs(np.array([w, w - sf.c0, w - sf.c1(R1), w - sf.c2, w - sf.vA]))) < tol or w < 0 or w > sf.cT:
+            indices_to_rm.append(i)
+    Woptions_slow_surf = np.delete(Woptions_slow_surf, indices_to_rm)
+    Woptions_slow_surf.sort()
+    
+    indices_to_rm = []
+    for i in range(len(Woptions_slow_body)):
+        w = Woptions_slow_body[i]
+        if min(abs(np.array([w, w - sf.c0, w - sf.c1(R1), w - sf.c2, w - sf.vA]))) < tol or w < sf.cT or w > sf.c0:
+            indices_to_rm.append(i)
+    Woptions_slow_body = np.delete(Woptions_slow_body, indices_to_rm)
+    Woptions_slow_body.sort()
+    
+    indices_to_rm = []
+    for i in range(len(Woptions_fast)):
+        w = Woptions_fast[i]
+        if min(abs(np.array([w, w - sf.c0, w - sf.c1(R1), w - sf.c2, w - sf.vA]))) < tol or w < sf.c0 or w > min(sf.c1, sf.c2):
+            indices_to_rm.append(i)
+    Woptions_fast = np.delete(Woptions_fast, indices_to_rm)
+    Woptions_fast.sort()
+    
+    # remove any higher order slow body modes
+    if len(Woptions_slow_body) > 6:
+        Woptions_slow_body = np.delete(Woptions_slow_body, range(len(Woptions_slow_body) - 6))
+    
+    Woptions = np.concatenate((Woptions_slow_surf, Woptions_slow_body, Woptions_fast))
+    
+    
+    # set W to be the eigenfrequency for the requested mode
+    if mode in ['fast-saus-body-1', 'fast-saus-body-2', 'fast-saus-body-3', 'fast-kink-surf']:
+        W = Woptions[-2]
+    elif mode in ['fast-kink-body-1', 'fast-kink-body-2', 'fast-kink-body-3', 'fast-saus-surf']:
+        W = Woptions[-1]
+    else:
+        for i in range(len(mode_options)):
+            if mode == mode_options[i]:
+                W = np.real(Woptions[i])
+                break
+    
 
 
 # Dependent variables:
