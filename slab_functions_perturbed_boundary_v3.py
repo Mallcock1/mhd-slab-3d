@@ -404,8 +404,8 @@ def rho_pert(mode, x, z, t, W, K, R1):
             if abs(sol[0]) <= K:
                 rho_hat_vals[i,j] = m0(W)*(constB(mode, W, K, R1)*sc.sinh(m0(W)*sol[0]) +
                                 constC(mode, W, K, R1)*sc.cosh(m0(W)*sol[0])) * lamb00(W) / (c0**2 * m00(W))
-                if mode in slow_surf_mode_options + slow_body_1_mode_options + slow_body_2_mode_options:
-                    rho_hat_vals[i,j] = -rho_hat_vals[i,j]
+#                if mode in slow_surf_mode_options + slow_body_1_mode_options + slow_body_2_mode_options:
+#                    rho_hat_vals[i,j] = -rho_hat_vals[i,j]
             elif sol[0] < -K:
                 rho_hat_vals[i,j] = constA(mode, W, K, R1)*(sc.sinh(m1(W, R1)*sol[0]) +
                                 sc.cosh(m1(W, R1)*sol[0])) * lamb1(W, R1) / c1(R1)**2

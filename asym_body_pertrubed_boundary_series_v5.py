@@ -6,6 +6,7 @@
 ##sys.path.append(u'W7_DATA/my_work/projects/Asymmetric_slab/Python/visualisations/ffmpeg/')
 
 import pdb # pause code for debugging at pdb.set_trace()
+import gc
 
 import numpy as np
 
@@ -18,6 +19,12 @@ import matplotlib.pyplot as plt
 import matplotlib
 
 from mayavi import mlab
+#mlab.options.offscreen = True
+
+from mayavi.tools.engine_manager import engine_manager
+from mayavi.core.registry import registry
+
+
 
 import img2vid as i2v
 
@@ -61,8 +68,8 @@ view_options = ['front', 'front-parallel', 'top', 'top-parallel' 'front-top',
 #view = 'front-parallel'
 #view = 'top'
 #view = 'top-parallel'
-#view = 'front-top'
-view = 'front-side'
+view = 'front-top'
+#view = 'front-side'
 
 # Uniform lighting?
 #uniform_light = True
@@ -83,38 +90,45 @@ show_vel_top_pert = False
 show_disp_top = False
 show_disp_front = False
 show_axes = False
+show_axis_labels = False
+show_mini_axis = False
 show_boundary = False
+
+
 
 # Set to True if you would like the dispersion diagram with this mode highlighted.
 show_dispersion = False
 #show_dispersion = True
 
 # Uncomment the parametrer you would like to see
-#show_density = True
-show_density_pert = True
+show_density = True
+#show_density_pert = True
 show_mag = True
 #show_mag_scale = True #must also have show_mag = True
 #show_mag_vec = True
-#show_vel_front = True
-show_vel_front_pert = True
+show_vel_front = True
+#show_vel_front_pert = True
 #show_vel_top = True
 #show_vel_top_pert = True
 #show_disp_top = True
 #show_disp_front = True
 show_axes = True
+#show_axis_labels = True
+show_mini_axis = True
 show_boundary = True
 
 # Video resolution
 #res = (1920,1080)
 res = tuple(101 * np.array((16,9)))
+#res = tuple(51 * np.array((16,9)))
 #res = tuple(21 * np.array((16,9)))
 
-number_of_frames = 50
+number_of_frames = 1 #50
 
 
 #for mode_ind in range(14): # for all others. REMEMBER SBB pparameters
 #for mode_ind in [14,15]: #for fast body surf. REMEMBER SBS parameters
-for mode_ind in [0,1]: #for an individual mode
+for mode_ind in [0]: #for an individual mode
 
     # choose your mode: (note that fast surface modes, i.e. 14 and 15, can only be 
     # found with SBS parameters in slab_functions...)
@@ -136,8 +150,8 @@ for mode_ind in [0,1]: #for an individual mode
     else:
         print('mode not found')
             
-#    R1 = 1.5 #1.8 # Higher denisty on left than right
-    R1 = 2. # Symmetric slab
+    R1 = 1.5 #1.8 # Higher denisty on left than right
+#    R1 = 2. # Symmetric slab
         
     def disp_rel_asym_2var(W, K):
         return sf.disp_rel_asym(W, K, R1)
@@ -1065,7 +1079,7 @@ for mode_ind in [0,1]: #for an individual mode
         
         fig = mlab.figure(size=res) # (1920, 1080) for 1080p , tuple(101 * np.array((16,9))) #16:9 aspect ratio for video upload
         
-        mlab.options.offscreen = True
+        
         
         spacing =  np.array([x_spacing, z_spacing, y_spacing])
         
@@ -1076,15 +1090,92 @@ for mode_ind in [0,1]: #for an individual mode
             ext_min_l = ((nx) * (xix_boundary_l_vals_t.min() - xmin) / (xmax - xmin)) * x_spacing #plus 2 after (xmax-xmin)?
             ext_max_l = ((nx) * (xix_boundary_l_vals_t.max() - xmin) / (xmax - xmin)) * x_spacing #plus 2 after (xmax-xmin)?
             
+                                               
+            if view == 'front-parallel':
+                boundary_r_thick = mlab.mesh(xix_boundary_r_vals_t, zvals, yvals,
+                                             extent=[ext_min_r, ext_max_r, 1, nz, 0, (ny-1) * y_spacing],
+                                             color=(1.,1.,1.), opacity=1., representation='wireframe',
+                                             line_width=12.)
             
-            boundary_r = mlab.mesh(xix_boundary_r_vals_t, zvals, yvals,
-                                   extent=[ext_min_r, ext_max_r, 1, nz, 0, (ny-1) * y_spacing],
-                                   color=(0.5,0.5,0.5), opacity=0.7)
-            
-            boundary_l = mlab.mesh(xix_boundary_l_vals_t, zvals, yvals,
-                                   extent=[ext_min_l, ext_max_l, 1, nz, 0, (ny-1) * y_spacing],
-                                   color=(0.5,0.5,0.5), opacity=0.7)
-        
+                boundary_l_thick = mlab.mesh(xix_boundary_l_vals_t, zvals, yvals,
+                                             extent=[ext_min_l, ext_max_l, 1, nz, 0, (ny-1) * y_spacing],
+                                             color=(1.,1.,1.), opacity=1., representation='wireframe',
+                                             line_width=12.)
+                                             
+            else:
+                boundary_r = mlab.mesh(xix_boundary_r_vals_t, zvals, yvals,
+                                       extent=[ext_min_r, ext_max_r, 1, nz, 0, (ny-1) * y_spacing],
+                                       color=(0.5,0.5,0.5), opacity=0.7)
+                
+                boundary_l = mlab.mesh(xix_boundary_l_vals_t, zvals, yvals,
+                                       extent=[ext_min_l, ext_max_l, 1, nz, 0, (ny-1) * y_spacing],
+                                       color=(0.5,0.5,0.5), opacity=0.7)
+#        if show_density == True or show_density_pert == True:
+#            # Scalar field density   
+#            rho = mlab.pipeline.scalar_field(rho_vals_t, name="density", figure=fig)
+#            #scalar_cut_plane = ScalarCutPlane()
+#            #fig.parent.add_filter(scalar_cut_plane, sca)
+#            rho.spacing = spacing
+#            minr = rho_vals_t.min()
+#            maxr = rho_vals_t.max()
+#            
+#            #Volume for high pressure
+#            rvmin1 = minr + 0.55 * (maxr - minr)
+#            rvmax1 = minr + 1. * (maxr - minr)
+#            rvol1 = mlab.pipeline.volume(rho, vmin=rvmin1, vmax=rvmax1)
+#            
+#            # Changing the ctf:
+#            from tvtk.util.ctf import ColorTransferFunction
+#            ctf1 = ColorTransferFunction()
+#            ctf1.add_rgb_point(rvmin1, 1., 1., 0.5)
+#            ctf1.add_rgb_point(rvmin1 + 0.5 * (rvmax1 - rvmin1), 1, 0.3, 0.1)
+#            ctf1.add_rgb_point(rvmax1, 1., 0., 0.)
+#            # ...
+#            rvol1._volume_property.set_color(ctf1)
+#            rvol1._ctf = ctf1
+#            rvol1.update_ctf = True
+#            
+#            #Changing the opacity of the volume vol1
+#            ## Changing the otf:
+#            from tvtk.util.ctf import PiecewiseFunction
+#            otf = PiecewiseFunction()
+#            otf.add_point(rvmin1, 0)
+#            otf.add_point(rvmax1, 0.10)
+#            ##vol1._otf = otf
+#            rvol1._volume_property.set_scalar_opacity(otf)
+#            
+#            # exempt volume from shading and improve overall look by increasing opacity
+#            rvol1.volume_property.shade = False
+#            rvol1.volume_property.scalar_opacity_unit_distance = 2.0
+#            
+#            
+#            #Volume for low pressure
+#            rvmin2 = minr + 0. * (maxr - minr)
+#            rvmax2 = minr + 0.45 * (maxr - minr)
+#            rvol2 = mlab.pipeline.volume(rho, vmin=rvmin2, vmax=rvmax2)
+#            
+#            # Changing the ctf:
+#            ctf2 = ColorTransferFunction()
+#            ctf2.add_rgb_point(rvmin2, 0., 0.5, 1.)
+#            ctf2.add_rgb_point(rvmin2 + 0.5 * (rvmax2 - rvmin2), 0.1, 0.7, 1.)
+#            ctf2.add_rgb_point(rvmax2, 0.5, 1., 1.)
+#            # ...
+#            rvol2._volume_property.set_color(ctf2)
+#            rvol2._ctf = ctf2
+#            rvol2.update_ctf = True
+#        
+#            #Changing the opacity of the volume vol1
+#            ## Changing the otf:
+#            otf = PiecewiseFunction()
+#            otf.add_point(rvmax2, 0)
+#            otf.add_point(rvmin2, 0.10)
+#            ##vol1._otf = otf
+#            rvol2._volume_property.set_scalar_opacity(otf)
+#            
+#            # exempt volume from shading and improve overall look by increasing opacity
+#            rvol2.volume_property.shade = False
+#            rvol2.volume_property.scalar_opacity_unit_distance = 2.0
+                                             
         if show_density == True or show_density_pert == True:
             # Scalar field density   
             rho = mlab.pipeline.scalar_field(rho_vals_t, name="density", figure=fig)
@@ -1095,7 +1186,7 @@ for mode_ind in [0,1]: #for an individual mode
             maxr = rho_vals_t.max()
             
             #Volume for high pressure
-            rvmin1 = minr + 0.55 * (maxr - minr)
+            rvmin1 = minr + 0.5 * (maxr - minr)
             rvmax1 = minr + 1. * (maxr - minr)
             rvol1 = mlab.pipeline.volume(rho, vmin=rvmin1, vmax=rvmax1)
             
@@ -1103,7 +1194,7 @@ for mode_ind in [0,1]: #for an individual mode
             from tvtk.util.ctf import ColorTransferFunction
             ctf1 = ColorTransferFunction()
             ctf1.add_rgb_point(rvmin1, 1., 1., 0.5)
-            ctf1.add_rgb_point(rvmin1 + 0.5 * (rvmax1 - rvmin1), 1, 0.3, 0.1)
+            ctf1.add_rgb_point(rvmin1 + 0.4 * (rvmax1 - rvmin1), 1, 0.3, 0.1)
             ctf1.add_rgb_point(rvmax1, 1., 0., 0.)
             # ...
             rvol1._volume_property.set_color(ctf1)
@@ -1115,7 +1206,9 @@ for mode_ind in [0,1]: #for an individual mode
             from tvtk.util.ctf import PiecewiseFunction
             otf = PiecewiseFunction()
             otf.add_point(rvmin1, 0)
-            otf.add_point(rvmax1, 0.10)
+            otf.add_point(rvmin1 + (rvmax1-rvmin1)*0.2, 0.012)
+            otf.add_point(rvmin1 + (rvmax1-rvmin1)*0.5, 0.05)
+            otf.add_point(rvmax1, 0.15)
             ##vol1._otf = otf
             rvol1._volume_property.set_scalar_opacity(otf)
             
@@ -1126,24 +1219,26 @@ for mode_ind in [0,1]: #for an individual mode
             
             #Volume for low pressure
             rvmin2 = minr + 0. * (maxr - minr)
-            rvmax2 = minr + 0.45 * (maxr - minr)
+            rvmax2 = minr + 0.5 * (maxr - minr)
             rvol2 = mlab.pipeline.volume(rho, vmin=rvmin2, vmax=rvmax2)
             
             # Changing the ctf:
             ctf2 = ColorTransferFunction()
             ctf2.add_rgb_point(rvmin2, 0., 0.5, 1.)
-            ctf2.add_rgb_point(rvmin2 + 0.5 * (rvmax2 - rvmin2), 0.1, 0.7, 1.)
+            ctf2.add_rgb_point(rvmin2 + 0.6 * (rvmax2 - rvmin2), 0.1, 0.7, 1.)
             ctf2.add_rgb_point(rvmax2, 0.5, 1., 1.)
             # ...
             rvol2._volume_property.set_color(ctf2)
             rvol2._ctf = ctf2
             rvol2.update_ctf = True
         
-            #Changing the opacity of the volume vol1
+            #Changing the opacity of the volume vol2
             ## Changing the otf:
             otf = PiecewiseFunction()
             otf.add_point(rvmax2, 0)
-            otf.add_point(rvmin2, 0.10)
+            otf.add_point(rvmax2 - (rvmax2-rvmin2)*0.2, 0.012)
+            otf.add_point(rvmax2 - (rvmax2-rvmin2)*0.5, 0.05)
+            otf.add_point(rvmin2, 0.15)
             ##vol1._otf = otf
             rvol2._volume_property.set_scalar_opacity(otf)
             
@@ -1281,46 +1376,64 @@ for mode_ind in [0,1]: #for an individual mode
         
         #Set viewing angle
         if view == 'front-parallel':
-            field.scene.parallel_projection = True
             field.scene.z_plus_view()
-            field.scene.camera.view_angle = 21
+            field.scene.parallel_projection = True
+            field.scene.camera.zoom(1.65) # Parallel projection zoom is done in this way, different to perspective projection
         if view == 'front':
             field.scene.z_plus_view()
-            field.scene.camera.view_angle = 21
+            field.scene.camera.view_angle = 21.
         if view == 'top':
             field.scene.camera.position = [53.107781380642741, 523.35670183503294, 50.948508989758153]
             field.scene.camera.focal_point = [50.821544647216797, 50.413210511207581, 50.159849926829338]
-            field.scene.camera.view_angle = 21.0
+            field.scene.camera.view_angle = 14.
             field.scene.camera.view_up = [-0, 0, -1]
             field.scene.camera.clipping_range = [368.83220888718552, 605.15289607145894]
         if view == 'top-parallel':
             field.scene.parallel_projection = True
+            field.scene.camera.zoom(2.)
             field.scene.camera.position = [53.107781380642741, 523.35670183503294, 50.948508989758153]
             field.scene.camera.focal_point = [50.821544647216797, 50.413210511207581, 50.159849926829338]
-            field.scene.camera.view_angle = 21.0
+#            field.scene.camera.view_angle = 14.
             field.scene.camera.view_up = [-0, 0, -1]
             field.scene.camera.clipping_range = [368.83220888718552, 605.15289607145894]
         if view == 'front-top':
             field.scene.camera.position = [48.764852970361503, 223.64895482756552, 498.62216293273576]
-            field.scene.camera.focal_point = [50.821544647216797, 50.413210511207581, 50.159849926829338]
-            field.scene.camera.view_angle = 17.0
+            field.scene.camera.focal_point = [50.821544647216797, 46., 50.159849926829338]
+            field.scene.camera.view_angle = 16.0
             field.scene.camera.view_up = [-0.002418791139063777, 0.93281530024654913, -0.36034672896443193]
             field.scene.camera.clipping_range = [345.97885880654962, 650.71850659694883]
          
         if view == 'front-side':
-            field.scene.camera.position = [219.75240522356913, 79.115530658939363, 499.350055117431]
+            field.scene.camera.position = [126.62380038836577, 60.458994158678557, 524.80329455823346]
             field.scene.camera.focal_point = [50.821544647216797, 50.413210511207581, 50.159849926829338]
-            field.scene.camera.view_angle = 17.0
-            field.scene.camera.view_up = [-0.044827368757468969, 0.99789300973432205, -0.046904670701947544]
-            field.scene.camera.clipping_range = [348.0134523780402, 654.26836207642464]
+            field.scene.camera.view_angle = 14.
+            field.scene.camera.view_up = [-0.016952270974394879, 0.9996860427028168, -0.018450922307365961]
+            field.scene.camera.clipping_range = [366.21083458278804, 631.07664372567524]
         
         if show_axes == True:
             axes = mlab.axes(field, nb_labels=1, line_width=3)
-            axes.axes.x_label = ''
-            axes.axes.y_label = ''
-            axes.axes.z_label = ''
             axes.axes.label_format = ''
-        
+            if show_axis_labels == True:
+                axes.axes.x_label = 'x'
+                if view == 'front-parallel':
+                    axes.axes.y_label = 'z'
+                    axes.axes.z_label = ''
+                elif view == 'top-parallel':
+                    axes.axes.y_label = ''
+                    axes.axes.z_label = 'y'
+                else:
+                    axes.axes.y_label = 'z'
+                    axes.axes.z_label = 'y'
+            else:
+                axes.axes.x_label = ''
+                axes.axes.y_label = ''
+                axes.axes.z_label = ''
+                
+        if show_mini_axis == True:
+            
+            oa = mlab.orientation_axes(xlabel='x', ylabel='z', zlabel='y')
+            oa.marker.set_viewport(0,0,0.25,0.25) # minx, miny, maxx, maxy
+
         if uniform_light == True:
             #uniform lighting, but if we turn shading of volumes off, we are ok without
             field.scene.light_manager.number_of_lights = 6
@@ -1363,13 +1476,24 @@ for mode_ind in [0,1]: #for an individual mode
         
         #Black background
         field.scene.background = (0., 0., 0.)
-        
+
         prefix = 'R1_'+str(R1)+'_'+view + '_' + mode
         
-        mlab.savefig('D:\\my_work\\projects\\Asymmetric_slab\\Python\\visualisations\\3D_vis_animations\\'
-                     + prefix + str(t_ind+1) + '.png')
-    
-        mlab.close()
+#        mlab.savefig('D:\\my_work\\projects\\Asymmetric_slab\\Python\\visualisations\\3D_vis_animations\\'
+#                     + prefix + str(t_ind+1) + '.png')
+        
+# Trying and failing to sort out memory issues.
+#        mlab.gcf()
+#        mlab.clf()
+#        mlab.close()
+#        gc.collect()
+#        del fig
+#        engine_manager.current_engine = None
+#        registry.engines = {}
+        
+        
+#        mlab.close(fig)
+
         t = t + (t_end - t_start) / nt
-    
-    i2v.image2video(prefix=prefix, output_name=prefix+'_video', out_extension='mp4', fps=25, n_loops=4, delete_images=False, delete_old_videos=True, res=res[1])
+
+#    i2v.image2video(prefix=prefix, output_name=prefix+'_video', out_extension='mp4', fps=25, n_loops=4, delete_images=True, delete_old_videos=True, res=res[1])

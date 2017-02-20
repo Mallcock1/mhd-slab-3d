@@ -22,44 +22,44 @@ from mayavi.modules.image_plane_widget import ImagePlaneWidget
 ###############################################################################
 
 # What mode do you want? OPTIONS:
-mode_options = ['slow kink surf', 'slow saus surf', 'slow saus body 3',
-                'slow kink body 3', 'slow saus body 2', 'slow kink body 2', 
-                'slow saus body 1', 'slow kink body 1', 'fast saus body 1',
-                'fast kink body 1', 'fast saus body 2', 'fast kink body 2',
-                'fast saus body 3', 'fast kink body 3', 'fast kink surf',
-                'fast saus surf']
+mode_options = ['slow-kink-surf', 'slow-saus-surf', 'slow-saus-body-3',
+                'slow-kink-body-3', 'slow-saus-body-2', 'slow-kink-body-2', 
+                'slow-saus-body-1', 'slow-kink-body-1', 'fast-saus-body-1',
+                'fast-kink-body-1', 'fast-saus-body-2', 'fast-kink-body-2',
+                'fast-saus-body-3', 'fast-kink-body-3', 'fast-kink-surf',
+                'fast-saus-surf']
                 
-kink_mode_options = ['slow kink surf', 'slow kink body 1', 'slow kink body 2',
-                     'slow kink body 3', 'fast kink body 1', 'fast kink body 2',
-                     'fast kink body 3', 'fast kink surf']
-saus_mode_options = ['slow saus surf', 'slow saus body 1', 'slow saus body 2',
-                     'slow saus body 3', 'fast saus body 1', 'fast saus body 2',
-                     'fast saus body 3', 'fast saus surf']
-slow_surf_mode_options = ['slow kink surf', 'slow saus surf']
-fast_surf_mode_options = ['fast kink surf', 'fast saus surf']
-fast_kink_mode_options = ['fast kink surf', 'fast kink body 3', 'fast kink body 2', 
-                          'fast kink body 1']
-fast_saus_mode_options = ['fast saus surf', 'fast saus body 3', 'fast saus body 2', 
-                          'fast saus body 1']
-slow_body_1_mode_options = ['slow kink body 1', 'slow saus body 1']
-slow_body_2_mode_options = ['slow kink body 2', 'slow saus body 2']
-slow_body_3_mode_options = ['slow kink body 3', 'slow saus body 3']
-fast_body_1_mode_options = ['fast kink body 1', 'fast saus body 1']
-fast_body_2_mode_options = ['fast kink body 2', 'fast saus body 2']
-fast_body_3_mode_options = ['fast kink body 3', 'fast saus body 3']
+kink_mode_options = ['slow-kink-surf', 'slow-kink-body-1', 'slow-kink-body-2',
+                     'slow-kink-body-3', 'fast-kink-body-1', 'fast-kink-body-2',
+                     'fast-kink-body-3', 'fast-kink-surf']
+saus_mode_options = ['slow-saus-surf', 'slow-saus-body-1', 'slow-saus-body-2',
+                     'slow-saus-body-3', 'fast-saus-body-1', 'fast-saus-body-2',
+                     'fast-saus-body-3', 'fast-saus-surf']
+slow_surf_mode_options = ['slow-kink-surf', 'slow-saus-surf']
+fast_surf_mode_options = ['fast-kink-surf', 'fast-saus-surf']
+fast_kink_mode_options = ['fast-kink-surf', 'fast-kink-body-3', 'fast-kink-body-2', 
+                          'fast-kink-body 1']
+fast_saus_mode_options = ['fast-saus-surf', 'fast-saus-body-3', 'fast-saus-body-2', 
+                          'fast-saus-body-1']
+slow_body_1_mode_options = ['slow-kink-body-1', 'slow-saus-body-1']
+slow_body_2_mode_options = ['slow-kink-body-2', 'slow-saus-body-2']
+slow_body_3_mode_options = ['slow-kink-body-3', 'slow-saus-body-3']
+fast_body_1_mode_options = ['fast-kink-body-1', 'fast-saus-body-1']
+fast_body_2_mode_options = ['fast-kink-body-2', 'fast-saus-body-2']
+fast_body_3_mode_options = ['fast-kink-body-3', 'fast-saus-body-3']
 
 # choose your mode (note that fast surface modes, i.e. 14 and 15, can only be 
 # found with SBS parameters in slab_functions...):
-mode = mode_options[15] #All working, 0-15 with R1 = 1.8
+mode = mode_options[7] #All working, 0-15 with R1 = 1.8
 
 
 # Which angle shall we view from?
 #view = 'front'
-#view = 'front parallel'
+#view = 'front-parallel'
 #view = 'top'
-#view = 'top parallel'
-#view = 'front top'
-view = 'front side'
+#view = 'top-parallel'
+#view = 'front-top'
+view = 'front-side'
 
 # Uniform lighting?
 #uniform_light = True
@@ -120,60 +120,60 @@ def disp_rel_asym_1var(W):
 def disp_rel_asym_2var(W, K):
     return sf.disp_rel_asym(W, K, R1)
 
-    # find eigenfrequencies W (= omega/k) within the range Wrange for the given parameters.
-    Wrange1 = np.linspace(0., sf.cT, 11)
-    Wrange2 = np.linspace(sf.cT, sf.c0, 401)
-    Wrange3 = np.linspace(sf.c0, sf.c2, 11)
-    
-    Woptions_slow_surf = np.real(tool.point_finder_scipy(disp_rel_asym_2var, np.array(K), Wrange1, args=None).transpose())
-    Woptions_slow_body = np.real(tool.point_finder_scipy(disp_rel_asym_2var, np.array(K), Wrange2, args=None).transpose())
-    Woptions_fast = np.real(tool.point_finder_scipy(disp_rel_asym_2var, np.array(K), Wrange3, args=None).transpose())
-    
-    # remove W values that are very close to characteristic speeds
-    tol = 1e-2
-    indices_to_rm = []
-    
-    for i in range(len(Woptions_slow_surf)):
-        w = Woptions_slow_surf[i]
-        if min(abs(np.array([w, w - sf.c0, w - sf.c1(R1), w - sf.c2, w - sf.vA]))) < tol or w < 0 or w > sf.cT:
-            indices_to_rm.append(i)
-    Woptions_slow_surf = np.delete(Woptions_slow_surf, indices_to_rm)
-    Woptions_slow_surf.sort()
-    
-    indices_to_rm = []
-    for i in range(len(Woptions_slow_body)):
-        w = Woptions_slow_body[i]
-        if min(abs(np.array([w, w - sf.c0, w - sf.c1(R1), w - sf.c2, w - sf.vA]))) < tol or w < sf.cT or w > sf.c0:
-            indices_to_rm.append(i)
-    Woptions_slow_body = np.delete(Woptions_slow_body, indices_to_rm)
-    Woptions_slow_body.sort()
-    
-    indices_to_rm = []
-    for i in range(len(Woptions_fast)):
-        w = Woptions_fast[i]
-        if min(abs(np.array([w, w - sf.c0, w - sf.c1(R1), w - sf.c2, w - sf.vA]))) < tol or w < sf.c0 or w > min(sf.c1, sf.c2):
-            indices_to_rm.append(i)
-    Woptions_fast = np.delete(Woptions_fast, indices_to_rm)
-    Woptions_fast.sort()
-    
-    # remove any higher order slow body modes
-    if len(Woptions_slow_body) > 6:
-        Woptions_slow_body = np.delete(Woptions_slow_body, range(len(Woptions_slow_body) - 6))
-    
-    Woptions = np.concatenate((Woptions_slow_surf, Woptions_slow_body, Woptions_fast))
-    
-    
-    # set W to be the eigenfrequency for the requested mode
-    if mode in ['fast-saus-body-1', 'fast-saus-body-2', 'fast-saus-body-3', 'fast-kink-surf']:
-        W = Woptions[-2]
-    elif mode in ['fast-kink-body-1', 'fast-kink-body-2', 'fast-kink-body-3', 'fast-saus-surf']:
-        W = Woptions[-1]
-    else:
-        for i in range(len(mode_options)):
-            if mode == mode_options[i]:
-                W = np.real(Woptions[i])
-                break
-    
+# find eigenfrequencies W (= omega/k) within the range Wrange for the given parameters.
+Wrange1 = np.linspace(0., sf.cT, 11)
+Wrange2 = np.linspace(sf.cT, sf.c0, 401)
+Wrange3 = np.linspace(sf.c0, sf.c2, 11)
+
+Woptions_slow_surf = np.real(tool.point_finder_scipy(disp_rel_asym_2var, np.array(K), Wrange1, args=None).transpose())
+Woptions_slow_body = np.real(tool.point_finder_scipy(disp_rel_asym_2var, np.array(K), Wrange2, args=None).transpose())
+Woptions_fast = np.real(tool.point_finder_scipy(disp_rel_asym_2var, np.array(K), Wrange3, args=None).transpose())
+
+# remove W values that are very close to characteristic speeds
+tol = 1e-2
+indices_to_rm = []
+
+for i in range(len(Woptions_slow_surf)):
+    w = Woptions_slow_surf[i]
+    if min(abs(np.array([w, w - sf.c0, w - sf.c1(R1), w - sf.c2, w - sf.vA]))) < tol or w < 0 or w > sf.cT:
+        indices_to_rm.append(i)
+Woptions_slow_surf = np.delete(Woptions_slow_surf, indices_to_rm)
+Woptions_slow_surf.sort()
+
+indices_to_rm = []
+for i in range(len(Woptions_slow_body)):
+    w = Woptions_slow_body[i]
+    if min(abs(np.array([w, w - sf.c0, w - sf.c1(R1), w - sf.c2, w - sf.vA]))) < tol or w < sf.cT or w > sf.c0:
+        indices_to_rm.append(i)
+Woptions_slow_body = np.delete(Woptions_slow_body, indices_to_rm)
+Woptions_slow_body.sort()
+
+indices_to_rm = []
+for i in range(len(Woptions_fast)):
+    w = Woptions_fast[i]
+    if min(abs(np.array([w, w - sf.c0, w - sf.c1(R1), w - sf.c2, w - sf.vA]))) < tol or w < sf.c0 or w > min(sf.c1, sf.c2):
+        indices_to_rm.append(i)
+Woptions_fast = np.delete(Woptions_fast, indices_to_rm)
+Woptions_fast.sort()
+
+# remove any higher order slow body modes
+if len(Woptions_slow_body) > 6:
+    Woptions_slow_body = np.delete(Woptions_slow_body, range(len(Woptions_slow_body) - 6))
+
+Woptions = np.concatenate((Woptions_slow_surf, Woptions_slow_body, Woptions_fast))
+
+
+# set W to be the eigenfrequency for the requested mode
+if mode in ['fast-saus-body-1', 'fast-saus-body-2', 'fast-saus-body-3', 'fast-kink-surf']:
+    W = Woptions[-2]
+elif mode in ['fast-kink-body-1', 'fast-kink-body-2', 'fast-kink-body-3', 'fast-saus-surf']:
+    W = Woptions[-1]
+else:
+    for i in range(len(mode_options)):
+        if mode == mode_options[i]:
+            W = np.real(Woptions[i])
+            break
+
 
 
 # Dependent variables:
@@ -633,7 +633,7 @@ if show_disp_front == True:
     vector_cut_plane_front.glyph.glyph_source.glyph_position = 'center'
 
 #Set viewing angle
-if view == 'front parallel':
+if view == 'front-parallel':
     field.scene.parallel_projection = True
     field.scene.z_plus_view()
     field.scene.camera.view_angle = 21
@@ -646,26 +646,26 @@ if view == 'top':
     field.scene.camera.view_angle = 21.0
     field.scene.camera.view_up = [-0, 0, -1]
     field.scene.camera.clipping_range = [368.83220888718552, 605.15289607145894]
-if view == 'top parallel':
+if view == 'top-parallel':
     field.scene.parallel_projection = True
     field.scene.camera.position = [53.107781380642741, 523.35670183503294, 50.948508989758153]
     field.scene.camera.focal_point = [50.821544647216797, 50.413210511207581, 50.159849926829338]
     field.scene.camera.view_angle = 21.0
     field.scene.camera.view_up = [-0, 0, -1]
     field.scene.camera.clipping_range = [368.83220888718552, 605.15289607145894]
-if view == 'front top':
+if view == 'front-top':
     field.scene.camera.position = [48.764852970361503, 223.64895482756552, 498.62216293273576]
     field.scene.camera.focal_point = [50.821544647216797, 50.413210511207581, 50.159849926829338]
     field.scene.camera.view_angle = 17.0
     field.scene.camera.view_up = [-0.002418791139063777, 0.93281530024654913, -0.36034672896443193]
     field.scene.camera.clipping_range = [345.97885880654962, 650.71850659694883]
  
-if view == 'front side':
-    field.scene.camera.position = [219.75240522356913, 79.115530658939363, 499.350055117431]
+if view == 'front-side':
+    field.scene.camera.position = [126.62380038836577, 60.458994158678557, 524.80329455823346]
     field.scene.camera.focal_point = [50.821544647216797, 50.413210511207581, 50.159849926829338]
-    field.scene.camera.view_angle = 17.0
-    field.scene.camera.view_up = [-0.044827368757468969, 0.99789300973432205, -0.046904670701947544]
-    field.scene.camera.clipping_range = [348.0134523780402, 654.26836207642464]
+    field.scene.camera.view_angle = 14.
+    field.scene.camera.view_up = [-0.016952270974394879, 0.9996860427028168, -0.018450922307365961]
+    field.scene.camera.clipping_range = [366.21083458278804, 631.07664372567524]
 
 if show_axes == True:
     axes = mlab.axes(field, nb_labels=1, line_width=3)
