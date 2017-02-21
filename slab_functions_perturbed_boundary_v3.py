@@ -3,11 +3,11 @@ import numpy as np
 import scipy as sc
 from scipy.optimize import fsolve
 
-# SBB
-# Define the sound speeds and alfven speeds.
-c2 = 1.2
-c0 = 1.
-vA = 0.9
+## SBB
+## Define the sound speeds and alfven speeds.
+#c2 = 1.2
+#c0 = 1.
+#vA = 0.9
 
 
 ## for xi of x slow surface sf GS and maybe others
@@ -16,11 +16,11 @@ vA = 0.9
 #vA = 0.4
 
 
-## SBS
-## Define the sound speeds and alfven speeds.
-#c2 = 1.2
-#c0 = 1.
-#vA = 1.3
+# SBS
+# Define the sound speeds and alfven speeds.
+c2 = 1.2
+c0 = 1.
+vA = 1.3
 
 cT = sc.sqrt(c0**2 * vA**2*(c0**2 + vA**2)**(-1))
 
@@ -101,11 +101,11 @@ def required_xi(mode, K):
     elif mode in slow_body_3_mode_options:
         return K / 250.
     elif mode in fast_body_1_mode_options:
-        return K / 50.
+        return K / 80.
     elif mode in fast_body_2_mode_options:
-        return K / 180.
+        return K / 250. #180.
     elif mode in fast_body_3_mode_options:
-        return K / 400. #250.
+        return K / 900. #400. #250.
     elif mode in fast_surf_mode_options:
         return K / 30. #40.
     else:
