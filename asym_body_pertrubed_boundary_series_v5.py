@@ -68,8 +68,8 @@ view_options = ['front', 'front-parallel', 'top', 'top-parallel' 'front-top',
 #view = 'front-parallel'
 #view = 'top'
 #view = 'top-parallel'
-view = 'front-top'
-#view = 'front-side'
+#view = 'front-top'
+view = 'front-side'
 
 # Uniform lighting?
 #uniform_light = True
@@ -101,8 +101,8 @@ show_dispersion = False
 #show_dispersion = True
 
 # Wanna see the animation? Of course you do
-show_animation = False
-#show_animation = True
+#show_animation = False
+show_animation = True
 
 # Uncomment the parametrer you would like to see
 show_density = True
@@ -127,15 +127,15 @@ res = tuple(101 * np.array((16,9)))
 #res = tuple(51 * np.array((16,9)))
 #res = tuple(21 * np.array((16,9)))
 
-number_of_frames = 1#50
+number_of_frames = 50
 
-make_video = False
-#make_video = True
+#make_video = False
+make_video = True
 
 
 #for mode_ind in range(14): # for all others. REMEMBER SBB pparameters
 #for mode_ind in [14,15]: #for fast body surf. REMEMBER SBS parameters
-for mode_ind in [15]: #for an individual mode
+for mode_ind in [13]: #for an individual mode
 
     # choose your mode: (note that fast surface modes, i.e. 14 and 15, can only be 
     # found with SBS parameters in slab_functions...)
@@ -157,8 +157,8 @@ for mode_ind in [15]: #for an individual mode
     else:
         print('mode not found')
             
-#    R1 = 1.5 #1.8 # Higher denisty on left than right
-    R1 = 2. # Symmetric slab
+    R1 = 1.5 #1.8 # Higher denisty on left than right
+#    R1 = 2. # Symmetric slab
         
     def disp_rel_asym_2var(W, K):
         return sf.disp_rel_asym(W, K, R1)
@@ -1417,7 +1417,7 @@ for mode_ind in [15]: #for an individual mode
             if view == 'front-side':
                 field.scene.camera.position = [126.62380038836577, 60.458994158678557, 524.80329455823346]
                 field.scene.camera.focal_point = [50.821544647216797, 50.413210511207581, 50.159849926829338]
-                field.scene.camera.view_angle = 14.
+                field.scene.camera.view_angle = 20.#14.
                 field.scene.camera.view_up = [-0.016952270974394879, 0.9996860427028168, -0.018450922307365961]
                 field.scene.camera.clipping_range = [366.21083458278804, 631.07664372567524]
             
