@@ -5,7 +5,7 @@ Prerequisites:
 Python 2 (https://www.python.org/download/releases/2.7.2/),
 Mayavi (http://mayavi.sourceforge.net/).
 
-Builds an animation of the magnetoacoustic eigenmodes of an isolated magnetic slab with possible visualisations of:
+Builds an animation of the magnetoacoustic eigenmodes of an isolated asymmetric magnetic slab with possible visualisations of:
 magnetic field lines,
 magentic field strength,
 mgnetic field vectors,
