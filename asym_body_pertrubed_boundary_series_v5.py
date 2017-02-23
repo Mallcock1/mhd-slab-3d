@@ -21,8 +21,8 @@ import matplotlib
 from mayavi import mlab
 #mlab.options.offscreen = True
 
-from mayavi.tools.engine_manager import engine_manager
-from mayavi.core.registry import registry
+#from mayavi.tools.engine_manager import engine_manager
+#from mayavi.core.registry import registry
 
 
 
@@ -37,7 +37,9 @@ mode_options = ['slow-kink-surf', 'slow-saus-surf', 'slow-saus-body-3',
                 'slow-saus-body-1', 'slow-kink-body-1', 'fast-saus-body-1',
                 'fast-kink-body-1', 'fast-saus-body-2', 'fast-kink-body-2',
                 'fast-saus-body-3', 'fast-kink-body-3', 'fast-kink-surf',
-                'fast-saus-surf']
+                'fast-saus-surf', 'shear-alfven']
+                
+alfven_mode_options = ['shear-alfven']
                 
 kink_mode_options = ['slow-kink-surf', 'slow-kink-body-1', 'slow-kink-body-2',
                      'slow-kink-body-3', 'fast-kink-body-1', 'fast-kink-body-2',
@@ -54,6 +56,7 @@ fast_saus_mode_options = ['fast-saus-surf', 'fast-saus-body-3', 'fast-saus-body-
 slow_body_1_mode_options = ['slow-kink-body-1', 'slow-saus-body-1']
 slow_body_2_mode_options = ['slow-kink-body-2', 'slow-saus-body-2']
 slow_body_3_mode_options = ['slow-kink-body-3', 'slow-saus-body-3']
+slow_body_mode_options = slow_body_1_mode_options + slow_body_2_mode_options + slow_body_3_mode_options
 fast_body_1_mode_options = ['fast-kink-body-1', 'fast-saus-body-1']
 fast_body_2_mode_options = ['fast-kink-body-2', 'fast-saus-body-2']
 fast_body_3_mode_options = ['fast-kink-body-3', 'fast-saus-body-3']
@@ -66,10 +69,10 @@ view_options = ['front', 'front-parallel', 'top', 'top-parallel' 'front-top',
                 'front-side']
 #view = 'front'
 #view = 'front-parallel'
-#view = 'top'
+view = 'top'
 #view = 'top-parallel'
 #view = 'front-top'
-view = 'front-side'
+#view = 'front-side'
 
 # Uniform lighting?
 #uniform_light = True
@@ -95,7 +98,6 @@ show_mini_axis = False
 show_boundary = False
 
 
-
 # Set to True if you would like the dispersion diagram with this mode highlighted.
 show_dispersion = False
 #show_dispersion = True
@@ -105,14 +107,15 @@ show_dispersion = False
 show_animation = True
 
 # Uncomment the parametrer you would like to see
-show_density = True
+# No density perturbations or vel/disp pert for alfven modes.
+#show_density = True
 #show_density_pert = True
 show_mag = True
 #show_mag_scale = True #must also have show_mag = True
 #show_mag_vec = True
-show_vel_front = True
+#show_vel_front = True
 #show_vel_front_pert = True
-#show_vel_top = True
+show_vel_top = True
 #show_vel_top_pert = True
 #show_disp_top = True
 #show_disp_front = True
@@ -120,6 +123,9 @@ show_axes = True
 #show_axis_labels = True
 show_mini_axis = True
 show_boundary = True
+
+if np.array([show_density, show_vel_front_pert, show_vel_top_pert]).any()  == True:
+    print('Cannot show density or vel/disp pert')
 
 # Video resolution
 #res = (1920,1080)
@@ -135,16 +141,19 @@ make_video = True
 
 #for mode_ind in range(14): # for all others. REMEMBER SBB pparameters
 #for mode_ind in [14,15]: #for fast body surf. REMEMBER SBS parameters
-for mode_ind in [13]: #for an individual mode
+for mode_ind in [16]: #for an individual mode
 
     # choose your mode: (note that fast surface modes, i.e. 14 and 15, can only be 
     # found with SBS parameters in slab_functions...)
-    mode = mode_options[mode_ind] #All working, 0-15    
+    mode = mode_options[mode_ind] #All working, 0-15
+#    mode = alfven_mode_options[mode_ind]
+    
+    print('Starting ' + mode)
     
     # Specify oscillation parameters
-    if mode in slow_surf_mode_options:
+    if mode in slow_surf_mode_options + alfven_mode_options:
         K = 2.
-    elif mode in slow_body_1_mode_options + slow_body_2_mode_options + slow_body_3_mode_options:
+    elif mode in slow_body_mode_options:
         K = 8.
     elif mode in fast_body_1_mode_options:
         K = 8.
@@ -157,8 +166,8 @@ for mode_ind in [13]: #for an individual mode
     else:
         print('mode not found')
             
-    R1 = 1.5 #1.8 # Higher denisty on left than right
-#    R1 = 2. # Symmetric slab
+#    R1 = 1.5 #1.8 # Higher denisty on left than right
+    R1 = 2. # Symmetric slab
         
     def disp_rel_asym_2var(W, K):
         return sf.disp_rel_asym(W, K, R1)
@@ -213,10 +222,14 @@ for mode_ind in [13]: #for an individual mode
         W = Woptions_fast[-1]
     elif mode in slow_surf_mode_options:
         W = Woptions_slow_surf[mode_ind]
-    else:
+    elif mode in slow_body_mode_options:
         W = Woptions_slow_body[mode_ind-2]
-            
-    W = np.real(W)
+    
+    if mode in alfven_mode_options:
+        W = sf.vA
+    else:
+        W = np.real(W)
+        
 # Quick plot to see if we are hitting correct mode    
 #    plt.plot([K] * len(Woptions), Woptions, '.')
 #    plt.plot(K+0.5, W, 'go')
@@ -233,7 +246,9 @@ for mode_ind in [13]: #for an individual mode
     #################################################################################
     
     if show_dispersion == True:
-        # Plot the dispersion diagram with the chosen mode hghlighted
+        if mode in alfven_mode_options:
+            print('Disperion plot requested for an alfven mode. Cant do it')
+        # Plot the dispersion diagram with the chosen mode highlighted
         
         Kmin = 0.
         Kmax = 23.#10.
@@ -887,13 +902,13 @@ for mode_ind in [13]: #for an individual mode
         zmax = 2*np.pi
         
         # You can change ny but be careful changing nx, nz.
-        nx = 100
-        ny = 100#20 #100
-        nz = 100
+        nx = 100 #100
+        ny = 100 #100#20 #100
+        nz = 100 #100
         nt = number_of_frames
         
         if nz % nt != 0:
-            print("nt doesnt divide nz so there may be a problem")
+            print("nt doesnt divide nz so there may be a problem with chopping in z direction for each time step")
         
         t_start = 0.
         t_end = zmax
@@ -910,33 +925,32 @@ for mode_ind in [13]: #for an individual mode
         
         
         # For masking points
-        mod = 4.
-        mod_top = np.ceil(4. / y_spacing)
+        mod = int(3 * nx / 100)
+        mod_top = int(np.ceil(mod / y_spacing))
         
         if show_disp_top == True or show_disp_front == True:
             xixvals = np.real(np.repeat(sf.xix(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
             xizvals = np.real(np.repeat(sf.xiz(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
-            xiyvals = np.zeros_like(xixvals)
+            xiyvals = np.real(np.repeat(sf.xiz(mode, xvals, zvals, t, K)[:, :, np.newaxis], ny, axis=2))
         
                                 
         if show_vel_front == True or show_vel_top == True:
             vxvals = np.real(np.repeat(sf.vx(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
             vzvals = np.real(np.repeat(sf.vz(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
-            vyvals = np.zeros_like(vxvals)
+            vyvals = np.real(np.repeat(sf.vy(mode, xvals, zvals, t, K)[:, :, np.newaxis], ny, axis=2))
         
-            
+        
         if show_vel_front_pert == True or show_vel_top_pert == True:
             vxvals = np.real(np.repeat(sf.vx_pert(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
             vzvals = np.real(np.repeat(sf.vz_pert(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
             vyvals = np.zeros_like(vxvals)
         
         bxvals = np.real(np.repeat(sf.bx(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
+        byvals = np.real(np.repeat(sf.by(mode, xvals, zvals, t, K)[:, :, np.newaxis], ny, axis=2))
         bz_eq3d = np.repeat(sf.bz_eq(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2)
         bzvals = np.real(np.repeat(-sf.bz(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2) +
                          bz_eq3d)
                          
-                         
-        byvals = np.zeros_like(bxvals)
         
         if show_boundary == True:
             xix_boundary_r_vals = np.real(np.repeat(K + sf.xix_boundary(mode, zvals, t, W, K, R1, boundary='r')[:, np.newaxis], ny, axis=1))
@@ -977,27 +991,30 @@ for mode_ind in [13]: #for an individual mode
                 
             else:
                 bxvals_split = np.split(bxvals, [nz - (nz / nt) * t_ind], axis=1)
+                byvals_split = np.split(byvals, [nz - (nz / nt) * t_ind], axis=1)
                 bzvals_split = np.split(bzvals, [nz - (nz / nt) * t_ind], axis=1)
                 
                 bxvals_t = np.concatenate((bxvals_split[1], bxvals_split[0]), axis=1)
-                byvals_t = byvals
+                byvals_t = np.concatenate((byvals_split[1], byvals_split[0]), axis=1)
                 bzvals_t = np.concatenate((bzvals_split[1], bzvals_split[0]), axis=1)
                 
                 
                 if show_disp_top == True or show_disp_front == True:            
                     xixvals_split = np.split(xixvals, [nz - (nz / nt) * t_ind], axis=1)
+                    xiyvals_split = np.split(xiyvals, [nz - (nz / nt) * t_ind], axis=1)
                     xizvals_split = np.split(xizvals, [nz - (nz / nt) * t_ind], axis=1)
                     
                     xixvals_t = np.concatenate((xixvals_split[1], xixvals_split[0]), axis=1)
-                    xiyvals_t = xiyvals
+                    xiyvals_t = np.concatenate((xiyvals_split[1], xiyvals_split[0]), axis=1)
                     xizvals_t = np.concatenate((xizvals_split[1], xizvals_split[0]), axis=1)
                                         
                 if np.array([show_vel_top, show_vel_top_pert, show_vel_front, show_vel_front_pert]).any() == True:            
                     vxvals_split = np.split(vxvals, [nz - (nz / nt) * t_ind], axis=1)
+                    vyvals_split = np.split(vyvals, [nz - (nz / nt) * t_ind], axis=1)
                     vzvals_split = np.split(vzvals, [nz - (nz / nt) * t_ind], axis=1)
                     
                     vxvals_t = np.concatenate((vxvals_split[1], vxvals_split[0]), axis=1)
-                    vyvals_t = vyvals
+                    vyvals_t = np.concatenate((vyvals_split[1], vyvals_split[0]), axis=1)
                     vzvals_t = np.concatenate((vzvals_split[1], vzvals_split[0]), axis=1)
                 
                 if show_boundary == True:
@@ -1012,17 +1029,17 @@ for mode_ind in [13]: #for an individual mode
                     
                     rho_vals_t = np.concatenate((rho_vals_split[1], rho_vals_split[0]), axis=1)                         
                 
+            if show_mag_vec == True:
+                bxvals_mask_front_t = np.copy(bxvals_t)
+                byvals_mask_front_t = np.copy(byvals_t)
+                bzvals_mask_front_t = np.copy(bzvals_t)
                 
-            bxvals_mask_front_t = np.copy(bxvals_t)
-            byvals_mask_front_t = np.copy(byvals_t)
-            bzvals_mask_front_t = np.copy(bzvals_t)
-            
-            for i in range(bxvals_t.shape[0]):
-                for j in range(bxvals_t.shape[1]):
-                    for k in range(bxvals_t.shape[2]):
-                        if (i%mod) != 0 or (j%mod) != 0:
-                            bxvals_mask_front_t[i,j,k] = 0.
-                            bzvals_mask_front_t[i,j,k] = 0.
+                for i in range(bxvals_t.shape[0]):
+                    for j in range(bxvals_t.shape[1]):
+                        for k in range(bxvals_t.shape[2]):
+                            if (i%mod) != 1 or (j%mod) != 1:
+                                bxvals_mask_front_t[i,j,k] = 0.
+                                bzvals_mask_front_t[i,j,k] = 0.
         
         
             if show_disp_top == True:    
@@ -1033,9 +1050,10 @@ for mode_ind in [13]: #for an individual mode
                 for i in range(xixvals_t.shape[0]):
                     for j in range(xixvals_t.shape[1]):
                         for k in range(xixvals_t.shape[2]):
-                            if (i%mod) != 0 or (k%mod_top) != 0:
+                            if (i%mod) != 1 or (k%mod_top) != 1:
                                 xixvals_mask_top_t[i,j,k] = 0.
                                 xizvals_mask_top_t[i,j,k] = 0.
+                                
             if show_disp_front == True:
                 xixvals_mask_front_t = np.copy(xixvals_t)
                 xiyvals_mask_front_t = np.copy(xiyvals_t)
@@ -1044,7 +1062,7 @@ for mode_ind in [13]: #for an individual mode
                 for i in range(xixvals_t.shape[0]):
                     for j in range(xixvals_t.shape[1]):
                         for k in range(xixvals_t.shape[2]):
-                            if (i%mod)!=0 or (j%mod)!=0:
+                            if (i%mod)!=1 or (j%mod)!=1:
                                 xixvals_mask_front_t[i,j,k] = 0.
                                 xizvals_mask_front_t[i,j,k] = 0.    
             
@@ -1057,8 +1075,9 @@ for mode_ind in [13]: #for an individual mode
                 for i in range(vxvals_t.shape[0]):
                     for j in range(vxvals_t.shape[1]):
                         for k in range(vxvals_t.shape[2]):
-                            if (i%mod) != 0 or (k%mod_top) != 0:
+                            if (i%mod) != 1 or (k%mod_top) != 1:
                                 vxvals_mask_top_t[i,j,k] = 0
+                                vyvals_mask_top_t[i,j,k] = 0
                                 vzvals_mask_top_t[i,j,k] = 0
                                                   
                                 
@@ -1070,7 +1089,7 @@ for mode_ind in [13]: #for an individual mode
                 for i in range(vxvals_t.shape[0]):
                     for j in range(vxvals_t.shape[1]):
                         for k in range(vxvals_t.shape[2]):
-                            if (i%mod) != 0 or (j%mod) != 0:
+                            if (i%mod) != 1 or (j%mod) != 1:
                                 vxvals_mask_front_t[i,j,k] = 0
                                 vzvals_mask_front_t[i,j,k] = 0   
             
@@ -1105,87 +1124,30 @@ for mode_ind in [13]: #for an individual mode
                 if view == 'front-parallel':
                     boundary_r_thick = mlab.mesh(xix_boundary_r_vals_t, zvals, yvals,
                                                  extent=[ext_min_r, ext_max_r, 1, nz, 0, (ny-1) * y_spacing],
-                                                 color=(1.,1.,1.), opacity=1., representation='wireframe',
+                                                 color=(0.9,0.9,0.9), opacity=1., representation='wireframe',
                                                  line_width=12.)
-                
+                    boundary_r_thick.enable_contours = True
                     boundary_l_thick = mlab.mesh(xix_boundary_l_vals_t, zvals, yvals,
                                                  extent=[ext_min_l, ext_max_l, 1, nz, 0, (ny-1) * y_spacing],
-                                                 color=(1.,1.,1.), opacity=1., representation='wireframe',
+                                                 color=(0.9,0.9,0.9), opacity=1., representation='wireframe',
                                                  line_width=12.)
+                    boundary_l_thick.enable_contours = True
                                                  
                 else:
                     boundary_r = mlab.mesh(xix_boundary_r_vals_t, zvals, yvals,
                                            extent=[ext_min_r, ext_max_r, 1, nz, 0, (ny-1) * y_spacing],
                                            color=(0.5,0.5,0.5), opacity=0.7)
-                    
+#                    color=(0.5,0.5,0.5), 
                     boundary_l = mlab.mesh(xix_boundary_l_vals_t, zvals, yvals,
                                            extent=[ext_min_l, ext_max_l, 1, nz, 0, (ny-1) * y_spacing],
                                            color=(0.5,0.5,0.5), opacity=0.7)
-    #        if show_density == True or show_density_pert == True:
-    #            # Scalar field density   
-    #            rho = mlab.pipeline.scalar_field(rho_vals_t, name="density", figure=fig)
-    #            #scalar_cut_plane = ScalarCutPlane()
-    #            #fig.parent.add_filter(scalar_cut_plane, sca)
-    #            rho.spacing = spacing
-    #            minr = rho_vals_t.min()
-    #            maxr = rho_vals_t.max()
-    #            
-    #            #Volume for high pressure
-    #            rvmin1 = minr + 0.55 * (maxr - minr)
-    #            rvmax1 = minr + 1. * (maxr - minr)
-    #            rvol1 = mlab.pipeline.volume(rho, vmin=rvmin1, vmax=rvmax1)
-    #            
-    #            # Changing the ctf:
-    #            from tvtk.util.ctf import ColorTransferFunction
-    #            ctf1 = ColorTransferFunction()
-    #            ctf1.add_rgb_point(rvmin1, 1., 1., 0.5)
-    #            ctf1.add_rgb_point(rvmin1 + 0.5 * (rvmax1 - rvmin1), 1, 0.3, 0.1)
-    #            ctf1.add_rgb_point(rvmax1, 1., 0., 0.)
-    #            # ...
-    #            rvol1._volume_property.set_color(ctf1)
-    #            rvol1._ctf = ctf1
-    #            rvol1.update_ctf = True
-    #            
-    #            #Changing the opacity of the volume vol1
-    #            ## Changing the otf:
-    #            from tvtk.util.ctf import PiecewiseFunction
-    #            otf = PiecewiseFunction()
-    #            otf.add_point(rvmin1, 0)
-    #            otf.add_point(rvmax1, 0.10)
-    #            ##vol1._otf = otf
-    #            rvol1._volume_property.set_scalar_opacity(otf)
-    #            
-    #            # exempt volume from shading and improve overall look by increasing opacity
-    #            rvol1.volume_property.shade = False
-    #            rvol1.volume_property.scalar_opacity_unit_distance = 2.0
-    #            
-    #            
-    #            #Volume for low pressure
-    #            rvmin2 = minr + 0. * (maxr - minr)
-    #            rvmax2 = minr + 0.45 * (maxr - minr)
-    #            rvol2 = mlab.pipeline.volume(rho, vmin=rvmin2, vmax=rvmax2)
-    #            
-    #            # Changing the ctf:
-    #            ctf2 = ColorTransferFunction()
-    #            ctf2.add_rgb_point(rvmin2, 0., 0.5, 1.)
-    #            ctf2.add_rgb_point(rvmin2 + 0.5 * (rvmax2 - rvmin2), 0.1, 0.7, 1.)
-    #            ctf2.add_rgb_point(rvmax2, 0.5, 1., 1.)
-    #            # ...
-    #            rvol2._volume_property.set_color(ctf2)
-    #            rvol2._ctf = ctf2
-    #            rvol2.update_ctf = True
-    #        
-    #            #Changing the opacity of the volume vol1
-    #            ## Changing the otf:
-    #            otf = PiecewiseFunction()
-    #            otf.add_point(rvmax2, 0)
-    #            otf.add_point(rvmin2, 0.10)
-    #            ##vol1._otf = otf
-    #            rvol2._volume_property.set_scalar_opacity(otf)
-    #            
-    #            # exempt volume from shading and improve overall look by increasing opacity
-    #            rvol2.volume_property.shade = False
-    #            rvol2.volume_property.scalar_opacity_unit_distance = 2.0
+#                                           color=(0.5,0.5,0.5),
+#                    src.image_data.point_data.add_array(np.angle(Phi).T.ravel())
+#                    src.image_data.point_data.get_array(1).name = 'angle'
+#                    contour2 = mlab.pipeline.set_active_attribute(boundary_l,
+#                                    point_scalars='angle')
+                                           
+                                           
                                                  
             if show_density == True or show_density_pert == True:
                 # Scalar field density   
@@ -1288,12 +1250,17 @@ for mode_ind in [13]: #for an individual mode
                 seeds=[]
                 dx_res = (end_x - start_x) / (nx_seed-1)
                 dy_res = (end_y - start_y) / (ny_seed-1)
-                for i in range(0,nx_seed):
-                    for j in range(0,ny_seed):
+                for j in range(0,ny_seed):
+                    for i in range(0,nx_seed):
                         x = start_x + (i * dx_res) * x_spacing
                         y = start_y + (j * dy_res) * y_spacing
                         z = 1. + (t_start + t_ind*(t_end - t_start)/nt)/zmax * nz
                         seeds.append((x,z,y))
+                
+                if mode in alfven_mode_options:
+                    for i in range(nx_seed):
+                        del seeds[0]
+                        del seeds[-1]
                                                              
                 field_lines = SeedStreamline(seed_points=seeds)
                 field_lines.stream_tracer.integration_direction='both'
@@ -1313,6 +1280,7 @@ for mode_ind in [13]: #for an individual mode
                     module_manager.scalar_lut_manager.lut_mode = 'jet'
                     module_manager.scalar_lut_manager.data_range=[7,18]
                 
+            scalefactor = 4. # scale factor for direction field vectors
             
             if show_mag_vec == True:
                 bdirfield_front = mlab.pipeline.vector_field(bxvals_mask_front_t, bzvals_mask_front_t,
@@ -1320,7 +1288,7 @@ for mode_ind in [13]: #for an individual mode
                                                              figure=fig)
                 bdirfield_front.spacing = spacing
                 vector_cut_plane_front = mlab.pipeline.vector_cut_plane(bdirfield_front, 
-                                                                  scale_factor=8.)
+                                                                  scale_factor=scalefactor)
                 vector_cut_plane_front.implicit_plane.widget.normal_to_z_axis = True
                 vector_cut_plane_front.implicit_plane.widget.origin = np.array([ 50., 25.91140784, (ny-1)*y_spacing])
                 vector_cut_plane_front.glyph.color_mode = 'no_coloring'
@@ -1330,15 +1298,15 @@ for mode_ind in [13]: #for an individual mode
             
             
             if show_vel_top == True or show_vel_top_pert == True:
-                vdirfield_top = mlab.pipeline.vector_field(vxvals_mask_top_t, vyvals_mask_top_t,
+                vdirfield_top = mlab.pipeline.vector_field(vxvals_mask_top_t, np.zeros_like(vxvals_mask_top_t),
                                                             vyvals_mask_top_t, name="V field top",
                                                             figure=fig)
                 vdirfield_top.spacing = spacing
                 vector_cut_plane_top = mlab.pipeline.vector_cut_plane(vdirfield_top, 
-                                                                  scale_factor=8.)
+                                                                  scale_factor=scalefactor)
                 vector_cut_plane_top.implicit_plane.widget.normal_to_y_axis = True
                 vector_cut_plane_top.glyph.color_mode = 'no_coloring'
-                vector_cut_plane_top.implicit_plane.widget.origin = np.array([ 50.,nz-1, 50.5])
+                vector_cut_plane_top.implicit_plane.widget.origin = np.array([ 50.,nz-0.1, 50.5])
                 vector_cut_plane_top.implicit_plane.widget.enabled = False
                 vector_cut_plane_top.glyph.glyph_source.glyph_source = vector_cut_plane_top.glyph.glyph_source.glyph_dict['arrow_source']
                 vector_cut_plane_top.glyph.glyph_source.glyph_position = 'center'
@@ -1349,7 +1317,7 @@ for mode_ind in [13]: #for an individual mode
                                                              figure=fig)
                 vdirfield_front.spacing = spacing
                 vector_cut_plane_front = mlab.pipeline.vector_cut_plane(vdirfield_front, 
-                                                                  scale_factor=8.)
+                                                                  scale_factor=scalefactor)
                 vector_cut_plane_front.implicit_plane.widget.normal_to_z_axis = True
                 vector_cut_plane_front.implicit_plane.widget.origin = np.array([ 50., 25.91140784, (ny-1)*y_spacing])
                 vector_cut_plane_front.glyph.color_mode = 'no_coloring'
@@ -1358,15 +1326,15 @@ for mode_ind in [13]: #for an individual mode
                 vector_cut_plane_front.glyph.glyph_source.glyph_position = 'center'
             
             if show_disp_top == True:
-                xidirfield_top = mlab.pipeline.vector_field(xixvals_mask_top_t, xiyvals_mask_top_t,
+                xidirfield_top = mlab.pipeline.vector_field(xixvals_mask_top_t, np.zeros_like(xixvals_mask_top_t),
                                                             xiyvals_mask_top_t, name="Xi field top",
                                                             figure=fig)
                 xidirfield_top.spacing = spacing
                 vector_cut_plane_top = mlab.pipeline.vector_cut_plane(xidirfield_top, 
-                                                                  scale_factor=8.)
+                                                                  scale_factor=scalefactor)
                 vector_cut_plane_top.implicit_plane.widget.normal_to_y_axis = True
                 vector_cut_plane_top.glyph.color_mode = 'no_coloring'
-                vector_cut_plane_top.implicit_plane.widget.origin = np.array([ 50.,nz-1, 50.5])
+                vector_cut_plane_top.implicit_plane.widget.origin = np.array([ 50.,nz-0.1, 50.5])
                 vector_cut_plane_top.implicit_plane.widget.enabled = False
                 vector_cut_plane_top.glyph.glyph_source.glyph_source = vector_cut_plane_top.glyph.glyph_source.glyph_dict['arrow_source']
                 vector_cut_plane_top.glyph.glyph_source.glyph_position = 'center'
@@ -1377,7 +1345,7 @@ for mode_ind in [13]: #for an individual mode
                                                              figure=fig)
                 xidirfield_front.spacing = spacing
                 vector_cut_plane_front = mlab.pipeline.vector_cut_plane(xidirfield_front, 
-                                                                  scale_factor=8.)
+                                                                  scale_factor=scalefactor)
                 vector_cut_plane_front.implicit_plane.widget.normal_to_z_axis = True
                 vector_cut_plane_front.implicit_plane.widget.origin = np.array([ 50., 25.91140784, (ny-1)*y_spacing])
                 vector_cut_plane_front.glyph.color_mode = 'no_coloring'
@@ -1415,10 +1383,10 @@ for mode_ind in [13]: #for an individual mode
                 field.scene.camera.clipping_range = [345.97885880654962, 650.71850659694883]
              
             if view == 'front-side':
-                field.scene.camera.position = [126.62380038836577, 60.458994158678557, 524.80329455823346]
-                field.scene.camera.focal_point = [50.821544647216797, 50.413210511207581, 50.159849926829338]
-                field.scene.camera.view_angle = 20.#14.
-                field.scene.camera.view_up = [-0.016952270974394879, 0.9996860427028168, -0.018450922307365961]
+                field.scene.camera.position = [126.6 * nx / 100., 60.5 * nz / 100., 524.8 * ny / 100.]
+                field.scene.camera.focal_point = [50.8 * nx / 100., 50.4 * nz / 100., 50.2 * ny / 100.]
+                field.scene.camera.view_angle = 14.
+                field.scene.camera.view_up = [-0.01695 * nx / 100., 0.999686 * nz / 100., -0.0184509 * ny / 100.]
                 field.scene.camera.clipping_range = [366.21083458278804, 631.07664372567524]
             
             if show_axes == True:
@@ -1488,10 +1456,7 @@ for mode_ind in [13]: #for an individual mode
             #Black background
             field.scene.background = (0., 0., 0.)
     
-            prefix = 'R1_'+str(R1)+'_'+view + '_' + mode
             
-            mlab.savefig('D:\\my_work\\projects\\Asymmetric_slab\\Python\\visualisations\\3D_vis_animations\\'
-                         + prefix + str(t_ind+1) + '.png')
             
     # Trying and failing to sort out memory issues.
     #        mlab.gcf()
@@ -1503,8 +1468,15 @@ for mode_ind in [13]: #for an individual mode
     #        registry.engines = {}
             
             if make_video == True:
+                prefix = 'R1_'+str(R1)+'_'+view + '_' + mode# + '_broadband'
+                mlab.savefig('D:\\my_work\\projects\\Asymmetric_slab\\Python\\visualisations\\3D_vis_animations\\'
+                             + prefix + str(t_ind+1) + '.png')
                 mlab.close(fig)
-    
-            t = t + (t_end - t_start) / nt
+            
         if make_video == True:
             i2v.image2video(prefix=prefix, output_name=prefix+'_video', out_extension='mp4', fps=20, n_loops=4, delete_images=True, delete_old_videos=True, res=res[1])
+    
+        t = t + (t_end - t_start) / nt
+        
+    print('Finished ' + mode)
+    
