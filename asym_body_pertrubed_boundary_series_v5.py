@@ -37,9 +37,9 @@ mode_options = ['slow-kink-surf', 'slow-saus-surf', 'slow-saus-body-3',
                 'slow-saus-body-1', 'slow-kink-body-1', 'fast-saus-body-1',
                 'fast-kink-body-1', 'fast-saus-body-2', 'fast-kink-body-2',
                 'fast-saus-body-3', 'fast-kink-body-3', 'fast-kink-surf',
-                'fast-saus-surf', 'shear-alfven']
+                'fast-saus-surf', 'shear-alfven', 'shear-alfven-broadband']
                 
-alfven_mode_options = ['shear-alfven']
+alfven_mode_options = ['shear-alfven', 'shear-alfven-broadband']
                 
 kink_mode_options = ['slow-kink-surf', 'slow-kink-body-1', 'slow-kink-body-2',
                      'slow-kink-body-3', 'fast-kink-body-1', 'fast-kink-body-2',
@@ -115,7 +115,7 @@ show_mag = True
 #show_mag_vec = True
 #show_vel_front = True
 #show_vel_front_pert = True
-show_vel_top = True
+#show_vel_top = True
 #show_vel_top_pert = True
 #show_disp_top = True
 #show_disp_front = True
@@ -125,7 +125,7 @@ show_mini_axis = True
 show_boundary = True
 
 if np.array([show_density, show_vel_front_pert, show_vel_top_pert]).any()  == True:
-    print('Cannot show density or vel/disp pert')
+    raise NameError('Cannot show density or vel/disp pert for this mode')
 
 # Video resolution
 #res = (1920,1080)
@@ -133,16 +133,27 @@ res = tuple(101 * np.array((16,9)))
 #res = tuple(51 * np.array((16,9)))
 #res = tuple(21 * np.array((16,9)))
 
-number_of_frames = 50
+number_of_frames = 1#50
 
-#make_video = False
-make_video = True
+make_video = False
+#make_video = True
 
+#
+##
+###
+####
+#####
+######
+#######
+########
+#########
 
 #for mode_ind in range(14): # for all others. REMEMBER SBB pparameters
 #for mode_ind in [14,15]: #for fast body surf. REMEMBER SBS parameters
-for mode_ind in [16]: #for an individual mode
-
+for mode_ind in [17]: #for an individual mode
+    if mode_ind not in range(len(mode_options)):
+        raise NameError('Mode not in mode_options')
+        
     # choose your mode: (note that fast surface modes, i.e. 14 and 15, can only be 
     # found with SBS parameters in slab_functions...)
     mode = mode_options[mode_ind] #All working, 0-15
@@ -164,7 +175,7 @@ for mode_ind in [16]: #for an individual mode
     elif mode in fast_surf_mode_options:
         K = 8. #6.
     else:
-        print('mode not found')
+        raise NameError('Mode not found')
             
 #    R1 = 1.5 #1.8 # Higher denisty on left than right
     R1 = 2. # Symmetric slab
@@ -247,7 +258,7 @@ for mode_ind in [16]: #for an individual mode
     
     if show_dispersion == True:
         if mode in alfven_mode_options:
-            print('Disperion plot requested for an alfven mode. Cant do it')
+            raise NameError('Disperion plot requested for an alfven mode. Cant do it')
         # Plot the dispersion diagram with the chosen mode highlighted
         
         Kmin = 0.
@@ -1136,16 +1147,43 @@ for mode_ind in [16]: #for an individual mode
                 else:
                     boundary_r = mlab.mesh(xix_boundary_r_vals_t, zvals, yvals,
                                            extent=[ext_min_r, ext_max_r, 1, nz, 0, (ny-1) * y_spacing],
-                                           color=(0.5,0.5,0.5), opacity=0.7)
-#                    color=(0.5,0.5,0.5), 
+                                           opacity=0.7, scalars=zvals)
+                                           
+                                           
+                                           
+                    # Retrieve the LUT of the surf object.
+                    lut = boundary_r.module_manager.scalar_lut_manager.lut.table.to_array()
+                    
+#                    # The lut is a 255x4 array, with the columns representing RGBA
+#                    # (red, green, blue, alpha) coded with integers going from 0 to 255.
+#                    
+#                    #We modify the alpha channel to add a transparency gradient
+                    lut = np.reshape(np.array([125, 125, 125, 255]*256), (256,4))
+                    lut[:,-1] = np.linspace(0, 255, 256)
+#                    # and finally we put this LUT back in the surface object. We could have
+#                    # added any 255*4 array rather than modifying an existing LUT.
+                    boundary_r.module_manager.scalar_lut_manager.lut.table = lut
+#                    
+#                    # We need to force update of the figure now that we have changed the LUT.
+#                    mlab.draw()
+                    
+                    
+                    
+                    
+                    
+                    
+                    
                     boundary_l = mlab.mesh(xix_boundary_l_vals_t, zvals, yvals,
                                            extent=[ext_min_l, ext_max_l, 1, nz, 0, (ny-1) * y_spacing],
                                            color=(0.5,0.5,0.5), opacity=0.7)
-#                                           color=(0.5,0.5,0.5),
+
 #                    src.image_data.point_data.add_array(np.angle(Phi).T.ravel())
 #                    src.image_data.point_data.get_array(1).name = 'angle'
 #                    contour2 = mlab.pipeline.set_active_attribute(boundary_l,
 #                                    point_scalars='angle')
+                                           
+#                    src2 = mlab.pipeline.set_active_attribute(src,
+#                                    point_scalars='scalar')
                                            
                                            
                                                  
@@ -1468,7 +1506,7 @@ for mode_ind in [16]: #for an individual mode
     #        registry.engines = {}
             
             if make_video == True:
-                prefix = 'R1_'+str(R1)+'_'+view + '_' + mode# + '_broadband'
+                prefix = 'R1_'+str(R1)+'_'+view + '_' + mode
                 mlab.savefig('D:\\my_work\\projects\\Asymmetric_slab\\Python\\visualisations\\3D_vis_animations\\'
                              + prefix + str(t_ind+1) + '.png')
                 mlab.close(fig)

@@ -29,14 +29,15 @@ mode_options = ['slow-kink-surf', 'slow-saus-surf', 'slow-saus-body-3',
                 'slow-saus-body-1', 'slow-kink-body-1', 'fast-saus-body-1',
                 'fast-kink-body-1', 'fast-saus-body-2', 'fast-kink-body-2',
                 'fast-saus-body-3', 'fast-kink-body-3', 'fast-kink-surf',
-                'fast-saus-surf', 'shear-alfven']
+                'fast-saus-surf', 'shear-alfven', 'shear-alfven-broadband']
                 
-alfven_mode_options = ['shear-alfven']
+alfven_mode_options = ['shear-alfven', 'shear-alfven-broadband']
 
-def alfven_shear_width(K):
-    return [-14*K/16, -13*K/16]
-#    return [-K, K]
-
+def alfven_shear_width(mode, K):
+    if mode == 'shear-alfven':
+        return [-14*K/16, -13*K/16]
+    elif mode == 'shear-alfven-broadband':
+        return [-K, K]
     
 alfven_amplitude = 0.3
                 
@@ -227,7 +228,7 @@ def vyhat(mode, x, K):
     if mode in alfven_mode_options:
         vyhat_alfven = np.zeros_like(x)
         for i in range(len(x)):
-            if x[i] > alfven_shear_width(K)[0] and x[i] < alfven_shear_width(K)[1]:
+            if x[i] > alfven_shear_width(mode, K)[0] and x[i] < alfven_shear_width(mode, K)[1]:
                 vyhat_alfven[i] = alfven_amplitude
         return vyhat_alfven
     else:
