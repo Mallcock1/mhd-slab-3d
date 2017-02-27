@@ -67,9 +67,9 @@ fast_body_3_mode_options = ['fast-kink-body-3', 'fast-saus-body-3']
 # Which angle shall we view from?
 view_options = ['front', 'front-parallel', 'top', 'top-parallel' 'front-top',
                 'front-side']
-#view = 'front'
+view = 'front'
 #view = 'front-parallel'
-view = 'top'
+#view = 'top'
 #view = 'top-parallel'
 #view = 'front-top'
 #view = 'front-side'
@@ -79,12 +79,10 @@ view = 'top'
 uniform_light = False
 
 show_density = False
-show_density_lagrang = False
 show_density_pert = False
-show_density_pert2 = False
-show_pressure = False
 show_mag = False
 show_mag_scale = False
+show_mag_fade = False
 show_mag_vec = False
 show_vel_front = False
 show_vel_front_pert = False
@@ -112,6 +110,7 @@ show_animation = True
 #show_density_pert = True
 show_mag = True
 #show_mag_scale = True #must also have show_mag = True
+show_mag_fade = True
 #show_mag_vec = True
 #show_vel_front = True
 #show_vel_front_pert = True
@@ -294,7 +293,145 @@ for mode_ind in [17]: #for an individual mode
     #    W_array = tool.point_finder_scipy(disp_rel_asym_2var, K_range, W_range,
     #                                      args=(None))
     #    ax.plot(K_range, W_array, '.', color = 'b')
+        if R1 == 1.5:
+            K_guess = []
+            W_guess = []
+            step = []
+            K_start = []
+            K_end = []
+            K_circles = []
+            W_circles = []
+            
+        elif R1 == 1.8:
+            K_guess = []
+            W_guess = []
+            step = []
+            K_start = []
+            K_end = []
+            K_circles = []
+            W_circles = []
+            
+        elif R1 == 2.:
+            if mode in fast_surf_mode_options:
+                K_guess = [1., 1., 10.56, 6., 4., 4., 2., 2., 6., 6.]
+                W_guess = [0.64, 0.72, 0.866878, 0.837169, 0.826689, 0.848421, 
+                           0.9301, 1.01567, 1.05754]
+                step = [0.01, 0.01, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 
+                        0.01, 0.01]
+                K_start = [0.0001, 0.0001, 2., 1.6, 1.2, 0.9, 0.6, 0.2, 5.24, 
+                           0.001]
+                K_end = [Kmax, Kmax, Kmax, Kmax, Kmax, Kmax, Kmax, 5.24, Kmax, 
+                         Kmax]
+                K_circles = [5.24]
+                W_circles = [sf.c0]
+            else:
+                K_guess = [1., 1., 8.74, 8.74, 5.98, 5.98, 3.68, 1.84, 2., 6., 
+                           9, 15, 19.8, 23.4]
+                W_guess = [0.473, 0.547, 0.719463, 0.733764, 0.722183, 
+                           0.746659, 0.741942, 0.749326, 1.16675, 1.156, 
+                           1.15692, 1.18647, 1.143, 1.07888]
+                step = [0.01, 0.01, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 
+                        0.01, 0.01, 0.01, 0.01, 0.01, 0.01]
+                K_start = [0.0001, 0.0001, 2.3, 1.8, 1.3, 1., 0.8, 0.3, 0.0001, 
+                           4.1, 8.2, 12.2, 16.2, 20.2]
+                K_end = [Kmax, Kmax, Kmax, Kmax, Kmax, Kmax, Kmax, Kmax, Kmax,
+                         Kmax, Kmax, Kmax, Kmax, Kmax]
+                K_circles = [4.1, 8.2, 12.2, 16.2, 20.2]
+                W_circles = [sf.c2] * len(K_circles)
+            
+            
+            
+            
+            
+            
+            
+            
+            
+        lw = 1.5
+        for i in range(len(K_guess)):
+            K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, K_guess[i], 
+                                                         W_guess[i], step[i], K_start[i],
+                                                         K_end[i], (None))
+            ax.plot(K_values, root_array, color=colour(mode)[i], linewidth=lw)
+        for i in range(len(K_circles)):
+            ax.plot(K_circles[i], sf.c2, marker='o', markerfacecolor='None', 
+                    markeredgecolor='b', markeredgewidth=lw)
         
+        ax.set_ylabel(r'$v_{ph}/c_0$', fontsize = 20)
+        ax.set_xlabel(r'$k x_0$', fontsize = 20)
+        
+        ax.set_xlim(K_range[0], K_range[-1])
+        ax.set_ylim(0., 1.41)
+        
+        if mode in fast_surf_mode_options:
+            ax.fill_between((Kmin-0.1, Kmax+0.1), (sf.c2, sf.c2), (1.42, 1.42),
+                edgecolor='gray', linestyle='-.', color='None', hatch='/',
+                linewidth=2)
+
+            #ax.plot([K_range[0], K_range[-1]], [sf.vA, sf.vA], color = '0.5', linestyle='--', linewidth=2)
+            ax.annotate(r'$v_A$', xy=(K_range[-1] + 0.03, sf.vA - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+            ax.plot([K_range[0], K_range[-1]], [sf.vA, sf.vA], color = '0.5', linestyle='-.', linewidth=2)
+            ax.plot([K_range[0], K_range[-1]], [sf.cT, sf.cT], color = '0.5', linestyle='-.', linewidth=2)
+            ax.annotate(r'$c_T$', xy=(K_range[-1] + 0.03, sf.cT - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+            ax.plot([K_range[0], K_range[-1]], [sf.c0, sf.c0], color = '0.5', linestyle='-.', linewidth=2)
+            ax.annotate(r'$c_0$', xy=(K_range[-1] + 0.03, sf.c0 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+            #ax.plot([K_range[0], K_range[-1]], [sf.c2, sf.c2], color = '0.5', linestyle='--', linewidth=2)
+#            ax.annotate(r'$c_2$', xy=(K_range[-1] + 0.03, sf.c2 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+            ax.plot([K_range[0], K_range[-1]], [sf.c1(R1), sf.c1(R1)], color = '0.5', linestyle='-.', linewidth=2)
+            if R1 == 2.:
+                ax.annotate(r'$c_1=c_2$', xy=(K_range[-1] + 0.03, sf.c1(R1) - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+            else:
+                ax.annotate(r'$c_1$', xy=(K_range[-1] + 0.03, sf.c1(R1) - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+                ax.annotate(r'$c_2$', xy=(K_range[-1] + 0.03, sf.c2(R1) - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+                
+        else:
+            K_range_for_fill = np.append(K_range, K_range[-1]+0.1)
+            ax.fill_between((Kmin-0.1, Kmax+0.1), (sf.c0,sf.c0), (sf.vA,sf.vA),
+                            edgecolor='gray', linestyle='-.', color='None', hatch='/',
+                            linewidth=2)
+            ax.fill_between((Kmin-0.1, Kmax+0.1), (sf.c2, sf.c2), (1.42, 1.42),
+                            edgecolor='gray', linestyle='-.', color='None', hatch='/',
+                            linewidth=2)
+            
+            #ax.plot([K_range[0], K_range[-1]], [sf.vA, sf.vA], color = '0.5', linestyle='--', linewidth=2)
+            ax.annotate(r'$v_A$', xy=(K_range[-1] + 0.03, sf.vA - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+            ax.plot([K_range[0], K_range[-1]], [sf.cT, sf.cT], color = '0.5', linestyle='-.', linewidth=2)
+            ax.annotate(r'$c_T$', xy=(K_range[-1] + 0.03, sf.cT - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+            #ax.plot([K_range[0], K_range[-1]], [sf.c0, sf.c0], color = '0.5', linestyle='--', linewidth=2)
+            ax.annotate(r'$c_0$', xy=(K_range[-1] + 0.03, sf.c0 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+            #ax.plot([K_range[0], K_range[-1]], [sf.c2, sf.c2], color = '0.5', linestyle='--', linewidth=2)
+    #            ax.annotate(r'$c_2$', xy=(K_range[-1] + 0.03, sf.c2 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+            ax.plot([K_range[0], K_range[-1]], [sf.c1(R1), sf.c1(R1)], color = '0.5', linestyle='-.', linewidth=2)
+            if R1 == 2.:
+                ax.annotate(r'$c_1=c_2$', xy=(K_range[-1] + 0.03, sf.c1(R1) - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+            else:
+                ax.annotate(r'$c_1$', xy=(K_range[-1] + 0.03, sf.c1(R1) - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+                ax.annotate(r'$c_2$', xy=(K_range[-1] + 0.03, sf.c2(R1) - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+
+                    
+        ax.plot(K, W, 'go', markersize=10)
+#        plt.tight_layout() # seems to make it chop the sides off with this
+        plt.savefig('D:\\my_work\\projects\\Asymmetric_slab\\Python\\visualisations\\3D_vis_dispersion_diagrams\\'
+                    + mode + '.png')   
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
         if R1 == 1.8:
             if mode in fast_surf_mode_options:
                 ## Line trace each solutions
@@ -1130,53 +1267,51 @@ for mode_ind in [17]: #for an individual mode
                 
                 ext_min_l = ((nx) * (xix_boundary_l_vals_t.min() - xmin) / (xmax - xmin)) * x_spacing #plus 2 after (xmax-xmin)?
                 ext_max_l = ((nx) * (xix_boundary_l_vals_t.max() - xmin) / (xmax - xmin)) * x_spacing #plus 2 after (xmax-xmin)?
-                
                                                    
                 if view == 'front-parallel':
+                    lut = np.reshape(np.array([150, 150, 150, 255]*256), (256,4))
+                    fade_value = 125
+                    lut[:fade_value,-1] = np.linspace(0, 255, fade_value)
+                    lut[-fade_value:,-1] = np.linspace(255, 0, fade_value)
+                    
                     boundary_r_thick = mlab.mesh(xix_boundary_r_vals_t, zvals, yvals,
                                                  extent=[ext_min_r, ext_max_r, 1, nz, 0, (ny-1) * y_spacing],
-                                                 color=(0.9,0.9,0.9), opacity=1., representation='wireframe',
-                                                 line_width=12.)
-                    boundary_r_thick.enable_contours = True
+                                                 opacity=1., representation='wireframe',
+                                                 line_width=12., scalars=zvals)
+#                    boundary_r_thick.enable_contours = True
                     boundary_l_thick = mlab.mesh(xix_boundary_l_vals_t, zvals, yvals,
                                                  extent=[ext_min_l, ext_max_l, 1, nz, 0, (ny-1) * y_spacing],
-                                                 color=(0.9,0.9,0.9), opacity=1., representation='wireframe',
-                                                 line_width=12.)
-                    boundary_l_thick.enable_contours = True
+                                                 opacity=1., representation='wireframe',
+                                                 line_width=12., scalars=zvals)
+#                    boundary_l_thick.enable_contours = True
+                    
+                    boundary_r_thick.module_manager.scalar_lut_manager.lut.table = lut
+                    boundary_l_thick.module_manager.scalar_lut_manager.lut.table = lut
+                    boundary_r_thick.actor.property.lighting = False
+                    boundary_r_thick.actor.property.shading = False
+                    boundary_l_thick.actor.property.lighting = False
+                    boundary_l_thick.actor.property.shading = False
                                                  
                 else:
+                    lut = np.reshape(np.array([150, 150, 150, 255]*256), (256,4))
+                    fade_value = 20
+                    lut[:fade_value,-1] = np.linspace(0, 255, fade_value)
+                    lut[-fade_value:,-1] = np.linspace(255, 0, fade_value)
+                    
                     boundary_r = mlab.mesh(xix_boundary_r_vals_t, zvals, yvals,
                                            extent=[ext_min_r, ext_max_r, 1, nz, 0, (ny-1) * y_spacing],
                                            opacity=0.7, scalars=zvals)
-                                           
-                                           
-                                           
-                    # Retrieve the LUT of the surf object.
-                    lut = boundary_r.module_manager.scalar_lut_manager.lut.table.to_array()
-                    
-#                    # The lut is a 255x4 array, with the columns representing RGBA
-#                    # (red, green, blue, alpha) coded with integers going from 0 to 255.
-#                    
-#                    #We modify the alpha channel to add a transparency gradient
-                    lut = np.reshape(np.array([125, 125, 125, 255]*256), (256,4))
-                    lut[:,-1] = np.linspace(0, 255, 256)
-#                    # and finally we put this LUT back in the surface object. We could have
-#                    # added any 255*4 array rather than modifying an existing LUT.
-                    boundary_r.module_manager.scalar_lut_manager.lut.table = lut
-#                    
-#                    # We need to force update of the figure now that we have changed the LUT.
-#                    mlab.draw()
-                    
-                    
-                    
-                    
-                    
-                    
-                    
+
                     boundary_l = mlab.mesh(xix_boundary_l_vals_t, zvals, yvals,
                                            extent=[ext_min_l, ext_max_l, 1, nz, 0, (ny-1) * y_spacing],
-                                           color=(0.5,0.5,0.5), opacity=0.7)
+                                           opacity=0.7, scalars=zvals)
 
+                    boundary_r.module_manager.scalar_lut_manager.lut.table = lut
+                    boundary_l.module_manager.scalar_lut_manager.lut.table = lut
+                    boundary_r.actor.property.lighting = False
+                    boundary_r.actor.property.shading = False
+                    boundary_l.actor.property.lighting = False
+                    boundary_l.actor.property.shading = False
 #                    src.image_data.point_data.add_array(np.angle(Phi).T.ravel())
 #                    src.image_data.point_data.get_array(1).name = 'angle'
 #                    contour2 = mlab.pipeline.set_active_attribute(boundary_l,
@@ -1260,19 +1395,79 @@ for mode_ind in [17]: #for an individual mode
                 
             
             # Vector field bxvals, bzvals, byvals
+#            field = mlab.pipeline.vector_field(bxvals_t, bzvals_t, byvals_t, name="B field", 
+#                                                   figure=fig)
+#            field.spacing = spacing
+#                
+#            if show_mag == True:
+#                #contours = mlab.pipeline.iso_surface(magnitude,
+#                #                                        contours=range(2, 14, 3),
+#                #                                        transparent=True,
+#                #                                        opacity=0.4,
+#                #                                        colormap='YlGnBu',
+#                #                                        vmin=0, vmax=14)
+#                
+#                # Create an array of points for which we want mag field seeds
+#                nx_seed = 9 #7
+#                ny_seed = 13 #10
+#                start_x = 30. #38
+#                end_x = nx+1 - start_x
+#                start_y = 1.
+#                if ny == 20:
+#                    end_y = ny - 1 #ny-2 for ny = 100
+#                elif ny == 100:
+#                    end_y = ny - 2
+#                else:
+#                    end_y = ny - 1
+#                seeds=[]
+#                dx_res = (end_x - start_x) / (nx_seed-1)
+#                dy_res = (end_y - start_y) / (ny_seed-1)
+#                for j in range(0,ny_seed):
+#                    for i in range(0,nx_seed):
+#                        x = start_x + (i * dx_res) * x_spacing
+#                        y = start_y + (j * dy_res) * y_spacing
+#                        z = 1. + (t_start + t_ind*(t_end - t_start)/nt)/zmax * nz
+#                        seeds.append((x,z,y))
+#                
+#                if mode in alfven_mode_options:
+#                    for i in range(nx_seed):
+#                        del seeds[0]
+#                        del seeds[-1]
+#                                                             
+#                field_lines = SeedStreamline(seed_points=seeds)
+#                field_lines.stream_tracer.integration_direction='both'
+#                field_lines.streamline_type = 'tube'
+#                
+#                magnitude = mlab.pipeline.extract_vector_norm(field)
+#                magnitude.add_child(field_lines)
+#                module_manager = field_lines.parent
+#                module_manager.scalar_lut_manager.lut_mode = 'Reds'
+#                module_manager.scalar_lut_manager.data_range=[-30,25]
+            
+#                field_lines.stream_tracer.maximum_propagation = 500.
+#                field_lines.tube_filter.number_of_sides = 20
+#                field_lines.tube_filter.radius = 0.7
+#                field_lines.tube_filter.capping = True
+#                
+#                if show_mag_scale == True:
+#                    module_manager.scalar_lut_manager.lut_mode = 'jet'
+#                    module_manager.scalar_lut_manager.data_range=[7,18]
+            
+            xvals, zvals, yvals = np.mgrid[0:nx:(nx)*1j,
+                                           0:nz:(nz)*1j,
+                                           0:ny:(ny)*1j]
+                
             field = mlab.pipeline.vector_field(bxvals_t, bzvals_t, byvals_t, name="B field", 
-                                                   figure=fig)
+                                                   figure=fig, scalars=zvals)
             field.spacing = spacing
                 
-            if show_mag == True:
-                magnitude = mlab.pipeline.extract_vector_norm(field)
                 #contours = mlab.pipeline.iso_surface(magnitude,
                 #                                        contours=range(2, 14, 3),
                 #                                        transparent=True,
                 #                                        opacity=0.4,
                 #                                        colormap='YlGnBu',
                 #                                        vmin=0, vmax=14)
-                
+            if show_mag == True:
                 # Create an array of points for which we want mag field seeds
                 nx_seed = 9 #7
                 ny_seed = 13 #10
@@ -1304,20 +1499,39 @@ for mode_ind in [17]: #for an individual mode
                 field_lines.stream_tracer.integration_direction='both'
                 field_lines.streamline_type = 'tube'
                 
-                magnitude = mlab.pipeline.extract_vector_norm(field)
-                magnitude.add_child(field_lines)
+#                module_manager = field_lines.parent
+#                module_manager.scalar_lut_manager.lut_mode = 'Reds'
+#                module_manager.scalar_lut_manager.data_range=[-30,25]    
+                
+#                magnitude = mlab.pipeline.add_dataset(field)
+                field.add_child(field_lines)
                 module_manager = field_lines.parent
-                module_manager.scalar_lut_manager.lut_mode = 'Reds'
-                module_manager.scalar_lut_manager.data_range=[-30,25]
+#                module_manager.scalar_lut_manager.lut_mode = 'Reds'
+#                module_manager.scalar_lut_manager.data_range=[-30,25]
+                
                 field_lines.stream_tracer.maximum_propagation = 500.
                 field_lines.tube_filter.number_of_sides = 20
                 field_lines.tube_filter.radius = 0.7
                 field_lines.tube_filter.capping = True
+                field_lines.actor.property.opacity = 1.0
                 
                 if show_mag_scale == True:
                     module_manager.scalar_lut_manager.lut_mode = 'jet'
                     module_manager.scalar_lut_manager.data_range=[7,18]
-                
+                else:
+                    mag_lut = module_manager.scalar_lut_manager.lut.table.to_array()
+                    mag_lut[:,0] = [220]*256
+                    mag_lut[:,1] = [20]*256
+                    mag_lut[:,2] = [20]*256
+                    module_manager.scalar_lut_manager.lut.table = mag_lut
+#                    module_manager.scalar_lut_manager.data_range=[-1500,500]
+                if show_mag_fade == True:
+                    mag_lut = module_manager.scalar_lut_manager.lut.table.to_array()
+#                    mag_fade_value = fade_value
+#                    mag_lut[:mag_fade_value,-1] = np.linspace(0, 255, mag_fade_value)
+#                    mag_lut[-mag_fade_value:,-1] = np.linspace(255, 0, mag_fade_value)
+#                    module_manager.scalar_lut_manager.lut.table = mag_lut
+            
             scalefactor = 4. # scale factor for direction field vectors
             
             if show_mag_vec == True:
