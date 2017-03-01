@@ -38,7 +38,7 @@ mode_options = ['slow-kink-surf', 'slow-saus-surf', 'slow-saus-body-3',
                 'fast-kink-body-1', 'fast-saus-body-2', 'fast-kink-body-2',
                 'fast-saus-body-3', 'fast-kink-body-3', 'fast-kink-surf',
                 'fast-saus-surf', 'shear-alfven', 'shear-alfven-broadband']
-                
+
 alfven_mode_options = ['shear-alfven', 'shear-alfven-broadband']
                 
 kink_mode_options = ['slow-kink-surf', 'slow-kink-body-1', 'slow-kink-body-2',
@@ -97,12 +97,12 @@ show_boundary = False
 
 
 # Set to True if you would like the dispersion diagram with this mode highlighted.
-show_dispersion = False
-#show_dispersion = True
+#show_dispersion = False
+show_dispersion = True
 
 # Wanna see the animation? Of course you do
-#show_animation = False
-show_animation = True
+show_animation = False
+#show_animation = True
 
 # Uncomment the parametrer you would like to see
 # No density perturbations or vel/disp pert for alfven modes.
@@ -149,7 +149,7 @@ make_video = False
 
 #for mode_ind in range(14): # for all others. REMEMBER SBB pparameters
 #for mode_ind in [14,15]: #for fast body surf. REMEMBER SBS parameters
-for mode_ind in [17]: #for an individual mode
+for mode_ind in [14]: #for an individual mode
     if mode_ind not in range(len(mode_options)):
         raise NameError('Mode not in mode_options')
         
@@ -176,8 +176,8 @@ for mode_ind in [17]: #for an individual mode
     else:
         raise NameError('Mode not found')
             
-#    R1 = 1.5 #1.8 # Higher denisty on left than right
-    R1 = 2. # Symmetric slab
+    R1 = 1.5 #1.8 # Higher denisty on left than right
+#    R1 = 2. # Symmetric slab
         
     def disp_rel_asym_2var(W, K):
         return sf.disp_rel_asym(W, K, R1)
@@ -279,39 +279,61 @@ for mode_ind in [17]: #for an individual mode
         # colours 
         def colour(mode):
             colours = []
-            for i in range(len(mode_options)):
-                if mode_options[i] == mode:
-                    colours.append('g')
-                elif mode_options[i] in slow_surf_mode_options + fast_surf_mode_options:
-                    colours.append('r')
-                else:
-                    colours.append('b')
+            if mode in fast_surf_mode_options:
+                for i in range(len(mode_options)):
+                    if i <= 7:
+                        if mode_options[i] == mode:
+                            colours.append('g')
+                        elif mode_options[i] in slow_surf_mode_options + fast_surf_mode_options:
+                            colours.append('r')
+                        else:
+                            colours.append('b')
+                    elif i >= 14:
+                        if mode_options[i] == mode:
+                            colours.append('g')
+                        elif mode_options[i] in slow_surf_mode_options + fast_surf_mode_options:
+                            colours.append('r')
+                        else:
+                            colours.append('b')
+            else:
+                for i in range(len(mode_options)):
+                    if mode_options[i] == mode:
+                        colours.append('g')
+                    elif mode_options[i] in slow_surf_mode_options + fast_surf_mode_options:
+                        colours.append('r')
+                    else:
+                        colours.append('b')
             return colours
-    
+         
+        def ls(mode):
+            linestyles = []
+            if mode in fast_surf_mode_options:
+                for i in range(8):
+                    if mode_options[i] in kink_mode_options:
+                        linestyles.append('--')
+                    else:
+                        linestyles.append('-')
+                for i in range(8, len(mode_options)):
+                    if mode_options[i-1] in kink_mode_options:
+                        linestyles.append('--')
+                    else:
+                        linestyles.append('-')
+            else:
+                for i in range(len(mode_options)):
+                    if mode_options[i] in kink_mode_options:
+                        linestyles.append('--')
+                    else:
+                        linestyles.append('-')
+            return linestyles
+            
         
-        ##Plot the dots
-    #    W_array = tool.point_finder_scipy(disp_rel_asym_2var, K_range, W_range,
-    #                                      args=(None))
-    #    ax.plot(K_range, W_array, '.', color = 'b')
+#        #Plot the dots
+#        W_array = tool.point_finder_scipy(disp_rel_asym_2var, K_range, W_range,
+#                                          args=(None))
+#        ax.plot(K_range, W_array, '.', color = 'b')
+#        
+        
         if R1 == 1.5:
-            K_guess = []
-            W_guess = []
-            step = []
-            K_start = []
-            K_end = []
-            K_circles = []
-            W_circles = []
-            
-        elif R1 == 1.8:
-            K_guess = []
-            W_guess = []
-            step = []
-            K_start = []
-            K_end = []
-            K_circles = []
-            W_circles = []
-            
-        elif R1 == 2.:
             if mode in fast_surf_mode_options:
                 K_guess = [1., 1., 10.56, 6., 4., 4., 2., 2., 6., 6.]
                 W_guess = [0.64, 0.72, 0.866878, 0.837169, 0.826689, 0.848421, 
@@ -322,8 +344,10 @@ for mode_ind in [17]: #for an individual mode
                            0.001]
                 K_end = [Kmax, Kmax, Kmax, Kmax, Kmax, Kmax, Kmax, 5.24, Kmax, 
                          Kmax]
-                K_circles = [5.24]
-                W_circles = [sf.c0]
+                K_fast_body_circles = []
+                W_fast_body_circles = []
+                K_transition_circles = [5.24]
+                W_transition_circles = [sf.c0]
             else:
                 K_guess = [1., 1., 8.74, 8.74, 5.98, 5.98, 3.68, 1.84, 2., 6., 
                            9, 15, 19.8, 23.4]
@@ -336,707 +360,774 @@ for mode_ind in [17]: #for an individual mode
                            4.1, 8.2, 12.2, 16.2, 20.2]
                 K_end = [Kmax, Kmax, Kmax, Kmax, Kmax, Kmax, Kmax, Kmax, Kmax,
                          Kmax, Kmax, Kmax, Kmax, Kmax]
-                K_circles = [4.1, 8.2, 12.2, 16.2, 20.2]
-                W_circles = [sf.c2] * len(K_circles)
-            
-            
-            
-            
-            
-            
-            
-            
-            
-        lw = 1.5
-        for i in range(len(K_guess)):
-            K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, K_guess[i], 
-                                                         W_guess[i], step[i], K_start[i],
-                                                         K_end[i], (None))
-            ax.plot(K_values, root_array, color=colour(mode)[i], linewidth=lw)
-        for i in range(len(K_circles)):
-            ax.plot(K_circles[i], sf.c2, marker='o', markerfacecolor='None', 
-                    markeredgecolor='b', markeredgewidth=lw)
-        
-        ax.set_ylabel(r'$v_{ph}/c_0$', fontsize = 20)
-        ax.set_xlabel(r'$k x_0$', fontsize = 20)
-        
-        ax.set_xlim(K_range[0], K_range[-1])
-        ax.set_ylim(0., 1.41)
-        
-        if mode in fast_surf_mode_options:
-            ax.fill_between((Kmin-0.1, Kmax+0.1), (sf.c2, sf.c2), (1.42, 1.42),
-                edgecolor='gray', linestyle='-.', color='None', hatch='/',
-                linewidth=2)
-
-            #ax.plot([K_range[0], K_range[-1]], [sf.vA, sf.vA], color = '0.5', linestyle='--', linewidth=2)
-            ax.annotate(r'$v_A$', xy=(K_range[-1] + 0.03, sf.vA - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-            ax.plot([K_range[0], K_range[-1]], [sf.vA, sf.vA], color = '0.5', linestyle='-.', linewidth=2)
-            ax.plot([K_range[0], K_range[-1]], [sf.cT, sf.cT], color = '0.5', linestyle='-.', linewidth=2)
-            ax.annotate(r'$c_T$', xy=(K_range[-1] + 0.03, sf.cT - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-            ax.plot([K_range[0], K_range[-1]], [sf.c0, sf.c0], color = '0.5', linestyle='-.', linewidth=2)
-            ax.annotate(r'$c_0$', xy=(K_range[-1] + 0.03, sf.c0 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-            #ax.plot([K_range[0], K_range[-1]], [sf.c2, sf.c2], color = '0.5', linestyle='--', linewidth=2)
-#            ax.annotate(r'$c_2$', xy=(K_range[-1] + 0.03, sf.c2 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-            ax.plot([K_range[0], K_range[-1]], [sf.c1(R1), sf.c1(R1)], color = '0.5', linestyle='-.', linewidth=2)
-            if R1 == 2.:
-                ax.annotate(r'$c_1=c_2$', xy=(K_range[-1] + 0.03, sf.c1(R1) - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-            else:
-                ax.annotate(r'$c_1$', xy=(K_range[-1] + 0.03, sf.c1(R1) - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-                ax.annotate(r'$c_2$', xy=(K_range[-1] + 0.03, sf.c2(R1) - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+                K_fast_body_circles = [-10, 4.1, 8.2, 12.2, 16.2, 20.2]
+                W_fast_body_circles = [sf.c2] * len(K_fast_body_circles)
+                K_transition_circles = []
+                W_transition_circles = []
+ 
                 
-        else:
-            K_range_for_fill = np.append(K_range, K_range[-1]+0.1)
-            ax.fill_between((Kmin-0.1, Kmax+0.1), (sf.c0,sf.c0), (sf.vA,sf.vA),
-                            edgecolor='gray', linestyle='-.', color='None', hatch='/',
-                            linewidth=2)
-            ax.fill_between((Kmin-0.1, Kmax+0.1), (sf.c2, sf.c2), (1.42, 1.42),
-                            edgecolor='gray', linestyle='-.', color='None', hatch='/',
-                            linewidth=2)
-            
-            #ax.plot([K_range[0], K_range[-1]], [sf.vA, sf.vA], color = '0.5', linestyle='--', linewidth=2)
-            ax.annotate(r'$v_A$', xy=(K_range[-1] + 0.03, sf.vA - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-            ax.plot([K_range[0], K_range[-1]], [sf.cT, sf.cT], color = '0.5', linestyle='-.', linewidth=2)
-            ax.annotate(r'$c_T$', xy=(K_range[-1] + 0.03, sf.cT - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-            #ax.plot([K_range[0], K_range[-1]], [sf.c0, sf.c0], color = '0.5', linestyle='--', linewidth=2)
-            ax.annotate(r'$c_0$', xy=(K_range[-1] + 0.03, sf.c0 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-            #ax.plot([K_range[0], K_range[-1]], [sf.c2, sf.c2], color = '0.5', linestyle='--', linewidth=2)
-    #            ax.annotate(r'$c_2$', xy=(K_range[-1] + 0.03, sf.c2 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-            ax.plot([K_range[0], K_range[-1]], [sf.c1(R1), sf.c1(R1)], color = '0.5', linestyle='-.', linewidth=2)
-            if R1 == 2.:
-                ax.annotate(r'$c_1=c_2$', xy=(K_range[-1] + 0.03, sf.c1(R1) - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-            else:
-                ax.annotate(r'$c_1$', xy=(K_range[-1] + 0.03, sf.c1(R1) - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-                ax.annotate(r'$c_2$', xy=(K_range[-1] + 0.03, sf.c2(R1) - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-
-                    
-        ax.plot(K, W, 'go', markersize=10)
-#        plt.tight_layout() # seems to make it chop the sides off with this
-        plt.savefig('D:\\my_work\\projects\\Asymmetric_slab\\Python\\visualisations\\3D_vis_dispersion_diagrams\\'
-                    + mode + '.png')   
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-                    
-        if R1 == 1.8:
+        elif R1 == 1.8:
+            #needs checking and adding to
             if mode in fast_surf_mode_options:
-                ## Line trace each solutions
-                lw = 1.5
-                ##Slow surface modes
-                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 1., 0.473,
-                                                             0.01, 0.0001, Kmax, (None))
-                ax.plot(K_values, root_array, color=colous(mode)[0], linewidth=lw)
-                
-                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 1., 0.547,
-                                                             0.01, 0.0001, Kmax, (None))
-                ax.plot(K_values, root_array, color=colous(mode)[1], linewidth=lw)
-                
-                ##Slow body modes
-                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 2., 0.758137, 
-                                                             0.001, 0.25, Kmax, (None))
-                ax.plot(K_values, root_array, color='b', linewidth=lw)
-                
-                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 3., 0.725553, 
-                                                             0.001, 0.6, Kmax, (None))
-                ax.plot(K_values, root_array, color='b', linewidth=lw)
-                
-                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 6., 0.747275, 
-                                                             0.001, 0.9, Kmax, (None))
-                ax.plot(K_values, root_array, color='b', linewidth=lw)
-                
-                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 6., 0.722607, 
-                                                             0.001, 1.2, Kmax, (None))
-                ax.plot(K_values, root_array, color='b', linewidth=lw)
-                
-                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 8.2, 0.728825, 
-                                                             0.001, 1.6, Kmax, (None))
-                ax.plot(K_values, root_array, color='b', linewidth=lw)
-                
-                #Fast body modes
-                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 2., 1.07888, 
-                                                             0.01, 0.25, Kmax, (None))
-                ax.plot(K_values, root_array, color='b', linewidth=lw)
-                
-        #        K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 6., 1.143, 
-        #                                                     0.01, 4.3, Kmax, (None))
-        #        ax.plot(K_values, root_array, color='b', linewidth=lw)
-                
-        #        K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 9., 1.18647, 
-        #                                                     0.01, 8.3, Kmax, (None))
-        #        ax.plot(K_values, root_array, color='b', linewidth=lw)
-                
-                ##plot some circles at start of fast body modes
-                ax.plot(0.25, sf.c2, marker='o', markerfacecolor='None', markeredgecolor='b',
-                        markeredgewidth=lw)
-                ax.plot(4.3, sf.c2, marker='o', markerfacecolor='None', markeredgecolor='b',
-                        markeredgewidth=lw)
-                ax.plot(8.3, sf.c2, marker='o', markerfacecolor='None', markeredgecolor='b', 
-                        markeredgewidth=lw)        
-                    
-                ##annotate each line
-                #s_labels_x = [1., 3.5, 6.]
-                #s_labels_y = [0.76, 0.77, 0.76]
-                #for i in range(len(s_labels_x)):
-                #    ax.annotate(r'$j={}$'.format(i+1), xy=(s_labels_x[i], s_labels_y[i]),
-                #                xycoords='data', annotation_clip=False, fontsize=15)
-                #f_labels_x = [1., 6., 9.]
-                #f_labels_y = [1.05, 1.09, 1.14]
-                #for i in range(len(f_labels_x)):
-                #    ax.annotate(r'$j={}$'.format(i+1), xy=(f_labels_x[i], f_labels_y[i]),
-                #                xycoords='data', annotation_clip=False, fontsize=15)
-                
-                ax.set_ylabel(r'$v_{ph}/c_0$', rotation=0, fontsize = 20)
-                ax.set_xlabel(r'$k x_0$', fontsize = 20)
-                ax.yaxis.labelpad = 17
-                
-                ax.set_xlim(K_range[0], K_range[-1])
-                ax.set_ylim(0., 1.41)
-                
-                #
-                #K_range_for_fill = np.append(K_range, K_range[-1]+0.1)
-                #ax.fill_between((Kmin-0.1, Kmax+0.1), (sf.c0,sf.c0), (sf.vA,sf.vA),
-                #                edgecolor='gray', linestyle='--', color='None', hatch='/',
-                #                linewidth=2)
-                #ax.fill_between((Kmin-0.1, Kmax+0.1), (sf.c2, sf.c2), (1.41, 1.41),
-                #                edgecolor='gray', linestyle='--', color='None', hatch='/',
-                #                linewidth=2)
-                
-                #ax.plot([K_range[0], K_range[-1]], [sf.vA, sf.vA], color = '0.5', linestyle='--', linewidth=2)
-                ax.annotate(r'$v_A$', xy=(K_range[-1] + 0.03, sf.vA - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-                ax.plot([K_range[0], K_range[-1]], [sf.cT, sf.cT], color = '0.5', linestyle='--', linewidth=2)
-                ax.annotate(r'$c_T$', xy=(K_range[-1] + 0.03, sf.cT - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-                #ax.plot([K_range[0], K_range[-1]], [sf.c0, sf.c0], color = '0.5', linestyle='--', linewidth=2)
-                ax.annotate(r'$c_0$', xy=(K_range[-1] + 0.03, sf.c0 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-                #ax.plot([K_range[0], K_range[-1]], [sf.c2, sf.c2], color = '0.5', linestyle='--', linewidth=2)
-                ax.annotate(r'$c_2$', xy=(K_range[-1] + 0.03, sf.c2 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-                ax.plot([K_range[0], K_range[-1]], [sf.c1(R1), sf.c1(R1)], color = '0.5', linestyle='--', linewidth=2)
-                ax.annotate(r'$c_1$', xy=(K_range[-1] + 0.03, sf.c1(R1) - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-                
-                ##Annotate some things
-                #ax.annotate('Leaky modes', xy=(xmax/2. - 1, (sf.vA + sf.c0)/2. - 0.01),
-                #            xycoords='data', annotation_clip=False, fontsize=15)
-                #ax.annotate('Leaky modes', xy=(xmax/2. - 1, (sf.c2 + 1.41) / 2. - 0.01),
-                #            xycoords='data', annotation_clip=False, fontsize=15)
-            
+                K_guess = [1., 1., 8.2, 6., 6., 3., 2., 2., 6., 6.]
+                W_guess = [0.64, 0.72, 0.866878, 0.837169, 0.826689, 0.848421, 
+                           0.9301, 1.01567, 1.05754]
+                step = [0.01, 0.01, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 
+                        0.01, 0.01]
+                K_start = [0.0001, 0.0001, 2., 1.6, 1.2, 0.9, 0.6, 0.2, 5.24, 
+                           0.001]
+                K_end = [Kmax, Kmax, Kmax, Kmax, Kmax, Kmax, Kmax, 5.24, Kmax, 
+                         Kmax]
+                K_fast_body_circles = []
+                W_fast_body_circles = []
+                K_transition_circles = [5.24]
+                W_transition_circles = [sf.c0]
             else:
-                ## Line trace each solutions
-                #lw = 1.5
-                ##Slow surface modes
-                #K_values, root_array = tool.line_trace_scipy(disp_rel_asym_1var, 1., 0.473,
-                #                                             0.01, 0.0001, 10., (None))
-                #ax.plot(K_values, root_array, color='r', linewidth=lw)
-                #
-                #K_values, root_array = tool.line_trace_scipy(disp_rel_asym_1var, 1., 0.547,
-                #                                             0.01, 0.0001, 10., (None))
-                #ax.plot(K_values, root_array, color='r', linewidth=lw)
-                #
-                ##Slow body modes
-                #K_values, root_array = tool.line_trace_scipy(disp_rel_asym_1var, 2., 0.758137, 
-                #                                             0.001, 0.25, 10., (None))
-                #ax.plot(K_values, root_array, color='b', linewidth=lw)
-                #
-                #K_values, root_array = tool.line_trace_scipy(disp_rel_asym_1var, 3., 0.725553, 
-                #                                             0.001, 0.6, 10., (None))
-                #ax.plot(K_values, root_array, color='b', linewidth=lw)
-                #
-                #K_values, root_array = tool.line_trace_scipy(disp_rel_asym_1var, 6., 0.747275, 
-                #                                             0.001, 0.9, 10., (None))
-                #ax.plot(K_values, root_array, color='b', linewidth=lw)
-                #
-                #K_values, root_array = tool.line_trace_scipy(disp_rel_asym_1var, 6., 0.722607, 
-                #                                             0.001, 1.2, 10., (None))
-                #ax.plot(K_values, root_array, color='b', linewidth=lw)
-                #
-                #K_values, root_array = tool.line_trace_scipy(disp_rel_asym_1var, 8.2, 0.728825, 
-                #                                             0.001, 1.6, 10., (None))
-                #ax.plot(K_values, root_array, color='b', linewidth=lw)
-                #
-                ##Fast body modes
-                #K_values, root_array = tool.line_trace_scipy(disp_rel_asym_1var, 2., 1.07888, 
-                #                                             0.01, 0.25, 10., (None))
-                #ax.plot(K_values, root_array, color='b', linewidth=lw)
-                #
-                #K_values, root_array = tool.line_trace_scipy(disp_rel_asym_1var, 6., 1.143, 
-                #                                             0.01, 4.3, 10., (None))
-                #ax.plot(K_values, root_array, color='b', linewidth=lw)
-                #
-                #K_values, root_array = tool.line_trace_scipy(disp_rel_asym_1var, 9., 1.18647, 
-                #                                             0.01, 8.3, 10., (None))
-                #ax.plot(K_values, root_array, color='b', linewidth=lw)
-                #
-                ###plot some circles at start of fast body modes
-                #ax.plot(0.25, sf.c2, marker='o', markerfacecolor='None', markeredgecolor='b',
-                #        markeredgewidth=lw)
-                #ax.plot(4.3, sf.c2, marker='o', markerfacecolor='None', markeredgecolor='b',
-                #        markeredgewidth=lw)
-                #ax.plot(8.3, sf.c2, marker='o', markerfacecolor='None', markeredgecolor='b', 
-                #        markeredgewidth=lw)        
-                    
-                #annotate each line
-                s_labels_x = [1., 3.5, 6.]
-                s_labels_y = [0.76, 0.77, 0.76]
-                for i in range(len(s_labels_x)):
-                    ax.annotate(r'$j={}$'.format(i+1), xy=(s_labels_x[i], s_labels_y[i]),
-                                xycoords='data', annotation_clip=False, fontsize=15)
-                f_labels_x = [1., 6., 9.]
-                f_labels_y = [1.05, 1.09, 1.14]
-                for i in range(len(f_labels_x)):
-                    ax.annotate(r'$j={}$'.format(i+1), xy=(f_labels_x[i], f_labels_y[i]),
-                                xycoords='data', annotation_clip=False, fontsize=15)
-                
-                ax.set_ylabel(r'$v_{ph}/c_0$', rotation=0, fontsize = 20)
-                ax.set_xlabel(r'$k x_0$', fontsize = 20)
-                ax.yaxis.labelpad = 17
-                
-                ax.set_xlim(K_range[0], K_range[-1])
-                ax.set_ylim(0., 1.41)
-                
-                
-                K_range_for_fill = np.append(K_range, K_range[-1]+0.1)
-                ax.fill_between((Kmin-0.1, Kmax+0.1), (sf.c0,sf.c0), (sf.vA,sf.vA),
-                                edgecolor='gray', linestyle='--', color='None', hatch='/',
-                                linewidth=2)
-                ax.fill_between((Kmin-0.1, Kmax+0.1), (sf.c2, sf.c2), (1.41, 1.41),
-                                edgecolor='gray', linestyle='--', color='None', hatch='/',
-                                linewidth=2)
-            
-                #ax.plot([K_range[0], K_range[-1]], [sf.vA, sf.vA], color = '0.5', linestyle='--', linewidth=2)
-                ax.annotate(r'$v_A$', xy=(K_range[-1] + 0.03, sf.vA - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-                ax.plot([K_range[0], K_range[-1]], [sf.cT, sf.cT], color = '0.5', linestyle='--', linewidth=2)
-                ax.annotate(r'$c_T$', xy=(K_range[-1] + 0.03, sf.cT - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-                #ax.plot([K_range[0], K_range[-1]], [sf.c0, sf.c0], color = '0.5', linestyle='--', linewidth=2)
-                ax.annotate(r'$c_0$', xy=(K_range[-1] + 0.03, sf.c0 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-                #ax.plot([K_range[0], K_range[-1]], [sf.c2, sf.c2], color = '0.5', linestyle='--', linewidth=2)
-                ax.annotate(r'$c_2$', xy=(K_range[-1] + 0.03, sf.c2 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-                ax.plot([K_range[0], K_range[-1]], [sf.c1(R1), sf.c1(R1)], color = '0.5', linestyle='--', linewidth=2)
-                ax.annotate(r'$c_1$', xy=(K_range[-1] + 0.03, sf.c1(R1) - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-                
-                #Annotate some things
-                ax.annotate('Leaky modes', xy=(Kmax/2. - 1, (sf.vA + sf.c0)/2. - 0.01),
-                            xycoords='data', annotation_clip=False, fontsize=15)
-                ax.annotate('Leaky modes', xy=(Kmax/2. - 1, (sf.c2 + 1.41) / 2. - 0.01),
-                            xycoords='data', annotation_clip=False, fontsize=15)
-        
+                K_guess = [1., 1., 8.2, 6., 6., 3., 2., 2., 6., 9.]
+                W_guess = [0.473, 0.547, 0.728825, 0.722607, 0.747275, 
+                           0.725553, 0.758137, 1.07888, 1.143, 1.18647]
+                step = [0.01, 0.01, 0.001, 0.001, 0.001, 0.001, 0.001, 
+                        0.01, 0.01, 0.01]
+                K_start = [0.0001, 0.0001, 1.6, 1.2, 0.9, 0.6, 0.25, 0.25, 
+                           4.3, 8.3]
+                K_end = [Kmax, Kmax, Kmax, Kmax, Kmax, Kmax, Kmax, Kmax, Kmax,
+                         Kmax]
+                K_fast_body_circles = [-10, 0.25, 4.3, 8.3]
+                W_fast_body_circles = [sf.c2] * len(K_fast_body_circles)
+                K_transition_circles = []
+                W_transition_circles = []
+
         elif R1 == 2.:
             if mode in fast_surf_mode_options:
-                # Line trace each solutions
-                lw = 1.5
-    #            ##Slow surface modes
-    #            K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 1., 0.64,
-    #                                                         0.01, 0.0001, Kmax, (None))
-    #            ax.plot(K_values, root_array, color=colour(mode)[0], linewidth=lw, linestyle='--')
-    #            
-    #            K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 1., 0.72,
-    #                                                         0.01, 0.0001, Kmax, (None))
-    #            ax.plot(K_values, root_array, color=colour(mode)[1], linewidth=lw)
-    #            
-    #            ##Slow body modes
-    #            K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 2., 0.9301, 
-    #                                                         0.001, 0.2, 5.24, (None))
-    #            ax.plot(K_values, root_array, color=colour(mode)[7], linewidth=lw, linestyle='--')
-    #            #
-    #            K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 2., 0.831416, 
-    #                                                         0.001, 0.6, Kmax, (None))
-    #            ax.plot(K_values, root_array, color=colour(mode)[6], linewidth=lw)
-    #            
-    #            K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 4., 0.848421, 
-    #                                                         0.001, 0.9, Kmax, (None))
-    #            ax.plot(K_values, root_array, color=colour(mode)[5], linewidth=lw, linestyle='--')
-    #            #
-    #            K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 4., 0.826689, 
-    #                                                         0.001, 1.2, Kmax, (None))
-    #            ax.plot(K_values, root_array, color=colour(mode)[4], linewidth=lw)
-    #            
-    #            K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 6., 0.837169, 
-    #                                                         0.001, 1.6, Kmax, (None))
-    #            ax.plot(K_values, root_array, color=colour(mode)[3], linewidth=lw, linestyle='--')
-    #            
-    #            K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 10.56, 0.866878, 
-    #                                                         0.001, 2., Kmax, (None))
-    #            ax.plot(K_values, root_array, color=colour(mode)[2], linewidth=lw)
-    #            
-    #            
-    #            
-    #            ##Fast surface modes
-    #            K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 6., 1.01567, 
-    #                                                         0.01, 5.24, Kmax, (None))
-    #            ax.plot(K_values, root_array, color=colour(mode)[14], linewidth=lw, linestyle='--')
-    #            #
-    #            K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 6., 1.05754, 
-    #                                                         0.01, 0.001, Kmax, (None))
-    #            ax.plot(K_values, root_array, color=colour(mode)[15], linewidth=lw)
-    #            
-                
-                ##plot some circles at start of fast surf modes
-                
-    #            ax.plot(0.6, sf.c2, marker='o', markerfacecolor='None', markeredgecolor=colour(mode)[15],
-    #                    markeredgewidth=lw, markersize=10)
-                ax.plot(5.24, sf.c0, marker='o', markerfacecolor='None', markeredgecolor=colour(mode)[14],
-                        markeredgewidth=lw, markersize=10)    
-                    
-                ##annotate each line
-                #s_labels_x = [1., 3.5, 6.]
-                #s_labels_y = [0.76, 0.77, 0.76]
-                #for i in range(len(s_labels_x)):
-                #    ax.annotate(r'$j={}$'.format(i+1), xy=(s_labels_x[i], s_labels_y[i]),
-                #                xycoords='data', annotation_clip=False, fontsize=15)
-                #f_labels_x = [1., 6., 9.]
-                #f_labels_y = [1.05, 1.09, 1.14]
-                #for i in range(len(f_labels_x)):
-                #    ax.annotate(r'$j={}$'.format(i+1), xy=(f_labels_x[i], f_labels_y[i]),
-                #                xycoords='data', annotation_clip=False, fontsize=15)
-                
-                ax.set_ylabel(r'$v_{ph}/c_0$', rotation=0, fontsize = 20)
-                ax.set_xlabel(r'$k x_0$', fontsize = 20)
-                ax.yaxis.labelpad = 17
-                
-                ax.set_xlim(K_range[0], K_range[-1])
-                ax.set_ylim(0., 1.41)
-                
-                ax.fill_between((Kmin-0.1, Kmax+0.1), (sf.c2, sf.c2), (1.42, 1.42),
-                    edgecolor='gray', linestyle='-.', color='None', hatch='/',
-                    linewidth=2)
-    
-                #ax.plot([K_range[0], K_range[-1]], [sf.vA, sf.vA], color = '0.5', linestyle='--', linewidth=2)
-                ax.annotate(r'$v_A$', xy=(K_range[-1] + 0.03, sf.vA - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-                ax.plot([K_range[0], K_range[-1]], [sf.vA, sf.vA], color = '0.5', linestyle='-.', linewidth=2)
-                ax.plot([K_range[0], K_range[-1]], [sf.cT, sf.cT], color = '0.5', linestyle='-.', linewidth=2)
-                ax.annotate(r'$c_T$', xy=(K_range[-1] + 0.03, sf.cT - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-                ax.plot([K_range[0], K_range[-1]], [sf.c0, sf.c0], color = '0.5', linestyle='-.', linewidth=2)
-                ax.annotate(r'$c_0$', xy=(K_range[-1] + 0.03, sf.c0 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-                #ax.plot([K_range[0], K_range[-1]], [sf.c2, sf.c2], color = '0.5', linestyle='--', linewidth=2)
-    #            ax.annotate(r'$c_2$', xy=(K_range[-1] + 0.03, sf.c2 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-                ax.plot([K_range[0], K_range[-1]], [sf.c1(R1), sf.c1(R1)], color = '0.5', linestyle='-.', linewidth=2)
-                ax.annotate(r'$c_1=c_2$', xy=(K_range[-1] + 0.03, sf.c1(R1) - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-                
-            
+                K_guess = [1., 1., 11.96, 6., 4., 4., 2., 2., 6., 6.]
+                W_guess = [0.64, 0.72, 0.877, 0.836, 0.826, 0.847, 0.83, 
+                           0.915, 1.01567, 1.05754]
+                step = [0.01, 0.01, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 
+                        0.01, 0.01]
+                K_start = [0.0001, 0.0001, 2., 1.6, 1.2, 0.9, 0.6, 0.2, 5.24, 
+                           0.001]
+                K_end = [Kmax, Kmax, Kmax, Kmax, Kmax, Kmax, Kmax, 5.2, Kmax, 
+                         Kmax]
+                K_fast_body_circles = []
+                W_fast_body_circles = []
+                K_transition_circles = [5.2]
+                W_transition_circles = [sf.c0]
             else:
-                # Line trace each solutions
-                lw = 1.5
-                #Slow surface modes
-                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 1., 0.473,
-                                                             0.01, 0.0001, Kmax, (None))
-                ax.plot(K_values, root_array, color=colour(mode)[0], linewidth=lw, linestyle='--')
-                
-                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 1., 0.547,
-                                                             0.01, 0.0001, Kmax, (None))
-                ax.plot(K_values, root_array, color=colour(mode)[1], linewidth=lw)
-                
-                #Slow body modes
-                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 1.84, 0.749326, 
-                                                             0.001, 0.3, Kmax, (None))
-                ax.plot(K_values, root_array, color=colour(mode)[7], linewidth=lw, linestyle='--')
-                
-                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 3.68, 0.741942, 
-                                                             0.001, 0.8, Kmax, (None))
-                ax.plot(K_values, root_array, color=colour(mode)[6], linewidth=lw)
-                
-                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 5.98, 0.746659, 
-                                                             0.001, 1., Kmax, (None))
-                ax.plot(K_values, root_array, color=colour(mode)[5], linewidth=lw, linestyle='--')
-                
-                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 5.98, 0.722183, 
-                                                             0.001, 1.3, Kmax, (None))
-                ax.plot(K_values, root_array, color=colour(mode)[4], linewidth=lw)
-                
-                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 8.74, 0.733764, 
-                                                             0.001, 1.8, Kmax, (None))
-                ax.plot(K_values, root_array, color=colour(mode)[3], linewidth=lw, linestyle='--')
-                
-                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 8.74, 0.719463, 
-                                                             0.001, 2.3, Kmax, (None))
-                ax.plot(K_values, root_array, color=colour(mode)[2], linewidth=lw)
-            
-                
-                #Fast body modes
-                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 2., 1.07888, 
-                                                             0.01, 0.0001, Kmax, (None))
-                ax.plot(K_values, root_array, color=colour(mode)[8], linewidth=lw)
-                
-                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 6., 1.143, 
-                                                             0.01, 4.1, Kmax, (None))
-                ax.plot(K_values, root_array, color=colour(mode)[9], linewidth=lw, linestyle='--')
-                
-                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 9., 1.18647, 
-                                                             0.01, 8.2, Kmax, (None))
-                ax.plot(K_values, root_array, color=colour(mode)[10], linewidth=lw)
-                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 15., 1.15692, 
-                                                             0.01, 12.2, Kmax, (None))
-                ax.plot(K_values, root_array, color=colour(mode)[11], linewidth=lw, linestyle='--')
-                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 19.8, 1.156, 
-                                                             0.01, 16.2, Kmax, (None))
-                ax.plot(K_values, root_array, color=colour(mode)[12], linewidth=lw)
-                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 23.4, 1.16675, 
-                                                             0.01, 20.2, Kmax, (None))
-                ax.plot(K_values, root_array, color=colour(mode)[13], linewidth=lw, linestyle='--')
-                
-                ##plot some circles at start of fast body modes
-                K_marker = [4.1, 8.2, 12.2, 16.2, 20.2]
-                y_marker = [sf.c2] * len(K_marker)
-                for i in range(len(K_marker)):
-                    ax.plot(K_marker[i], y_marker[i], marker='o', markersize=10, 
-                            markerfacecolor='None', markeredgecolor=colour(mode)[9 + i], markeredgewidth=lw)
-                        
-                ##annotate each line
-                #s_labels_x = [1., 3.5, 6.]
-                #s_labels_y = [0.76, 0.77, 0.76]
-                #for i in range(len(s_labels_x)):
-                #    ax.annotate(r'$j={}$'.format(i+1), xy=(s_labels_x[i], s_labels_y[i]),
-                #                xycoords='data', annotation_clip=False, fontsize=15)
-                #f_labels_x = [1., 6., 9.]
-                #f_labels_y = [1.05, 1.09, 1.14]
-                #for i in range(len(f_labels_x)):
-                #    ax.annotate(r'$j={}$'.format(i+1), xy=(f_labels_x[i], f_labels_y[i]),
-                #                xycoords='data', annotation_clip=False, fontsize=15)
-                
-                #ax.set_ylabel(r'$v_{ph}$', rotation=0, fontsize = 20)
-                ax.set_ylabel(r'$v_{ph}/c_0$', fontsize = 20)
-                ax.set_xlabel(r'$k x_0$', fontsize = 20)
-                #ax.yaxis.labelpad = 17
-                
-                ax.set_xlim(K_range[0], K_range[-1])
-                ax.set_ylim(0., 1.41)
-                
-                
-                K_range_for_fill = np.append(K_range, K_range[-1]+0.1)
-                ax.fill_between((Kmin-0.1, Kmax+0.1), (sf.c0,sf.c0), (sf.vA,sf.vA),
-                                edgecolor='gray', linestyle='-.', color='None', hatch='/',
-                                linewidth=2)
-                ax.fill_between((Kmin-0.1, Kmax+0.1), (sf.c2, sf.c2), (1.42, 1.42),
-                                edgecolor='gray', linestyle='-.', color='None', hatch='/',
-                                linewidth=2)
-                
-                #ax.plot([K_range[0], K_range[-1]], [sf.vA, sf.vA], color = '0.5', linestyle='--', linewidth=2)
-                ax.annotate(r'$v_A$', xy=(K_range[-1] + 0.03, sf.vA - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-                ax.plot([K_range[0], K_range[-1]], [sf.cT, sf.cT], color = '0.5', linestyle='-.', linewidth=2)
-                ax.annotate(r'$c_T$', xy=(K_range[-1] + 0.03, sf.cT - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-                #ax.plot([K_range[0], K_range[-1]], [sf.c0, sf.c0], color = '0.5', linestyle='--', linewidth=2)
-                ax.annotate(r'$c_0$', xy=(K_range[-1] + 0.03, sf.c0 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-                #ax.plot([K_range[0], K_range[-1]], [sf.c2, sf.c2], color = '0.5', linestyle='--', linewidth=2)
-    #            ax.annotate(r'$c_2$', xy=(K_range[-1] + 0.03, sf.c2 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-                ax.plot([K_range[0], K_range[-1]], [sf.c1(R1), sf.c1(R1)], color = '0.5', linestyle='-.', linewidth=2)
-                ax.annotate(r'$c_1=c_2$', xy=(K_range[-1] + 0.03, sf.c1(R1) - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-    
+                K_guess = [1., 1., 8.74, 8.74, 5.98, 5.98, 3.68, 1.84, 2., 6., 
+                           9., 14.73, 19.8, 23.4]
+                W_guess = [0.473, 0.547, 0.719463, 0.733764, 0.722183, 
+                           0.746659, 0.741942, 0.749326, 1.16675, 1.156, 
+                           1.17, 1.1547, 1.16, 1.16]
+                step = [0.01, 0.01, 0.001, 0.001, 0.001, 0.001, 0.001, 0.001, 
+                        0.01, 0.01, 0.01, 0.01, 0.01, 0.01]
+                K_start = [0.0001, 0.0001, 2.3, 1.8, 1.3, 1., 0.8, 0.3, 0.0001, 
+                           4.1, 8.2, 12.2, 16.2, 20.2]
+                K_end = [Kmax, Kmax, Kmax, Kmax, Kmax, Kmax, Kmax, Kmax, Kmax,
+                         Kmax, Kmax, Kmax, Kmax, Kmax]
+                K_fast_body_circles = [-10, 4.1, 8.2, 12.2, 16.2, 20.2]
+                W_fast_body_circles = [sf.c2] * len(K_fast_body_circles)
+                K_transition_circles = []
+                W_transition_circles = []
         
-        elif R1 == 1.5:
-            if mode in fast_surf_mode_options:
-                # Line trace each solutions
-                lw = 1.5
-                ##Slow surface modes
-                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 1., 0.64,
-                                                             0.01, 0.0001, Kmax, (None))
-                ax.plot(K_values, root_array, color=colour(mode)[0], linewidth=lw, linestyle='--')
-                
-                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 1., 0.72,
-                                                             0.01, 0.0001, Kmax, (None))
-                ax.plot(K_values, root_array, color=colour(mode)[1], linewidth=lw)
-                
-                ##Slow body modes
-                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 2., 0.9301, 
-                                                             0.001, 0.2, 4.199, (None))
-                ax.plot(K_values, root_array, color=colour(mode)[7], linewidth=lw, linestyle='--')
-                #
-                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 2., 0.831416, 
-                                                             0.001, 0.6, Kmax, (None))
-                ax.plot(K_values, root_array, color=colour(mode)[6], linewidth=lw)
-                
-                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 4., 0.848421, 
-                                                             0.001, 0.9, Kmax, (None))
-                ax.plot(K_values, root_array, color=colour(mode)[5], linewidth=lw, linestyle='--')
-                #
-                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 4., 0.826689, 
-                                                             0.001, 1.2, Kmax, (None))
-                ax.plot(K_values, root_array, color=colour(mode)[4], linewidth=lw)
-                
-                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 6., 0.837169, 
-                                                             0.001, 1.6, Kmax, (None))
-                ax.plot(K_values, root_array, color=colour(mode)[3], linewidth=lw, linestyle='--')
-                
-                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 10.56, 0.866878, 
-                                                             0.001, 2., Kmax, (None))
-                ax.plot(K_values, root_array, color=colour(mode)[2], linewidth=lw)
-                
-                #
-                #
-                ##Fast surface modes
-                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 6., 1.01567, 
-                                                             0.01, 4.19, Kmax, (None))
-                ax.plot(K_values, root_array, color=colour(mode)[14], linewidth=lw, linestyle='--')
-                #
-                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 6., 1.05754, 
-                                                             0.01, 0.6, Kmax, (None))
-                ax.plot(K_values, root_array, color=colour(mode)[15], linewidth=lw)
-                
-                
-                ##plot some circles at start of fast surf modes
-                
-                ax.plot(0.6, sf.c2, marker='o', markerfacecolor='None', markeredgecolor=colour(mode)[15],
-                        markeredgewidth=lw, markersize=10)
-                ax.plot(4.19, sf.c0, marker='o', markerfacecolor='None', markeredgecolor=colour(mode)[14],
-                        markeredgewidth=lw, markersize=10)    
+        
+        
+        
+        
+#        lw = 1.5
+#        
+#        for i in range(len(K_guess)):
+#            K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, K_guess[i], 
+#                                                         W_guess[i], step[i], K_start[i],
+#                                                         K_end[i], (None))
+#            ax.plot(K_values, root_array, color=colour(mode)[i], linewidth=lw, 
+#                    linestyle=ls(mode)[i])
+#        for i in range(len(K_fast_body_circles)):
+#            ax.plot(K_fast_body_circles[i], W_fast_body_circles[i], marker='o', markerfacecolor='None', 
+#                    markeredgecolor=colour(mode)[i+8], markeredgewidth=lw)
+#        for i in range(len(K_transition_circles)):
+#            ax.plot(K_transition_circles[i], W_transition_circles[i], marker='o', markerfacecolor='None', 
+#                    markeredgecolor=colour(mode)[i+8], markeredgewidth=lw)
+#        
+#        ax.set_ylabel(r'$v_{ph}/c_0$', fontsize = 20)
+#        ax.set_xlabel(r'$k x_0$', fontsize = 20)
+#        
+#        ax.set_xlim(K_range[0], K_range[-1])
+#        ax.set_ylim(0., 1.41)
+#        
+#        if mode in fast_surf_mode_options:
+#            ax.fill_between((Kmin-0.1, Kmax+0.1), (sf.c2, sf.c2), (1.42, 1.42),
+#                edgecolor='gray', linestyle='-.', color='None', hatch='/',
+#                linewidth=2)
+#
+#            #ax.plot([K_range[0], K_range[-1]], [sf.vA, sf.vA], color = '0.5', linestyle='--', linewidth=2)
+#            ax.annotate(r'$v_A$', xy=(K_range[-1] + 0.03, sf.vA - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+#            ax.plot([K_range[0], K_range[-1]], [sf.vA, sf.vA], color = '0.5', linestyle='-.', linewidth=2)
+#            ax.plot([K_range[0], K_range[-1]], [sf.cT, sf.cT], color = '0.5', linestyle='-.', linewidth=2)
+#            ax.annotate(r'$c_T$', xy=(K_range[-1] + 0.03, sf.cT - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+#            ax.plot([K_range[0], K_range[-1]], [sf.c0, sf.c0], color = '0.5', linestyle='-.', linewidth=2)
+#            ax.annotate(r'$c_0$', xy=(K_range[-1] + 0.03, sf.c0 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+#            #ax.plot([K_range[0], K_range[-1]], [sf.c2, sf.c2], color = '0.5', linestyle='--', linewidth=2)
+##            ax.annotate(r'$c_2$', xy=(K_range[-1] + 0.03, sf.c2 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+#            ax.plot([K_range[0], K_range[-1]], [sf.c1(R1), sf.c1(R1)], color = '0.5', linestyle='-.', linewidth=2)
+#            if R1 == 2.:
+#                ax.annotate(r'$c_1=c_2$', xy=(K_range[-1] + 0.03, sf.c1(R1) - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+#            else:
+#                ax.annotate(r'$c_1$', xy=(K_range[-1] + 0.03, sf.c1(R1) - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+#                ax.annotate(r'$c_2$', xy=(K_range[-1] + 0.03, sf.c2(R1) - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+#                
+#        else:
+#            K_range_for_fill = np.append(K_range, K_range[-1]+0.1)
+#            ax.fill_between((Kmin-0.1, Kmax+0.1), (sf.c0,sf.c0), (sf.vA,sf.vA),
+#                            edgecolor='gray', linestyle='-.', color='None', hatch='/',
+#                            linewidth=2)
+#            ax.fill_between((Kmin-0.1, Kmax+0.1), (sf.c2, sf.c2), (1.42, 1.42),
+#                            edgecolor='gray', linestyle='-.', color='None', hatch='/',
+#                            linewidth=2)
+#            
+#            #ax.plot([K_range[0], K_range[-1]], [sf.vA, sf.vA], color = '0.5', linestyle='--', linewidth=2)
+#            ax.annotate(r'$v_A$', xy=(K_range[-1] + 0.03, sf.vA - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+#            ax.plot([K_range[0], K_range[-1]], [sf.cT, sf.cT], color = '0.5', linestyle='-.', linewidth=2)
+#            ax.annotate(r'$c_T$', xy=(K_range[-1] + 0.03, sf.cT - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+#            #ax.plot([K_range[0], K_range[-1]], [sf.c0, sf.c0], color = '0.5', linestyle='--', linewidth=2)
+#            ax.annotate(r'$c_0$', xy=(K_range[-1] + 0.03, sf.c0 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+#            #ax.plot([K_range[0], K_range[-1]], [sf.c2, sf.c2], color = '0.5', linestyle='--', linewidth=2)
+#    #            ax.annotate(r'$c_2$', xy=(K_range[-1] + 0.03, sf.c2 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+#            ax.plot([K_range[0], K_range[-1]], [sf.c1(R1), sf.c1(R1)], color = '0.5', linestyle='-.', linewidth=2)
+#            if R1 == 2.:
+#                ax.annotate(r'$c_1=c_2$', xy=(K_range[-1] + 0.03, sf.c1(R1) - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+#            else:
+#                ax.annotate(r'$c_1$', xy=(K_range[-1] + 0.03, sf.c1(R1) - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+#                ax.annotate(r'$c_2$', xy=(K_range[-1] + 0.03, sf.c2(R1) - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+#
+#                    
+#        ax.plot(K, W, 'go', markersize=10)
+##        plt.tight_layout() # seems to make it chop the sides off with this
+#        plt.savefig('D:\\my_work\\projects\\Asymmetric_slab\\Python\\visualisations\\3D_vis_dispersion_diagrams\\'
+#                    + mode + '.png')   
                     
-                ##annotate each line
-                #s_labels_x = [1., 3.5, 6.]
-                #s_labels_y = [0.76, 0.77, 0.76]
-                #for i in range(len(s_labels_x)):
-                #    ax.annotate(r'$j={}$'.format(i+1), xy=(s_labels_x[i], s_labels_y[i]),
-                #                xycoords='data', annotation_clip=False, fontsize=15)
-                #f_labels_x = [1., 6., 9.]
-                #f_labels_y = [1.05, 1.09, 1.14]
-                #for i in range(len(f_labels_x)):
-                #    ax.annotate(r'$j={}$'.format(i+1), xy=(f_labels_x[i], f_labels_y[i]),
-                #                xycoords='data', annotation_clip=False, fontsize=15)
-                
-                ax.set_ylabel(r'$v_{ph}/c_0$', rotation=0, fontsize = 20)
-                ax.set_xlabel(r'$k x_0$', fontsize = 20)
-                ax.yaxis.labelpad = 17
-                
-                ax.set_xlim(K_range[0], K_range[-1])
-                ax.set_ylim(0., 1.41)
-                
-                ax.fill_between((Kmin-0.1, Kmax+0.1), (sf.c2, sf.c2), (1.42, 1.42),
-                    edgecolor='gray', linestyle='-.', color='None', hatch='/',
-                    linewidth=2)
-    
-                #ax.plot([K_range[0], K_range[-1]], [sf.vA, sf.vA], color = '0.5', linestyle='--', linewidth=2)
-                ax.annotate(r'$v_A$', xy=(K_range[-1] + 0.03, sf.vA - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-                ax.plot([K_range[0], K_range[-1]], [sf.vA, sf.vA], color = '0.5', linestyle='-.', linewidth=2)
-                ax.plot([K_range[0], K_range[-1]], [sf.cT, sf.cT], color = '0.5', linestyle='-.', linewidth=2)
-                ax.annotate(r'$c_T$', xy=(K_range[-1] + 0.03, sf.cT - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-                ax.plot([K_range[0], K_range[-1]], [sf.c0, sf.c0], color = '0.5', linestyle='-.', linewidth=2)
-                ax.annotate(r'$c_0$', xy=(K_range[-1] + 0.03, sf.c0 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-                #ax.plot([K_range[0], K_range[-1]], [sf.c2, sf.c2], color = '0.5', linestyle='--', linewidth=2)
-                ax.annotate(r'$c_2$', xy=(K_range[-1] + 0.03, sf.c2 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-                ax.plot([K_range[0], K_range[-1]], [sf.c1(R1), sf.c1(R1)], color = '0.5', linestyle='-.', linewidth=2)
-                ax.annotate(r'$c_1$', xy=(K_range[-1] + 0.03, sf.c1(R1) - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-                
-            
-            else:
-                # Line trace each solutions
-                lw = 1.5
-                #Slow surface modes
-                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 1., 0.473,
-                                                             0.01, 0.0001, Kmax, (None))
-                ax.plot(K_values, root_array, color=colour(mode)[0], linewidth=lw, linestyle='--')
-                
-                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 1., 0.547,
-                                                             0.01, 0.0001, Kmax, (None))
-                ax.plot(K_values, root_array, color=colour(mode)[1], linewidth=lw)
-    #            
-    #            #Slow body modes
-    #            K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 2., 0.760531, 
-    #                                                         0.001, 0.2, Kmax, (None))
-    #            ax.plot(K_values, root_array, color=colour(mode)[7], linewidth=lw, linestyle='--')
-    #            
-    #            K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 3., 0.726328, 
-    #                                                         0.001, 0.5, Kmax, (None))
-    #            ax.plot(K_values, root_array, color=colour(mode)[6], linewidth=lw)
-    #            
-    #            K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 6., 0.747901, 
-    #                                                         0.001, 0.8, Kmax, (None))
-    #            ax.plot(K_values, root_array, color=colour(mode)[5], linewidth=lw, linestyle='--')
-    #            
-    #            K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 6., 0.722958, 
-    #                                                         0.001, 1.1, Kmax, (None))
-    #            ax.plot(K_values, root_array, color=colour(mode)[4], linewidth=lw)
-    #            
-    #            K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 8.2, 0.729129, 
-    #                                                         0.001, 1.5, Kmax, (None))
-    #            ax.plot(K_values, root_array, color=colour(mode)[3], linewidth=lw, linestyle='--')
-    #            
-    #            K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 9., 0.721913, 
-    #                                                         0.001, 2., Kmax, (None))
-    #            ax.plot(K_values, root_array, color=colour(mode)[2], linewidth=lw)
-            
-                
-                #Fast body modes
-                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 2., 1.07888, 
-                                                             0.01, 0.45, Kmax, (None))
-                ax.plot(K_values, root_array, color=colour(mode)[8], linewidth=lw)
-                
-                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 6., 1.143, 
-                                                             0.01, 4.5, Kmax, (None))
-                ax.plot(K_values, root_array, color=colour(mode)[9], linewidth=lw, linestyle='--')
-                
-                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 9., 1.18647, 
-                                                             0.01, 8.45, Kmax, (None))
-                ax.plot(K_values, root_array, color=colour(mode)[10], linewidth=lw)
-                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 15., 1.15692, 
-                                                             0.01, 12.49, Kmax, (None))
-                ax.plot(K_values, root_array, color=colour(mode)[11], linewidth=lw, linestyle='--')
-                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 19.8, 1.156, 
-                                                             0.01, 16.5673, Kmax, (None))
-                ax.plot(K_values, root_array, color=colour(mode)[12], linewidth=lw)
-                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 23.4, 1.16675, 
-                                                             0.01, 20.6113, Kmax, (None))
-                ax.plot(K_values, root_array, color=colour(mode)[13], linewidth=lw, linestyle='--')
-                
-                ##plot some circles at start of fast body modes
-                K_marker = [0.45, 4.5, 8.45, 12.49, 16.5673, 20.6113]
-                y_marker = [sf.c2] * len(K_marker)
-                for i in range(len(K_marker)):
-                    ax.plot(K_marker[i], y_marker[i], marker='o', markersize=10, 
-                            markerfacecolor='None', markeredgecolor=colour(mode)[8 + i], markeredgewidth=lw)
-                        
-                ##annotate each line
-                #s_labels_x = [1., 3.5, 6.]
-                #s_labels_y = [0.76, 0.77, 0.76]
-                #for i in range(len(s_labels_x)):
-                #    ax.annotate(r'$j={}$'.format(i+1), xy=(s_labels_x[i], s_labels_y[i]),
-                #                xycoords='data', annotation_clip=False, fontsize=15)
-                #f_labels_x = [1., 6., 9.]
-                #f_labels_y = [1.05, 1.09, 1.14]
-                #for i in range(len(f_labels_x)):
-                #    ax.annotate(r'$j={}$'.format(i+1), xy=(f_labels_x[i], f_labels_y[i]),
-                #                xycoords='data', annotation_clip=False, fontsize=15)
-                
-                #ax.set_ylabel(r'$v_{ph}$', rotation=0, fontsize = 20)
-                ax.set_ylabel(r'$v_{ph}/c_0$', fontsize = 20)
-                ax.set_xlabel(r'$k x_0$', fontsize = 20)
-                #ax.yaxis.labelpad = 17
-                
-                ax.set_xlim(K_range[0], K_range[-1])
-                ax.set_ylim(0., 1.41)
-                
-                
-                K_range_for_fill = np.append(K_range, K_range[-1]+0.1)
-                ax.fill_between((Kmin-0.1, Kmax+0.1), (sf.c0,sf.c0), (sf.vA,sf.vA),
-                                edgecolor='gray', linestyle='-.', color='None', hatch='/',
-                                linewidth=2)
-                ax.fill_between((Kmin-0.1, Kmax+0.1), (sf.c2, sf.c2), (1.42, 1.42),
-                                edgecolor='gray', linestyle='-.', color='None', hatch='/',
-                                linewidth=2)
-                
-                #ax.plot([K_range[0], K_range[-1]], [sf.vA, sf.vA], color = '0.5', linestyle='--', linewidth=2)
-                ax.annotate(r'$v_A$', xy=(K_range[-1] + 0.03, sf.vA - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-                ax.plot([K_range[0], K_range[-1]], [sf.cT, sf.cT], color = '0.5', linestyle='-.', linewidth=2)
-                ax.annotate(r'$c_T$', xy=(K_range[-1] + 0.03, sf.cT - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-                #ax.plot([K_range[0], K_range[-1]], [sf.c0, sf.c0], color = '0.5', linestyle='--', linewidth=2)
-                ax.annotate(r'$c_0$', xy=(K_range[-1] + 0.03, sf.c0 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-                #ax.plot([K_range[0], K_range[-1]], [sf.c2, sf.c2], color = '0.5', linestyle='--', linewidth=2)
-                ax.annotate(r'$c_2$', xy=(K_range[-1] + 0.03, sf.c2 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-                ax.plot([K_range[0], K_range[-1]], [sf.c1(R1), sf.c1(R1)], color = '0.5', linestyle='-.', linewidth=2)
-                ax.annotate(r'$c_1$', xy=(K_range[-1] + 0.03, sf.c1(R1) - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-    
-        ax.plot(K, W, 'go', markersize=10)
-#        plt.tight_layout() # seems to make it chop the sides off with this
-        plt.savefig('D:\\my_work\\projects\\Asymmetric_slab\\Python\\visualisations\\3D_vis_dispersion_diagrams\\'
-                    + mode + '.png')
-#        plt.close()
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+                    
+#        if R1 == 1.8:
+#            if mode in fast_surf_mode_options:
+#                ## Line trace each solutions
+#                lw = 1.5
+#                ##Slow surface modes
+#                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 1., 0.473,
+#                                                             0.01, 0.0001, Kmax, (None))
+#                ax.plot(K_values, root_array, color=colous(mode)[0], linewidth=lw)
+#                
+#                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 1., 0.547,
+#                                                             0.01, 0.0001, Kmax, (None))
+#                ax.plot(K_values, root_array, color=colous(mode)[1], linewidth=lw)
+#                
+#                ##Slow body modes
+#                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 2., 0.758137, 
+#                                                             0.001, 0.25, Kmax, (None))
+#                ax.plot(K_values, root_array, color='b', linewidth=lw)
+#                
+#                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 3., 0.725553, 
+#                                                             0.001, 0.6, Kmax, (None))
+#                ax.plot(K_values, root_array, color='b', linewidth=lw)
+#                
+#                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 6., 0.747275, 
+#                                                             0.001, 0.9, Kmax, (None))
+#                ax.plot(K_values, root_array, color='b', linewidth=lw)
+#                
+#                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 6., 0.722607, 
+#                                                             0.001, 1.2, Kmax, (None))
+#                ax.plot(K_values, root_array, color='b', linewidth=lw)
+#                
+#                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 8.2, 0.728825, 
+#                                                             0.001, 1.6, Kmax, (None))
+#                ax.plot(K_values, root_array, color='b', linewidth=lw)
+#                
+#                #Fast body modes
+#                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 2., 1.07888, 
+#                                                             0.01, 0.25, Kmax, (None))
+#                ax.plot(K_values, root_array, color='b', linewidth=lw)
+#                
+#        #        K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 6., 1.143, 
+#        #                                                     0.01, 4.3, Kmax, (None))
+#        #        ax.plot(K_values, root_array, color='b', linewidth=lw)
+#                
+#        #        K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 9., 1.18647, 
+#        #                                                     0.01, 8.3, Kmax, (None))
+#        #        ax.plot(K_values, root_array, color='b', linewidth=lw)
+#                
+#                ##plot some circles at start of fast body modes
+#                ax.plot(0.25, sf.c2, marker='o', markerfacecolor='None', markeredgecolor='b',
+#                        markeredgewidth=lw)
+#                ax.plot(4.3, sf.c2, marker='o', markerfacecolor='None', markeredgecolor='b',
+#                        markeredgewidth=lw)
+#                ax.plot(8.3, sf.c2, marker='o', markerfacecolor='None', markeredgecolor='b', 
+#                        markeredgewidth=lw)        
+#                    
+#                ##annotate each line
+#                #s_labels_x = [1., 3.5, 6.]
+#                #s_labels_y = [0.76, 0.77, 0.76]
+#                #for i in range(len(s_labels_x)):
+#                #    ax.annotate(r'$j={}$'.format(i+1), xy=(s_labels_x[i], s_labels_y[i]),
+#                #                xycoords='data', annotation_clip=False, fontsize=15)
+#                #f_labels_x = [1., 6., 9.]
+#                #f_labels_y = [1.05, 1.09, 1.14]
+#                #for i in range(len(f_labels_x)):
+#                #    ax.annotate(r'$j={}$'.format(i+1), xy=(f_labels_x[i], f_labels_y[i]),
+#                #                xycoords='data', annotation_clip=False, fontsize=15)
+#                
+#                ax.set_ylabel(r'$v_{ph}/c_0$', rotation=0, fontsize = 20)
+#                ax.set_xlabel(r'$k x_0$', fontsize = 20)
+#                ax.yaxis.labelpad = 17
+#                
+#                ax.set_xlim(K_range[0], K_range[-1])
+#                ax.set_ylim(0., 1.41)
+#                
+#                #
+#                #K_range_for_fill = np.append(K_range, K_range[-1]+0.1)
+#                #ax.fill_between((Kmin-0.1, Kmax+0.1), (sf.c0,sf.c0), (sf.vA,sf.vA),
+#                #                edgecolor='gray', linestyle='--', color='None', hatch='/',
+#                #                linewidth=2)
+#                #ax.fill_between((Kmin-0.1, Kmax+0.1), (sf.c2, sf.c2), (1.41, 1.41),
+#                #                edgecolor='gray', linestyle='--', color='None', hatch='/',
+#                #                linewidth=2)
+#                
+#                #ax.plot([K_range[0], K_range[-1]], [sf.vA, sf.vA], color = '0.5', linestyle='--', linewidth=2)
+#                ax.annotate(r'$v_A$', xy=(K_range[-1] + 0.03, sf.vA - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+#                ax.plot([K_range[0], K_range[-1]], [sf.cT, sf.cT], color = '0.5', linestyle='--', linewidth=2)
+#                ax.annotate(r'$c_T$', xy=(K_range[-1] + 0.03, sf.cT - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+#                #ax.plot([K_range[0], K_range[-1]], [sf.c0, sf.c0], color = '0.5', linestyle='--', linewidth=2)
+#                ax.annotate(r'$c_0$', xy=(K_range[-1] + 0.03, sf.c0 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+#                #ax.plot([K_range[0], K_range[-1]], [sf.c2, sf.c2], color = '0.5', linestyle='--', linewidth=2)
+#                ax.annotate(r'$c_2$', xy=(K_range[-1] + 0.03, sf.c2 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+#                ax.plot([K_range[0], K_range[-1]], [sf.c1(R1), sf.c1(R1)], color = '0.5', linestyle='--', linewidth=2)
+#                ax.annotate(r'$c_1$', xy=(K_range[-1] + 0.03, sf.c1(R1) - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+#                
+#                ##Annotate some things
+#                #ax.annotate('Leaky modes', xy=(xmax/2. - 1, (sf.vA + sf.c0)/2. - 0.01),
+#                #            xycoords='data', annotation_clip=False, fontsize=15)
+#                #ax.annotate('Leaky modes', xy=(xmax/2. - 1, (sf.c2 + 1.41) / 2. - 0.01),
+#                #            xycoords='data', annotation_clip=False, fontsize=15)
+#            
+#            else:
+#                ## Line trace each solutions
+#                #lw = 1.5
+#                ##Slow surface modes
+#                #K_values, root_array = tool.line_trace_scipy(disp_rel_asym_1var, 1., 0.473,
+#                #                                             0.01, 0.0001, 10., (None))
+#                #ax.plot(K_values, root_array, color='r', linewidth=lw)
+#                #
+#                #K_values, root_array = tool.line_trace_scipy(disp_rel_asym_1var, 1., 0.547,
+#                #                                             0.01, 0.0001, 10., (None))
+#                #ax.plot(K_values, root_array, color='r', linewidth=lw)
+#                #
+#                ##Slow body modes
+#                #K_values, root_array = tool.line_trace_scipy(disp_rel_asym_1var, 2., 0.758137, 
+#                #                                             0.001, 0.25, 10., (None))
+#                #ax.plot(K_values, root_array, color='b', linewidth=lw)
+#                #
+#                #K_values, root_array = tool.line_trace_scipy(disp_rel_asym_1var, 3., 0.725553, 
+#                #                                             0.001, 0.6, 10., (None))
+#                #ax.plot(K_values, root_array, color='b', linewidth=lw)
+#                #
+#                #K_values, root_array = tool.line_trace_scipy(disp_rel_asym_1var, 6., 0.747275, 
+#                #                                             0.001, 0.9, 10., (None))
+#                #ax.plot(K_values, root_array, color='b', linewidth=lw)
+#                #
+#                #K_values, root_array = tool.line_trace_scipy(disp_rel_asym_1var, 6., 0.722607, 
+#                #                                             0.001, 1.2, 10., (None))
+#                #ax.plot(K_values, root_array, color='b', linewidth=lw)
+#                #
+#                #K_values, root_array = tool.line_trace_scipy(disp_rel_asym_1var, 8.2, 0.728825, 
+#                #                                             0.001, 1.6, 10., (None))
+#                #ax.plot(K_values, root_array, color='b', linewidth=lw)
+#                #
+#                ##Fast body modes
+#                #K_values, root_array = tool.line_trace_scipy(disp_rel_asym_1var, 2., 1.07888, 
+#                #                                             0.01, 0.25, 10., (None))
+#                #ax.plot(K_values, root_array, color='b', linewidth=lw)
+#                #
+#                #K_values, root_array = tool.line_trace_scipy(disp_rel_asym_1var, 6., 1.143, 
+#                #                                             0.01, 4.3, 10., (None))
+#                #ax.plot(K_values, root_array, color='b', linewidth=lw)
+#                #
+#                #K_values, root_array = tool.line_trace_scipy(disp_rel_asym_1var, 9., 1.18647, 
+#                #                                             0.01, 8.3, 10., (None))
+#                #ax.plot(K_values, root_array, color='b', linewidth=lw)
+#                #
+#                ###plot some circles at start of fast body modes
+#                #ax.plot(0.25, sf.c2, marker='o', markerfacecolor='None', markeredgecolor='b',
+#                #        markeredgewidth=lw)
+#                #ax.plot(4.3, sf.c2, marker='o', markerfacecolor='None', markeredgecolor='b',
+#                #        markeredgewidth=lw)
+#                #ax.plot(8.3, sf.c2, marker='o', markerfacecolor='None', markeredgecolor='b', 
+#                #        markeredgewidth=lw)        
+#                    
+#                #annotate each line
+#                s_labels_x = [1., 3.5, 6.]
+#                s_labels_y = [0.76, 0.77, 0.76]
+#                for i in range(len(s_labels_x)):
+#                    ax.annotate(r'$j={}$'.format(i+1), xy=(s_labels_x[i], s_labels_y[i]),
+#                                xycoords='data', annotation_clip=False, fontsize=15)
+#                f_labels_x = [1., 6., 9.]
+#                f_labels_y = [1.05, 1.09, 1.14]
+#                for i in range(len(f_labels_x)):
+#                    ax.annotate(r'$j={}$'.format(i+1), xy=(f_labels_x[i], f_labels_y[i]),
+#                                xycoords='data', annotation_clip=False, fontsize=15)
+#                
+#                ax.set_ylabel(r'$v_{ph}/c_0$', rotation=0, fontsize = 20)
+#                ax.set_xlabel(r'$k x_0$', fontsize = 20)
+#                ax.yaxis.labelpad = 17
+#                
+#                ax.set_xlim(K_range[0], K_range[-1])
+#                ax.set_ylim(0., 1.41)
+#                
+#                
+#                K_range_for_fill = np.append(K_range, K_range[-1]+0.1)
+#                ax.fill_between((Kmin-0.1, Kmax+0.1), (sf.c0,sf.c0), (sf.vA,sf.vA),
+#                                edgecolor='gray', linestyle='--', color='None', hatch='/',
+#                                linewidth=2)
+#                ax.fill_between((Kmin-0.1, Kmax+0.1), (sf.c2, sf.c2), (1.41, 1.41),
+#                                edgecolor='gray', linestyle='--', color='None', hatch='/',
+#                                linewidth=2)
+#            
+#                #ax.plot([K_range[0], K_range[-1]], [sf.vA, sf.vA], color = '0.5', linestyle='--', linewidth=2)
+#                ax.annotate(r'$v_A$', xy=(K_range[-1] + 0.03, sf.vA - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+#                ax.plot([K_range[0], K_range[-1]], [sf.cT, sf.cT], color = '0.5', linestyle='--', linewidth=2)
+#                ax.annotate(r'$c_T$', xy=(K_range[-1] + 0.03, sf.cT - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+#                #ax.plot([K_range[0], K_range[-1]], [sf.c0, sf.c0], color = '0.5', linestyle='--', linewidth=2)
+#                ax.annotate(r'$c_0$', xy=(K_range[-1] + 0.03, sf.c0 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+#                #ax.plot([K_range[0], K_range[-1]], [sf.c2, sf.c2], color = '0.5', linestyle='--', linewidth=2)
+#                ax.annotate(r'$c_2$', xy=(K_range[-1] + 0.03, sf.c2 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+#                ax.plot([K_range[0], K_range[-1]], [sf.c1(R1), sf.c1(R1)], color = '0.5', linestyle='--', linewidth=2)
+#                ax.annotate(r'$c_1$', xy=(K_range[-1] + 0.03, sf.c1(R1) - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+#                
+#                #Annotate some things
+#                ax.annotate('Leaky modes', xy=(Kmax/2. - 1, (sf.vA + sf.c0)/2. - 0.01),
+#                            xycoords='data', annotation_clip=False, fontsize=15)
+#                ax.annotate('Leaky modes', xy=(Kmax/2. - 1, (sf.c2 + 1.41) / 2. - 0.01),
+#                            xycoords='data', annotation_clip=False, fontsize=15)
+#        
+#        elif R1 == 2.:
+#            if mode in fast_surf_mode_options:
+#                # Line trace each solutions
+#                lw = 1.5
+#    #            ##Slow surface modes
+#    #            K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 1., 0.64,
+#    #                                                         0.01, 0.0001, Kmax, (None))
+#    #            ax.plot(K_values, root_array, color=colour(mode)[0], linewidth=lw, linestyle='--')
+#    #            
+#    #            K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 1., 0.72,
+#    #                                                         0.01, 0.0001, Kmax, (None))
+#    #            ax.plot(K_values, root_array, color=colour(mode)[1], linewidth=lw)
+#    #            
+#    #            ##Slow body modes
+#    #            K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 2., 0.9301, 
+#    #                                                         0.001, 0.2, 5.24, (None))
+#    #            ax.plot(K_values, root_array, color=colour(mode)[7], linewidth=lw, linestyle='--')
+#    #            #
+#    #            K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 2., 0.831416, 
+#    #                                                         0.001, 0.6, Kmax, (None))
+#    #            ax.plot(K_values, root_array, color=colour(mode)[6], linewidth=lw)
+#    #            
+#    #            K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 4., 0.848421, 
+#    #                                                         0.001, 0.9, Kmax, (None))
+#    #            ax.plot(K_values, root_array, color=colour(mode)[5], linewidth=lw, linestyle='--')
+#    #            #
+#    #            K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 4., 0.826689, 
+#    #                                                         0.001, 1.2, Kmax, (None))
+#    #            ax.plot(K_values, root_array, color=colour(mode)[4], linewidth=lw)
+#    #            
+#    #            K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 6., 0.837169, 
+#    #                                                         0.001, 1.6, Kmax, (None))
+#    #            ax.plot(K_values, root_array, color=colour(mode)[3], linewidth=lw, linestyle='--')
+#    #            
+#    #            K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 10.56, 0.866878, 
+#    #                                                         0.001, 2., Kmax, (None))
+#    #            ax.plot(K_values, root_array, color=colour(mode)[2], linewidth=lw)
+#    #            
+#    #            
+#    #            
+#    #            ##Fast surface modes
+#    #            K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 6., 1.01567, 
+#    #                                                         0.01, 5.24, Kmax, (None))
+#    #            ax.plot(K_values, root_array, color=colour(mode)[14], linewidth=lw, linestyle='--')
+#    #            #
+#    #            K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 6., 1.05754, 
+#    #                                                         0.01, 0.001, Kmax, (None))
+#    #            ax.plot(K_values, root_array, color=colour(mode)[15], linewidth=lw)
+#    #            
+#                
+#                ##plot some circles at start of fast surf modes
+#                
+#    #            ax.plot(0.6, sf.c2, marker='o', markerfacecolor='None', markeredgecolor=colour(mode)[15],
+#    #                    markeredgewidth=lw, markersize=10)
+#                ax.plot(5.24, sf.c0, marker='o', markerfacecolor='None', markeredgecolor=colour(mode)[14],
+#                        markeredgewidth=lw, markersize=10)    
+#                    
+#                ##annotate each line
+#                #s_labels_x = [1., 3.5, 6.]
+#                #s_labels_y = [0.76, 0.77, 0.76]
+#                #for i in range(len(s_labels_x)):
+#                #    ax.annotate(r'$j={}$'.format(i+1), xy=(s_labels_x[i], s_labels_y[i]),
+#                #                xycoords='data', annotation_clip=False, fontsize=15)
+#                #f_labels_x = [1., 6., 9.]
+#                #f_labels_y = [1.05, 1.09, 1.14]
+#                #for i in range(len(f_labels_x)):
+#                #    ax.annotate(r'$j={}$'.format(i+1), xy=(f_labels_x[i], f_labels_y[i]),
+#                #                xycoords='data', annotation_clip=False, fontsize=15)
+#                
+#                ax.set_ylabel(r'$v_{ph}/c_0$', rotation=0, fontsize = 20)
+#                ax.set_xlabel(r'$k x_0$', fontsize = 20)
+#                ax.yaxis.labelpad = 17
+#                
+#                ax.set_xlim(K_range[0], K_range[-1])
+#                ax.set_ylim(0., 1.41)
+#                
+#                ax.fill_between((Kmin-0.1, Kmax+0.1), (sf.c2, sf.c2), (1.42, 1.42),
+#                    edgecolor='gray', linestyle='-.', color='None', hatch='/',
+#                    linewidth=2)
+#    
+#                #ax.plot([K_range[0], K_range[-1]], [sf.vA, sf.vA], color = '0.5', linestyle='--', linewidth=2)
+#                ax.annotate(r'$v_A$', xy=(K_range[-1] + 0.03, sf.vA - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+#                ax.plot([K_range[0], K_range[-1]], [sf.vA, sf.vA], color = '0.5', linestyle='-.', linewidth=2)
+#                ax.plot([K_range[0], K_range[-1]], [sf.cT, sf.cT], color = '0.5', linestyle='-.', linewidth=2)
+#                ax.annotate(r'$c_T$', xy=(K_range[-1] + 0.03, sf.cT - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+#                ax.plot([K_range[0], K_range[-1]], [sf.c0, sf.c0], color = '0.5', linestyle='-.', linewidth=2)
+#                ax.annotate(r'$c_0$', xy=(K_range[-1] + 0.03, sf.c0 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+#                #ax.plot([K_range[0], K_range[-1]], [sf.c2, sf.c2], color = '0.5', linestyle='--', linewidth=2)
+#    #            ax.annotate(r'$c_2$', xy=(K_range[-1] + 0.03, sf.c2 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+#                ax.plot([K_range[0], K_range[-1]], [sf.c1(R1), sf.c1(R1)], color = '0.5', linestyle='-.', linewidth=2)
+#                ax.annotate(r'$c_1=c_2$', xy=(K_range[-1] + 0.03, sf.c1(R1) - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+#                
+#            
+#            else:
+#                # Line trace each solutions
+#                lw = 1.5
+#                #Slow surface modes
+#                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 1., 0.473,
+#                                                             0.01, 0.0001, Kmax, (None))
+#                ax.plot(K_values, root_array, color=colour(mode)[0], linewidth=lw, linestyle='--')
+#                
+#                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 1., 0.547,
+#                                                             0.01, 0.0001, Kmax, (None))
+#                ax.plot(K_values, root_array, color=colour(mode)[1], linewidth=lw)
+#                
+#                #Slow body modes
+#                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 1.84, 0.749326, 
+#                                                             0.001, 0.3, Kmax, (None))
+#                ax.plot(K_values, root_array, color=colour(mode)[7], linewidth=lw, linestyle='--')
+#                
+#                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 3.68, 0.741942, 
+#                                                             0.001, 0.8, Kmax, (None))
+#                ax.plot(K_values, root_array, color=colour(mode)[6], linewidth=lw)
+#                
+#                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 5.98, 0.746659, 
+#                                                             0.001, 1., Kmax, (None))
+#                ax.plot(K_values, root_array, color=colour(mode)[5], linewidth=lw, linestyle='--')
+#                
+#                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 5.98, 0.722183, 
+#                                                             0.001, 1.3, Kmax, (None))
+#                ax.plot(K_values, root_array, color=colour(mode)[4], linewidth=lw)
+#                
+#                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 8.74, 0.733764, 
+#                                                             0.001, 1.8, Kmax, (None))
+#                ax.plot(K_values, root_array, color=colour(mode)[3], linewidth=lw, linestyle='--')
+#                
+#                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 8.74, 0.719463, 
+#                                                             0.001, 2.3, Kmax, (None))
+#                ax.plot(K_values, root_array, color=colour(mode)[2], linewidth=lw)
+#            
+#                
+#                #Fast body modes
+#                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 2., 1.07888, 
+#                                                             0.01, 0.0001, Kmax, (None))
+#                ax.plot(K_values, root_array, color=colour(mode)[8], linewidth=lw)
+#                
+#                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 6., 1.143, 
+#                                                             0.01, 4.1, Kmax, (None))
+#                ax.plot(K_values, root_array, color=colour(mode)[9], linewidth=lw, linestyle='--')
+#                
+#                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 9., 1.18647, 
+#                                                             0.01, 8.2, Kmax, (None))
+#                ax.plot(K_values, root_array, color=colour(mode)[10], linewidth=lw)
+#                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 15., 1.15692, 
+#                                                             0.01, 12.2, Kmax, (None))
+#                ax.plot(K_values, root_array, color=colour(mode)[11], linewidth=lw, linestyle='--')
+#                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 19.8, 1.156, 
+#                                                             0.01, 16.2, Kmax, (None))
+#                ax.plot(K_values, root_array, color=colour(mode)[12], linewidth=lw)
+#                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 23.4, 1.16675, 
+#                                                             0.01, 20.2, Kmax, (None))
+#                ax.plot(K_values, root_array, color=colour(mode)[13], linewidth=lw, linestyle='--')
+#                
+#                ##plot some circles at start of fast body modes
+#                K_marker = [4.1, 8.2, 12.2, 16.2, 20.2]
+#                y_marker = [sf.c2] * len(K_marker)
+#                for i in range(len(K_marker)):
+#                    ax.plot(K_marker[i], y_marker[i], marker='o', markersize=10, 
+#                            markerfacecolor='None', markeredgecolor=colour(mode)[9 + i], markeredgewidth=lw)
+#                        
+#                ##annotate each line
+#                #s_labels_x = [1., 3.5, 6.]
+#                #s_labels_y = [0.76, 0.77, 0.76]
+#                #for i in range(len(s_labels_x)):
+#                #    ax.annotate(r'$j={}$'.format(i+1), xy=(s_labels_x[i], s_labels_y[i]),
+#                #                xycoords='data', annotation_clip=False, fontsize=15)
+#                #f_labels_x = [1., 6., 9.]
+#                #f_labels_y = [1.05, 1.09, 1.14]
+#                #for i in range(len(f_labels_x)):
+#                #    ax.annotate(r'$j={}$'.format(i+1), xy=(f_labels_x[i], f_labels_y[i]),
+#                #                xycoords='data', annotation_clip=False, fontsize=15)
+#                
+#                #ax.set_ylabel(r'$v_{ph}$', rotation=0, fontsize = 20)
+#                ax.set_ylabel(r'$v_{ph}/c_0$', fontsize = 20)
+#                ax.set_xlabel(r'$k x_0$', fontsize = 20)
+#                #ax.yaxis.labelpad = 17
+#                
+#                ax.set_xlim(K_range[0], K_range[-1])
+#                ax.set_ylim(0., 1.41)
+#                
+#                
+#                K_range_for_fill = np.append(K_range, K_range[-1]+0.1)
+#                ax.fill_between((Kmin-0.1, Kmax+0.1), (sf.c0,sf.c0), (sf.vA,sf.vA),
+#                                edgecolor='gray', linestyle='-.', color='None', hatch='/',
+#                                linewidth=2)
+#                ax.fill_between((Kmin-0.1, Kmax+0.1), (sf.c2, sf.c2), (1.42, 1.42),
+#                                edgecolor='gray', linestyle='-.', color='None', hatch='/',
+#                                linewidth=2)
+#                
+#                #ax.plot([K_range[0], K_range[-1]], [sf.vA, sf.vA], color = '0.5', linestyle='--', linewidth=2)
+#                ax.annotate(r'$v_A$', xy=(K_range[-1] + 0.03, sf.vA - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+#                ax.plot([K_range[0], K_range[-1]], [sf.cT, sf.cT], color = '0.5', linestyle='-.', linewidth=2)
+#                ax.annotate(r'$c_T$', xy=(K_range[-1] + 0.03, sf.cT - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+#                #ax.plot([K_range[0], K_range[-1]], [sf.c0, sf.c0], color = '0.5', linestyle='--', linewidth=2)
+#                ax.annotate(r'$c_0$', xy=(K_range[-1] + 0.03, sf.c0 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+#                #ax.plot([K_range[0], K_range[-1]], [sf.c2, sf.c2], color = '0.5', linestyle='--', linewidth=2)
+#    #            ax.annotate(r'$c_2$', xy=(K_range[-1] + 0.03, sf.c2 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+#                ax.plot([K_range[0], K_range[-1]], [sf.c1(R1), sf.c1(R1)], color = '0.5', linestyle='-.', linewidth=2)
+#                ax.annotate(r'$c_1=c_2$', xy=(K_range[-1] + 0.03, sf.c1(R1) - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+#    
+#        
+#        elif R1 == 1.5:
+#            if mode in fast_surf_mode_options:
+#                # Line trace each solutions
+#                lw = 1.5
+#                ##Slow surface modes
+#                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 1., 0.64,
+#                                                             0.01, 0.0001, Kmax, (None))
+#                ax.plot(K_values, root_array, color=colour(mode)[0], linewidth=lw, linestyle='--')
+#                
+#                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 1., 0.72,
+#                                                             0.01, 0.0001, Kmax, (None))
+#                ax.plot(K_values, root_array, color=colour(mode)[1], linewidth=lw)
+#                
+#                ##Slow body modes
+#                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 2., 0.9301, 
+#                                                             0.001, 0.2, 4.199, (None))
+#                ax.plot(K_values, root_array, color=colour(mode)[7], linewidth=lw, linestyle='--')
+#                #
+#                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 2., 0.831416, 
+#                                                             0.001, 0.6, Kmax, (None))
+#                ax.plot(K_values, root_array, color=colour(mode)[6], linewidth=lw)
+#                
+#                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 4., 0.848421, 
+#                                                             0.001, 0.9, Kmax, (None))
+#                ax.plot(K_values, root_array, color=colour(mode)[5], linewidth=lw, linestyle='--')
+#                #
+#                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 4., 0.826689, 
+#                                                             0.001, 1.2, Kmax, (None))
+#                ax.plot(K_values, root_array, color=colour(mode)[4], linewidth=lw)
+#                
+#                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 6., 0.837169, 
+#                                                             0.001, 1.6, Kmax, (None))
+#                ax.plot(K_values, root_array, color=colour(mode)[3], linewidth=lw, linestyle='--')
+#                
+#                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 10.56, 0.866878, 
+#                                                             0.001, 2., Kmax, (None))
+#                ax.plot(K_values, root_array, color=colour(mode)[2], linewidth=lw)
+#                
+#                #
+#                #
+#                ##Fast surface modes
+#                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 6., 1.01567, 
+#                                                             0.01, 4.19, Kmax, (None))
+#                ax.plot(K_values, root_array, color=colour(mode)[14], linewidth=lw, linestyle='--')
+#                #
+#                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 6., 1.05754, 
+#                                                             0.01, 0.6, Kmax, (None))
+#                ax.plot(K_values, root_array, color=colour(mode)[15], linewidth=lw)
+#                
+#                
+#                ##plot some circles at start of fast surf modes
+#                
+#                ax.plot(0.6, sf.c2, marker='o', markerfacecolor='None', markeredgecolor=colour(mode)[15],
+#                        markeredgewidth=lw, markersize=10)
+#                ax.plot(4.19, sf.c0, marker='o', markerfacecolor='None', markeredgecolor=colour(mode)[14],
+#                        markeredgewidth=lw, markersize=10)    
+#                    
+#                ##annotate each line
+#                #s_labels_x = [1., 3.5, 6.]
+#                #s_labels_y = [0.76, 0.77, 0.76]
+#                #for i in range(len(s_labels_x)):
+#                #    ax.annotate(r'$j={}$'.format(i+1), xy=(s_labels_x[i], s_labels_y[i]),
+#                #                xycoords='data', annotation_clip=False, fontsize=15)
+#                #f_labels_x = [1., 6., 9.]
+#                #f_labels_y = [1.05, 1.09, 1.14]
+#                #for i in range(len(f_labels_x)):
+#                #    ax.annotate(r'$j={}$'.format(i+1), xy=(f_labels_x[i], f_labels_y[i]),
+#                #                xycoords='data', annotation_clip=False, fontsize=15)
+#                
+#                ax.set_ylabel(r'$v_{ph}/c_0$', rotation=0, fontsize = 20)
+#                ax.set_xlabel(r'$k x_0$', fontsize = 20)
+#                ax.yaxis.labelpad = 17
+#                
+#                ax.set_xlim(K_range[0], K_range[-1])
+#                ax.set_ylim(0., 1.41)
+#                
+#                ax.fill_between((Kmin-0.1, Kmax+0.1), (sf.c2, sf.c2), (1.42, 1.42),
+#                    edgecolor='gray', linestyle='-.', color='None', hatch='/',
+#                    linewidth=2)
+#    
+#                #ax.plot([K_range[0], K_range[-1]], [sf.vA, sf.vA], color = '0.5', linestyle='--', linewidth=2)
+#                ax.annotate(r'$v_A$', xy=(K_range[-1] + 0.03, sf.vA - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+#                ax.plot([K_range[0], K_range[-1]], [sf.vA, sf.vA], color = '0.5', linestyle='-.', linewidth=2)
+#                ax.plot([K_range[0], K_range[-1]], [sf.cT, sf.cT], color = '0.5', linestyle='-.', linewidth=2)
+#                ax.annotate(r'$c_T$', xy=(K_range[-1] + 0.03, sf.cT - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+#                ax.plot([K_range[0], K_range[-1]], [sf.c0, sf.c0], color = '0.5', linestyle='-.', linewidth=2)
+#                ax.annotate(r'$c_0$', xy=(K_range[-1] + 0.03, sf.c0 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+#                #ax.plot([K_range[0], K_range[-1]], [sf.c2, sf.c2], color = '0.5', linestyle='--', linewidth=2)
+#                ax.annotate(r'$c_2$', xy=(K_range[-1] + 0.03, sf.c2 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+#                ax.plot([K_range[0], K_range[-1]], [sf.c1(R1), sf.c1(R1)], color = '0.5', linestyle='-.', linewidth=2)
+#                ax.annotate(r'$c_1$', xy=(K_range[-1] + 0.03, sf.c1(R1) - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+#                
+#            
+#            else:
+#                # Line trace each solutions
+#                lw = 1.5
+#                #Slow surface modes
+#                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 1., 0.473,
+#                                                             0.01, 0.0001, Kmax, (None))
+#                ax.plot(K_values, root_array, color=colour(mode)[0], linewidth=lw, linestyle='--')
+#                
+#                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 1., 0.547,
+#                                                             0.01, 0.0001, Kmax, (None))
+#                ax.plot(K_values, root_array, color=colour(mode)[1], linewidth=lw)
+#    #            
+#    #            #Slow body modes
+#    #            K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 2., 0.760531, 
+#    #                                                         0.001, 0.2, Kmax, (None))
+#    #            ax.plot(K_values, root_array, color=colour(mode)[7], linewidth=lw, linestyle='--')
+#    #            
+#    #            K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 3., 0.726328, 
+#    #                                                         0.001, 0.5, Kmax, (None))
+#    #            ax.plot(K_values, root_array, color=colour(mode)[6], linewidth=lw)
+#    #            
+#    #            K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 6., 0.747901, 
+#    #                                                         0.001, 0.8, Kmax, (None))
+#    #            ax.plot(K_values, root_array, color=colour(mode)[5], linewidth=lw, linestyle='--')
+#    #            
+#    #            K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 6., 0.722958, 
+#    #                                                         0.001, 1.1, Kmax, (None))
+#    #            ax.plot(K_values, root_array, color=colour(mode)[4], linewidth=lw)
+#    #            
+#    #            K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 8.2, 0.729129, 
+#    #                                                         0.001, 1.5, Kmax, (None))
+#    #            ax.plot(K_values, root_array, color=colour(mode)[3], linewidth=lw, linestyle='--')
+#    #            
+#    #            K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 9., 0.721913, 
+#    #                                                         0.001, 2., Kmax, (None))
+#    #            ax.plot(K_values, root_array, color=colour(mode)[2], linewidth=lw)
+#            
+#                
+#                #Fast body modes
+#                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 2., 1.07888, 
+#                                                             0.01, 0.45, Kmax, (None))
+#                ax.plot(K_values, root_array, color=colour(mode)[8], linewidth=lw)
+#                
+#                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 6., 1.143, 
+#                                                             0.01, 4.5, Kmax, (None))
+#                ax.plot(K_values, root_array, color=colour(mode)[9], linewidth=lw, linestyle='--')
+#                
+#                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 9., 1.18647, 
+#                                                             0.01, 8.45, Kmax, (None))
+#                ax.plot(K_values, root_array, color=colour(mode)[10], linewidth=lw)
+#                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 15., 1.15692, 
+#                                                             0.01, 12.49, Kmax, (None))
+#                ax.plot(K_values, root_array, color=colour(mode)[11], linewidth=lw, linestyle='--')
+#                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 19.8, 1.156, 
+#                                                             0.01, 16.5673, Kmax, (None))
+#                ax.plot(K_values, root_array, color=colour(mode)[12], linewidth=lw)
+#                K_values, root_array = tool.line_trace_scipy(disp_rel_asym_2var, 23.4, 1.16675, 
+#                                                             0.01, 20.6113, Kmax, (None))
+#                ax.plot(K_values, root_array, color=colour(mode)[13], linewidth=lw, linestyle='--')
+#                
+#                ##plot some circles at start of fast body modes
+#                K_marker = [0.45, 4.5, 8.45, 12.49, 16.5673, 20.6113]
+#                y_marker = [sf.c2] * len(K_marker)
+#                for i in range(len(K_marker)):
+#                    ax.plot(K_marker[i], y_marker[i], marker='o', markersize=10, 
+#                            markerfacecolor='None', markeredgecolor=colour(mode)[8 + i], markeredgewidth=lw)
+#                        
+#                ##annotate each line
+#                #s_labels_x = [1., 3.5, 6.]
+#                #s_labels_y = [0.76, 0.77, 0.76]
+#                #for i in range(len(s_labels_x)):
+#                #    ax.annotate(r'$j={}$'.format(i+1), xy=(s_labels_x[i], s_labels_y[i]),
+#                #                xycoords='data', annotation_clip=False, fontsize=15)
+#                #f_labels_x = [1., 6., 9.]
+#                #f_labels_y = [1.05, 1.09, 1.14]
+#                #for i in range(len(f_labels_x)):
+#                #    ax.annotate(r'$j={}$'.format(i+1), xy=(f_labels_x[i], f_labels_y[i]),
+#                #                xycoords='data', annotation_clip=False, fontsize=15)
+#                
+#                #ax.set_ylabel(r'$v_{ph}$', rotation=0, fontsize = 20)
+#                ax.set_ylabel(r'$v_{ph}/c_0$', fontsize = 20)
+#                ax.set_xlabel(r'$k x_0$', fontsize = 20)
+#                #ax.yaxis.labelpad = 17
+#                
+#                ax.set_xlim(K_range[0], K_range[-1])
+#                ax.set_ylim(0., 1.41)
+#                
+#                
+#                K_range_for_fill = np.append(K_range, K_range[-1]+0.1)
+#                ax.fill_between((Kmin-0.1, Kmax+0.1), (sf.c0,sf.c0), (sf.vA,sf.vA),
+#                                edgecolor='gray', linestyle='-.', color='None', hatch='/',
+#                                linewidth=2)
+#                ax.fill_between((Kmin-0.1, Kmax+0.1), (sf.c2, sf.c2), (1.42, 1.42),
+#                                edgecolor='gray', linestyle='-.', color='None', hatch='/',
+#                                linewidth=2)
+#                
+#                #ax.plot([K_range[0], K_range[-1]], [sf.vA, sf.vA], color = '0.5', linestyle='--', linewidth=2)
+#                ax.annotate(r'$v_A$', xy=(K_range[-1] + 0.03, sf.vA - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+#                ax.plot([K_range[0], K_range[-1]], [sf.cT, sf.cT], color = '0.5', linestyle='-.', linewidth=2)
+#                ax.annotate(r'$c_T$', xy=(K_range[-1] + 0.03, sf.cT - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+#                #ax.plot([K_range[0], K_range[-1]], [sf.c0, sf.c0], color = '0.5', linestyle='--', linewidth=2)
+#                ax.annotate(r'$c_0$', xy=(K_range[-1] + 0.03, sf.c0 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+#                #ax.plot([K_range[0], K_range[-1]], [sf.c2, sf.c2], color = '0.5', linestyle='--', linewidth=2)
+#                ax.annotate(r'$c_2$', xy=(K_range[-1] + 0.03, sf.c2 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+#                ax.plot([K_range[0], K_range[-1]], [sf.c1(R1), sf.c1(R1)], color = '0.5', linestyle='-.', linewidth=2)
+#                ax.annotate(r'$c_1$', xy=(K_range[-1] + 0.03, sf.c1(R1) - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+#    
+#        ax.plot(K, W, 'go', markersize=10)
+##        plt.tight_layout() # seems to make it chop the sides off with this
+#        plt.savefig('D:\\my_work\\projects\\Asymmetric_slab\\Python\\visualisations\\3D_vis_dispersion_diagrams\\'
+#                    + mode + '.png')
+##        plt.close()
     
     
     ##############################################################################
@@ -1311,15 +1402,7 @@ for mode_ind in [17]: #for an individual mode
                     boundary_r.actor.property.lighting = False
                     boundary_r.actor.property.shading = False
                     boundary_l.actor.property.lighting = False
-                    boundary_l.actor.property.shading = False
-#                    src.image_data.point_data.add_array(np.angle(Phi).T.ravel())
-#                    src.image_data.point_data.get_array(1).name = 'angle'
-#                    contour2 = mlab.pipeline.set_active_attribute(boundary_l,
-#                                    point_scalars='angle')
-                                           
-#                    src2 = mlab.pipeline.set_active_attribute(src,
-#                                    point_scalars='scalar')
-                                           
+                    boundary_l.actor.property.shading = False                                           
                                            
                                                  
             if show_density == True or show_density_pert == True:
