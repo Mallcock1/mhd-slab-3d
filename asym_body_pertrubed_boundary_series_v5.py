@@ -5,8 +5,7 @@
 #sys.path.append('D:\\my_work\\projects\\Asymmetric_slab\\Python\\visualisations\\ffmpeg')
 ##sys.path.append(u'W7_DATA/my_work/projects/Asymmetric_slab/Python/visualisations/ffmpeg/')
 
-import pdb # pause code for debugging at pdb.set_trace()
-import gc
+#import pdb # pause code for debugging at pdb.set_trace()
 
 import numpy as np
 
@@ -21,15 +20,9 @@ import matplotlib
 from mayavi import mlab
 #mlab.options.offscreen = True
 
-#from mayavi.tools.engine_manager import engine_manager
-#from mayavi.core.registry import registry
-
-
-
 import img2vid as i2v
 
 ###############################################################################
-
 
 # What mode do you want? OPTIONS:
 mode_options = ['slow-kink-surf', 'slow-saus-surf', 'slow-saus-body-3',
@@ -60,7 +53,6 @@ slow_body_mode_options = slow_body_1_mode_options + slow_body_2_mode_options + s
 fast_body_1_mode_options = ['fast-kink-body-1', 'fast-saus-body-1']
 fast_body_2_mode_options = ['fast-kink-body-2', 'fast-saus-body-2']
 fast_body_3_mode_options = ['fast-kink-body-3', 'fast-saus-body-3']
-
 
 
 
@@ -97,12 +89,12 @@ show_boundary = False
 
 
 # Set to True if you would like the dispersion diagram with this mode highlighted.
-#show_dispersion = False
-show_dispersion = True
+show_dispersion = False
+#show_dispersion = True
 
 # Wanna see the animation? Of course you do
-show_animation = False
-#show_animation = True
+#show_animation = False
+show_animation = True
 
 # Uncomment the parametrer you would like to see
 # No density perturbations or vel/disp pert for alfven modes.
@@ -122,9 +114,6 @@ show_axes = True
 #show_axis_labels = True
 show_mini_axis = True
 show_boundary = True
-
-if np.array([show_density, show_vel_front_pert, show_vel_top_pert]).any()  == True:
-    raise NameError('Cannot show density or vel/disp pert for this mode')
 
 # Video resolution
 #res = (1920,1080)
@@ -146,6 +135,9 @@ make_video = False
 #######
 ########
 #########
+
+#if np.array([show_density, show_vel_front_pert, show_vel_top_pert]).any()  == True:
+#    raise NameError('Cannot show density or vel/disp pert for this mode')
 
 #for mode_ind in range(14): # for all others. REMEMBER SBB pparameters
 #for mode_ind in [14,15]: #for fast body surf. REMEMBER SBS parameters
@@ -648,7 +640,8 @@ for mode_ind in [14]: #for an individual mode
                     rho_vals_split = np.split(rho_vals, [nz - (nz / nt) * t_ind], axis=1)
                     
                     rho_vals_t = np.concatenate((rho_vals_split[1], rho_vals_split[0]), axis=1)                         
-                
+            
+            #Masking points
             if show_mag_vec == True:
                 bxvals_mask_front_t = np.copy(bxvals_t)
                 byvals_mask_front_t = np.copy(byvals_t)
@@ -1189,10 +1182,10 @@ for mode_ind in [14]: #for an individual mode
                              + prefix + str(t_ind+1) + '.png')
                 mlab.close(fig)
             
-        if make_video == True:
-            i2v.image2video(prefix=prefix, output_name=prefix+'_video', out_extension='mp4', fps=20, n_loops=4, delete_images=True, delete_old_videos=True, res=res[1])
-    
         t = t + (t_end - t_start) / nt
+        
+    if make_video == True:
+        i2v.image2video(prefix=prefix, output_name=prefix+'_video', out_extension='mp4', fps=20, n_loops=4, delete_images=True, delete_old_videos=True, res=res[1])
         
     print('Finished ' + mode)
     

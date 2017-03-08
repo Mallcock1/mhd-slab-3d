@@ -467,3 +467,71 @@ def rho_pert(mode, x, z, t, W, K, R1):
             rho_vals[i,j] = rho_hat_vals[i,j] * np.exp(1j*(z[j]-t))
     return rho_vals
     
+##############################################################################
+    
+def W_amd(x, vA_func):
+    return vA_func(x)
+    
+def vxhat_amd(x):
+    return np.zeros(len(x), dtype=complex)
+    
+def vyhat_amd(x, vA_func):
+    return alfven_amplitude * vA_func(x)    
+
+def vzhat_amd(x):
+    return np.zeros(len(x), dtype=complex)
+    
+def vzhat_dash_amd(x):
+    return np.zeros(len(x), dtype=complex)
+    
+def vx_amd(x, z, t):
+    return np.outer(vxhat_amd(x), np.exp(1j*(z-t)))
+
+def vy_amd(x, z, t, vA_func):
+    return np.outer(vyhat_amd(x, vA_func), np.exp(1j*(z-t)))
+
+def vz_amd(x, z, t):
+    return np.outer(vzhat_amd(x), np.exp(1j*(z-t)))
+    
+def xix_hat_amd(x, W):
+    return vxhat_amd(x) / W
+    
+def xiy_hat_amd(x, W, vA_func):
+    return vyhat_amd(x, vA_func) / W
+    
+def xiz_hat_amd(x, W):
+    return vzhat_amd(x) / W
+
+def xix_amd(x, z, t, W):
+    return np.outer(1j*xix_hat_amd(x, W), np.exp(1j*(z-t)))
+
+def xiy_amd(x, z, t, W, vA_func):
+    return np.outer(1j*xiy_hat_amd(x, vA_func), np.exp(1j*(z-t)))
+
+def xiz_amd(x, z, t, W, vA_func):
+    return np.outer(1j*xiz_hat_amd(x, W), np.exp(1j*(z-t)))
+    
+def bxhat_amd(x, vA_func):
+    return -(B0/vA_func(x)) * vxhat_amd(x)
+
+def byhat_amd(x, vA_func):
+    return -(B0/vA_func(x)) * vyhat_amd(x, vA_func)
+
+def bzhat_amd(x, W):
+    return -1j * (B0/W) * vzhat_dash_amd(x)
+    
+def bx_amd(x, z, t, vA_func):
+    bxhat_amd_md = bxhat_amd(x, vA_func) * np.exp(1j*W_amd(x, vA_func)*t)
+    return np.outer(bxhat_amd_md, np.exp(1j*(z)))
+    
+def by_amd(x, z, t, vA_func):
+    byhat_amd_md = byhat_amd(x, vA_func) * np.exp(1j*W_amd(x, vA_func)*t)
+    return np.outer(byhat_amd_md, np.exp(1j*(z)))
+    
+def bz_amd(x, z, t, W, vA_func):
+    bzhat_amd_md = bzhat_amd(x, W) * np.exp(1j*W_amd(x, vA_func)*t)
+    return np.outer(bzhat_amd_md, np.exp(1j*(z)))
+
+def bz_eq_amd(x, z):
+    return B0 * np.ones((len(x), len(z)), dtype=complex)
+    
