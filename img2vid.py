@@ -39,16 +39,32 @@ def image2video(filepath=None, prefix='', in_extension='png',
     overlay_image_swat = 'ffmpeg -y -i '+filepath+output_name+'_overlay.'+out_extension+' -i \
     swat_logo2.png -filter_complex "[1:0] scale=-1:'+logo_height+' [logo]; \
     [0:0][logo] overlay=main_w-overlay_w:main_h-'+logo_height+'" -c:a copy \
-    '+filepath+output_name+'_overlay2.'+out_extension        
+    '+filepath+output_name+'_overlay2.'+out_extension
 
-
+    cover_page_rescale = 'ffmpeg -i '+filepath+'template.'+in_extension+' -vf scale=1616:866 '+filepath+'template.'+in_extension
+    
+    cover_page_video = 'ffmpeg -y -framerate '+str(in_fps)+' -i \
+    '+filepath+'template.'+in_extension+' \
+    -c:v libx264 -r '+str(out_fps)+' -pix_fmt yuv420p \
+    '+filepath+'template.'+out_extension
+    
+    if n_loops != 1:
+        video_name = filepath+output_name+'_overlay2_looped'
+    else:
+        video_name = filepath+output_name+'_overlay2'
+        
+    cover_page_list = "(@echo file '"+filepath+'template.'+out_extension+"'& @echo file \
+'"+video_name+'.'+out_extension+"') > "+filepath+'cover_page_list.txt'
+    
+    cover_page_concat = 'ffmpeg -y -f concat -safe 0 -i '+filepath+'cover_page_list.txt \
+    -c copy '+video_name+'_cp.'+out_extension
 
 # create .txt file to loop through
     loop_list = "(for /l %i in (1,1,"+str(n_loops)+") do @echo file \
-    '"+filepath+output_name+'_overlay2.'+out_extension+"') > "+filepath+'mylist.txt'
+    '"+filepath+output_name+'_overlay2.'+out_extension+"') > "+filepath+'loop_list.txt'
     
 # loop vid n_loops times
-    loop = 'ffmpeg -y -f concat -safe 0 -i '+filepath+'mylist.txt -c copy \
+    loop = 'ffmpeg -y -f concat -safe 0 -i '+filepath+'loop_list.txt -c copy \
     '+filepath+output_name+'_overlay2_looped.'+out_extension
 
     
@@ -56,13 +72,21 @@ def image2video(filepath=None, prefix='', in_extension='png',
     if overlay == True:
         os.system(overlay_image_sp2rc)
         os.system(overlay_image_swat)
-    if n_loops!=1:
+    if n_loops != 1:
         os.system(loop_list)
         os.system(loop)
+    if cover_page == True:
+        os.system(cover_page_rescale)
+        os.system(cover_page_video)
+        os.system(cover_page_list)
+        os.system(cover_page_concat)
     if delete_images == True:
         os.system(delete_images_cmd)
     if delete_old_videos == True:
         os.system(delete_old_videos_cmd)
     
+image2video(prefix='amd_front-top-side_alfven-mixed-driver', output_name='video', 
+            out_extension='mp4', fps=10, n_loops=4, delete_images=False, delete_old_videos=False,
+            cover_page=True)
 
 #img2vid(prefix=prefix, output_name='video', out_extension='mp4', fps=20, n_loops=4, delete_images=True)
