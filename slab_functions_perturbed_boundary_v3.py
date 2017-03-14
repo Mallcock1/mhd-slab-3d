@@ -485,15 +485,15 @@ def vzhat_dash_amd(x):
     return np.zeros(len(x), dtype=complex)
     
 def vx_amd(x, z, t, vA_func):
-    vxhat_amd_md = vxhat_amd(x) * np.exp(1j*W_amd(x, vA_func)*t)
+    vxhat_amd_md = vxhat_amd(x) * np.exp(-1j*W_amd(x, vA_func)*t)
     return np.outer(vxhat_amd_md, np.exp(1j*z))
 
 def vy_amd(x, z, t, vA_func):
-    vyhat_amd_md = vyhat_amd(x, vA_func) * np.exp(1j*W_amd(x, vA_func)*t)
+    vyhat_amd_md = vyhat_amd(x, vA_func) * np.exp(-1j*W_amd(x, vA_func)*t)
     return np.outer(vyhat_amd_md, np.exp(1j*z))
 
 def vz_amd(x, z, t, vA_func):
-    vzhat_amd_md = vzhat_amd(x) * np.exp(1j*W_amd(x, vA_func)*t)
+    vzhat_amd_md = vzhat_amd(x) * np.exp(-1j*W_amd(x, vA_func)*t)
     return np.outer(vzhat_amd_md, np.exp(1j*z))
     
 def xix_hat_amd(x, vA_func):
@@ -506,15 +506,15 @@ def xiz_hat_amd(x, vA_func):
     return vzhat_amd(x) / W_amd(x, vA_func)
 
 def xix_amd(x, z, t, vA_func):
-    xix_hat_amd_md = xix_hat_amd(x, vA_func) * np.exp(1j*W_amd(x, vA_func)*t)
+    xix_hat_amd_md = xix_hat_amd(x, vA_func) * np.exp(-1j*W_amd(x, vA_func)*t)
     return np.outer(1j*xix_hat_amd_md, np.exp(1j*z))
 
 def xiy_amd(x, z, t, vA_func):
-    xiy_hat_amd_md = xiy_hat_amd(x, vA_func) * np.exp(1j*W_amd(x, vA_func)*t)
+    xiy_hat_amd_md = xiy_hat_amd(x, vA_func) * np.exp(-1j*W_amd(x, vA_func)*t)
     return np.outer(1j*xiy_hat_amd_md, np.exp(1j*z))
 
 def xiz_amd(x, z, t, vA_func):
-    xiz_hat_amd_md = xiz_hat_amd(x, vA_func) * np.exp(1j*W_amd(x, vA_func)*t)
+    xiz_hat_amd_md = xiz_hat_amd(x, vA_func) * np.exp(-1j*W_amd(x, vA_func)*t)
     return np.outer(1j*xiz_hat_amd_md, np.exp(1j*z))
     
 def bxhat_amd(x, vA_func):
@@ -527,15 +527,15 @@ def bzhat_amd(x, vA_func):
     return -1j * (B0/W_amd(x, vA_func)) * vzhat_dash_amd(x)
     
 def bx_amd(x, z, t, vA_func):
-    bxhat_amd_md = bxhat_amd(x, vA_func) * np.exp(1j*W_amd(x, vA_func)*t)
+    bxhat_amd_md = bxhat_amd(x, vA_func) * np.exp(-1j*W_amd(x, vA_func)*t)
     return np.outer(bxhat_amd_md, np.exp(1j*z))
     
 def by_amd(x, z, t, vA_func):
-    byhat_amd_md = byhat_amd(x, vA_func) * np.exp(1j*W_amd(x, vA_func)*t)
+    byhat_amd_md = byhat_amd(x, vA_func) * np.exp(-1j*W_amd(x, vA_func)*t)
     return np.outer(byhat_amd_md, np.exp(1j*z))
     
 def bz_amd(x, z, t, vA_func):
-    bzhat_amd_md = bzhat_amd(x, vA_func) * np.exp(1j*W_amd(x, vA_func)*t)
+    bzhat_amd_md = bzhat_amd(x, vA_func) * np.exp(-1j*W_amd(x, vA_func)*t)
     return np.outer(bzhat_amd_md, np.exp(1j*z))
 
 def bz_eq_amd(x, z):

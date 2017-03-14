@@ -20,6 +20,8 @@ import matplotlib
 from mayavi import mlab
 #mlab.options.offscreen = True
 
+import mayavi_plotting_functions as mpf
+
 import img2vid as i2v
 
 ###############################################################################
@@ -1063,107 +1065,20 @@ for mode_ind in [14]: #for an individual mode
                 vector_cut_plane_front.glyph.glyph_source.glyph_position = 'center'
             
             #Set viewing angle
-            if view == 'front-parallel':
-                field.scene.z_plus_view()
-                field.scene.parallel_projection = True
-                field.scene.camera.zoom(1.65) # Parallel projection zoom is done in this way, different to perspective projection
-            if view == 'front':
-                field.scene.z_plus_view()
-                field.scene.camera.view_angle = 21.
-            if view == 'top':
-                field.scene.camera.position = [53.107781380642741, 523.35670183503294, 50.948508989758153]
-                field.scene.camera.focal_point = [50.821544647216797, 50.413210511207581, 50.159849926829338]
-                field.scene.camera.view_angle = 14.
-                field.scene.camera.view_up = [-0, 0, -1]
-                field.scene.camera.clipping_range = [368.83220888718552, 605.15289607145894]
-            if view == 'top-parallel':
-                field.scene.parallel_projection = True
-                field.scene.camera.zoom(2.)
-                field.scene.camera.position = [53.107781380642741, 523.35670183503294, 50.948508989758153]
-                field.scene.camera.focal_point = [50.821544647216797, 50.413210511207581, 50.159849926829338]
-    #            field.scene.camera.view_angle = 14.
-                field.scene.camera.view_up = [-0, 0, -1]
-                field.scene.camera.clipping_range = [368.83220888718552, 605.15289607145894]
-            if view == 'front-top':
-                field.scene.camera.position = [48.764852970361503, 223.64895482756552, 498.62216293273576]
-                field.scene.camera.focal_point = [50.821544647216797, 46., 50.159849926829338]
-                field.scene.camera.view_angle = 16.0
-                field.scene.camera.view_up = [-0.002418791139063777, 0.93281530024654913, -0.36034672896443193]
-                field.scene.camera.clipping_range = [345.97885880654962, 650.71850659694883]
-             
-            if view == 'front-side':
-                field.scene.camera.position = [126.6 * nx / 100., 60.5 * nz / 100., 524.8 * ny / 100.]
-                field.scene.camera.focal_point = [50.8 * nx / 100., 50.4 * nz / 100., 50.2 * ny / 100.]
-                field.scene.camera.view_angle = 14.
-                field.scene.camera.view_up = [-0.01695 * nx / 100., 0.999686 * nz / 100., -0.0184509 * ny / 100.]
-                field.scene.camera.clipping_range = [366.21083458278804, 631.07664372567524]
+            mpf.view_position(field, view, nx, ny, nz)
             
             if show_axes == True:
-                axes = mlab.axes(field, nb_labels=1, line_width=3)
-                axes.axes.label_format = ''
-                if show_axis_labels == True:
-                    axes.axes.x_label = 'x'
-                    if view == 'front-parallel':
-                        axes.axes.y_label = 'z'
-                        axes.axes.z_label = ''
-                    elif view == 'top-parallel':
-                        axes.axes.y_label = ''
-                        axes.axes.z_label = 'y'
-                    else:
-                        axes.axes.y_label = 'z'
-                        axes.axes.z_label = 'y'
-                else:
-                    axes.axes.x_label = ''
-                    axes.axes.y_label = ''
-                    axes.axes.z_label = ''
+                mpf.axes(field, show_axis_labels, view)
                     
             if show_mini_axis == True:
-                
-                oa = mlab.orientation_axes(xlabel='x', ylabel='z', zlabel='y')
-                oa.marker.set_viewport(0,0,0.25,0.25) # minx, miny, maxx, maxy
+                mpf.mini_axes()
     
             if uniform_light == True:
                 #uniform lighting, but if we turn shading of volumes off, we are ok without
-                field.scene.light_manager.number_of_lights = 6
-                
-                camera_light1 = field.scene.light_manager.lights[0]
-                camera_light1.activate = True
-                camera_light1.intensity = 0.7
-                camera_light1.elevation = 90.
-                camera_light1.azimuth = 0.
-            
-                camera_light2 = field.scene.light_manager.lights[1]
-                camera_light2.activate = True
-                camera_light2.intensity = 0.7
-                camera_light2.elevation = -90.
-                camera_light2.azimuth = 0.
-            
-                camera_light3 = field.scene.light_manager.lights[2]
-                camera_light3.activate = True
-                camera_light3.intensity = 0.7
-                camera_light3.elevation = 0.
-                camera_light3.azimuth = -90
-            
-                camera_light4 = field.scene.light_manager.lights[3]
-                camera_light4.activate = True
-                camera_light4.intensity = 0.7
-                camera_light4.elevation = 0.
-                camera_light4.azimuth = 0.
-            
-                camera_light5 = field.scene.light_manager.lights[4]
-                camera_light5.activate = True
-                camera_light5.intensity = 0.7
-                camera_light5.elevation = 0.
-                camera_light5.azimuth = 90.
-            
-                camera_light6 = field.scene.light_manager.lights[5]
-                camera_light6.activate = True
-                camera_light6.intensity = 0.7
-                camera_light6.elevation = 0.
-                camera_light6.azimuth = 180.
+                mpf.uniform_lighting(field)
             
             #Black background
-            field.scene.background = (0., 0., 0.)
+            mpf.background_colour(field, (0., 0., 0.))
     
             
             

@@ -24,8 +24,12 @@ def image2video(filepath=None, prefix='', in_extension='png',
 
     delete_images_cmd = 'DEL "'+filepath+prefix+'*.'+in_extension+'"'
     
-    delete_old_videos_cmd = 'DEL "'+filepath+output_name+'.'+out_extension+'" \
-    "'+filepath+output_name+'_overlay.'+out_extension+'" "'+filepath+output_name+'_overlay2.'+out_extension+'"'
+    if n_loops == 1:
+        delete_old_videos_cmd = 'DEL "'+filepath+output_name+'.'+out_extension+'" \
+        "'+filepath+output_name+'_overlay.'+out_extension+'"'
+    else:
+        delete_old_videos_cmd = 'DEL "'+filepath+output_name+'.'+out_extension+'" \
+        "'+filepath+output_name+'_overlay.'+out_extension+'" "'+filepath+output_name+'_overlay2.'+out_extension+'"'
 
 
     logo_height = str(int(100. * res / 1080.))
@@ -41,19 +45,22 @@ def image2video(filepath=None, prefix='', in_extension='png',
     [0:0][logo] overlay=main_w-overlay_w:main_h-'+logo_height+'" -c:a copy \
     '+filepath+output_name+'_overlay2.'+out_extension
 
-    cover_page_rescale = 'ffmpeg -i '+filepath+'template.'+in_extension+' -vf scale=1616:866 '+filepath+'template.'+in_extension
+
+    cover_page_filename = 'template'
+    
+    cover_page_rescale = 'ffmpeg -y -i '+filepath+cover_page_filename+'.'+in_extension+' -vf scale=1616:866 '+filepath+cover_page_filename+'_coverpage.'+in_extension    
     
     cover_page_video = 'ffmpeg -y -framerate '+str(in_fps)+' -i \
-    '+filepath+'template.'+in_extension+' \
+    '+filepath+cover_page_filename+'_coverpage.'+in_extension+' \
     -c:v libx264 -r '+str(out_fps)+' -pix_fmt yuv420p \
-    '+filepath+'template.'+out_extension
+    '+filepath+cover_page_filename+'_coverpage.'+out_extension
     
     if n_loops != 1:
         video_name = filepath+output_name+'_overlay2_looped'
     else:
         video_name = filepath+output_name+'_overlay2'
         
-    cover_page_list = "(@echo file '"+filepath+'template.'+out_extension+"'& @echo file \
+    cover_page_list = "(@echo file '"+filepath+cover_page_filename+'_coverpage.'+out_extension+"'& @echo file \
 '"+video_name+'.'+out_extension+"') > "+filepath+'cover_page_list.txt'
     
     cover_page_concat = 'ffmpeg -y -f concat -safe 0 -i '+filepath+'cover_page_list.txt \
@@ -85,8 +92,8 @@ def image2video(filepath=None, prefix='', in_extension='png',
     if delete_old_videos == True:
         os.system(delete_old_videos_cmd)
     
-image2video(prefix='amd_front-top-side_alfven-mixed-driver', output_name='video', 
-            out_extension='mp4', fps=10, n_loops=4, delete_images=False, delete_old_videos=False,
-            cover_page=True)
+#image2video(prefix='amd_front-top-side_alfven-mixed-driver', output_name='video', 
+#            out_extension='mp4', fps=10, n_loops=4, delete_images=False, delete_old_videos=False,
+#            cover_page=True)
 
 #img2vid(prefix=prefix, output_name='video', out_extension='mp4', fps=20, n_loops=4, delete_images=True)

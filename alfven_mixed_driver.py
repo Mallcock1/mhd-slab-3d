@@ -18,12 +18,14 @@ from pysac.plot.mayavi_seed_streamlines import SeedStreamline
 from mayavi import mlab
 #mlab.options.offscreen = True
 
+import mayavi_plotting_functions as mpf
+
 import img2vid as i2v
 
 ###############################################################################
 
 vA2 = 1.
-vA1 = 0.5
+vA1 = 0.9
 
 def vA_func(x):
     return (vA2 - vA1)/4 * x + vA1
@@ -43,8 +45,8 @@ view_options = ['front', 'front-parallel', 'top', 'top-parallel' 'front-top',
 view = 'front-top-side'
 
 # Uniform lighting?
-#uniform_light = True
-uniform_light = False
+uniform_light = True
+#uniform_light = False
 
 show_mag = False
 show_mag_scale = False
@@ -74,7 +76,7 @@ res = tuple(101 * np.array((16,9)))
 #res = tuple(51 * np.array((16,9)))
 #res = tuple(21 * np.array((16,9)))
 
-number_of_frames = 10
+number_of_frames = 1
 
 make_video = False
 #make_video = True
@@ -457,46 +459,10 @@ for t_ind in range(nt):
 
     if uniform_light == True:
         #uniform lighting, but if we turn shading of volumes off, we are ok without
-        field.scene.light_manager.number_of_lights = 6
-        
-        camera_light1 = field.scene.light_manager.lights[0]
-        camera_light1.activate = True
-        camera_light1.intensity = 0.7
-        camera_light1.elevation = 90.
-        camera_light1.azimuth = 0.
-    
-        camera_light2 = field.scene.light_manager.lights[1]
-        camera_light2.activate = True
-        camera_light2.intensity = 0.7
-        camera_light2.elevation = -90.
-        camera_light2.azimuth = 0.
-    
-        camera_light3 = field.scene.light_manager.lights[2]
-        camera_light3.activate = True
-        camera_light3.intensity = 0.7
-        camera_light3.elevation = 0.
-        camera_light3.azimuth = -90
-    
-        camera_light4 = field.scene.light_manager.lights[3]
-        camera_light4.activate = True
-        camera_light4.intensity = 0.7
-        camera_light4.elevation = 0.
-        camera_light4.azimuth = 0.
-    
-        camera_light5 = field.scene.light_manager.lights[4]
-        camera_light5.activate = True
-        camera_light5.intensity = 0.7
-        camera_light5.elevation = 0.
-        camera_light5.azimuth = 90.
-    
-        camera_light6 = field.scene.light_manager.lights[5]
-        camera_light6.activate = True
-        camera_light6.intensity = 0.7
-        camera_light6.elevation = 0.
-        camera_light6.azimuth = 180.
+        mpf.uniform_lighting(field)
     
     #Black background
-    field.scene.background = (0., 0., 0.)
+    mpf.background_colour(field, (0., 0., 0.))
 
         
         
@@ -509,16 +475,18 @@ for t_ind in range(nt):
 #        engine_manager.current_engine = None
 #        registry.engines = {}
         
-#    if make_video == True:
-    prefix = 'amd_' + view + '_' + mode
-    mlab.savefig('D:\\my_work\\projects\\Asymmetric_slab\\Python\\visualisations\\3D_vis_animations\\'
+    if make_video == True:
+        prefix = 'amd_' + view + '_' + mode
+        mlab.savefig('D:\\my_work\\projects\\Asymmetric_slab\\Python\\visualisations\\3D_vis_animations\\'
                  + prefix + str(t_ind+1) + '.png')
-    mlab.close(fig)
+        mlab.close(fig)
         
     t = t + (t_end - t_start) / nt
     del vxvals_t
 if make_video == True:
-    i2v.image2video(prefix=prefix, output_name=prefix+'_video', out_extension='mp4', fps=20, n_loops=4, delete_images=True, delete_old_videos=True, res=res[1])
-
+#    i2v.image2video(prefix=prefix, output_name=prefix+'_video', out_extension='mp4', fps=20, n_loops=4, delete_images=True, delete_old_videos=True, res=res[1])
+    i2v.image2video(prefix='amd_front-top-side_alfven-mixed-driver', output_name='video', 
+                    out_extension='mp4', fps=20, n_loops=1, delete_images=True,
+                    delete_old_videos=True, cover_page=True)
 print('Finished ' + mode)
     
