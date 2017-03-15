@@ -9,7 +9,7 @@
 
 import numpy as np
 
-import slab_functions_perturbed_boundary_v3 as sf
+import slab_functions as sf
 
 import move_seed_points as msp
 

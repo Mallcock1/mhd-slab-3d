@@ -9,8 +9,8 @@
 
 import numpy as np
 
-import Toolbox as tool
-import slab_functions_perturbed_boundary_v3 as sf
+import toolbox as tool
+import slab_functions as sf
 
 from pysac.plot.mayavi_seed_streamlines import SeedStreamline
 
@@ -282,8 +282,6 @@ for mode_ind in [14]: #for an individual mode
         plt.savefig('D:\\my_work\\projects\\Asymmetric_slab\\Python\\visualisations\\3D_vis_dispersion_diagrams\\'
                     + 'R1_' + str(R1) + '_' + mode + '.png')   
 #        plt.close()
-                    
-
     
     ##############################################################################
     

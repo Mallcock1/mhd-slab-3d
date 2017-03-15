@@ -6,7 +6,7 @@ Created on Wed Mar 15 11:52:53 2017
 """
 
 import numpy as np
-import slab_functions_perturbed_boundary_v3 as sf
+import slab_functions as sf
 import Toolbox as tool
 import matplotlib.pyplot as plt
 import matplotlib
