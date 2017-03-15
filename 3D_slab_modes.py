@@ -9,11 +9,12 @@
 
 import numpy as np
 import toolbox as tool
-import slab_perturbation_functions as sf
+import slab_functions as sf
 from pysac.plot.mayavi_seed_streamlines import SeedStreamline
 import matplotlib.pyplot as plt
 from mayavi import mlab
 #mlab.options.offscreen = True
+import move_seed_points as msp
 import mayavi_plotting_functions as mpf
 import dispersion_diagram
 import img2vid as i2v
@@ -106,12 +107,12 @@ show_boundary = False
 
 
 # Set to True if you would like the dispersion diagram with this mode highlighted.
-#show_dispersion = False
-show_dispersion = True
+show_dispersion = False
+#show_dispersion = True
 
 # Wanna see the animation? Of course you do
-show_animation = False
-#show_animation = True
+#show_animation = False
+show_animation = True
 
 # Uncomment the parametrer you would like to see
 # No density perturbations or vel/disp pert for alfven modes.
@@ -125,7 +126,7 @@ show_mag_vec = True
 #show_vel_front_pert = True
 #show_vel_top = True
 #show_vel_top_pert = True
-#show_disp_top = True
+show_disp_top = True
 #show_disp_front = True
 show_axes = True
 #show_axis_labels = True
@@ -316,7 +317,7 @@ for mode_ind in [14]: #for an individual mode
         if show_disp_top == True or show_disp_front == True:
             xixvals = np.real(np.repeat(sf.xix(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
             xizvals = np.real(np.repeat(sf.xiz(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
-            xiyvals = np.real(np.repeat(sf.xiz(mode, xvals, zvals, t, K)[:, :, np.newaxis], ny, axis=2))
+            xiyvals = np.real(np.repeat(sf.xiy(mode, xvals, zvals, t, W, K)[:, :, np.newaxis], ny, axis=2))
         
                                 
         if show_vel_front == True or show_vel_top == True:
@@ -544,14 +545,17 @@ for mode_ind in [14]: #for an individual mode
                     for i in range(0,nx_seed):
                         x = start_x + (i * dx_res) * x_spacing
                         y = start_y + (j * dy_res) * y_spacing
-                        z = 1. + (t_start + t_ind*(t_end - t_start)/nt)/zmax * nz
+                        z = 1. #+ (t_start + t_ind*(t_end - t_start)/nt)/zmax * nz
                         seeds.append((x,z,y))
                 
                 if mode in alfven_mode_options:
                     for i in range(nx_seed):
                         del seeds[0]
                         del seeds[-1]
-                                                             
+                        
+                seeds = msp.move_seeds(seeds, xixvals_t, xiyvals_t, xizvals_t, 
+                                       [xmin, ymin, zmin], [xmax, ymax, zmax])
+                                       
                 field_lines = SeedStreamline(seed_points=seeds)
                 field_lines.stream_tracer.integration_direction='both'
                 field_lines.streamline_type = 'tube'
