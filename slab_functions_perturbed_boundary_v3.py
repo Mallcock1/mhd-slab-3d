@@ -30,8 +30,51 @@ mode_options = ['slow-kink-surf', 'slow-saus-surf', 'slow-saus-body-3',
                 'fast-kink-body-1', 'fast-saus-body-2', 'fast-kink-body-2',
                 'fast-saus-body-3', 'fast-kink-body-3', 'fast-kink-surf',
                 'fast-saus-surf', 'shear-alfven', 'shear-alfven-broadband']
-                
-alfven_mode_options = ['shear-alfven', 'shear-alfven-broadband']
+
+alfven_mode_options = []
+kink_mode_options = []
+saus_mode_options = []
+slow_surf_mode_options = []
+fast_surf_mode_options = []
+fast_kink_mode_options = []
+fast_saus_mode_options = []
+slow_body_1_mode_options = []
+slow_body_2_mode_options = []
+slow_body_3_mode_options = []
+slow_body_mode_options = []
+fast_body_1_mode_options = []
+fast_body_2_mode_options = []
+fast_body_3_mode_options = []
+
+for mode in mode_options:
+    if 'alfven' in mode:
+        alfven_mode_options.append(mode)
+    if 'kink' in mode:
+        kink_mode_options.append(mode)
+    if 'saus' in mode:
+        saus_mode_options.append(mode)
+    if 'slow' in mode and 'surf' in mode:
+        slow_surf_mode_options.append(mode)
+    if 'fast' in mode and 'surf' in mode:
+        fast_surf_mode_options.append(mode)
+    if 'fast' in mode and 'kink' in mode:
+        fast_kink_mode_options.append(mode)
+    if 'fast' in mode and 'saus' in mode:
+        fast_saus_mode_options.append(mode)
+    if 'fast' in mode and 'body-1' in mode:
+        fast_body_1_mode_options.append(mode)
+    if 'fast' in mode and 'body-2' in mode:
+        fast_body_2_mode_options.append(mode)
+    if 'fast' in mode and 'body-3' in mode:
+        fast_body_3_mode_options.append(mode)
+    if 'slow' in mode and 'body-1' in mode:
+        slow_body_1_mode_options.append(mode)
+    if 'slow' in mode and 'body-2' in mode:
+        slow_body_2_mode_options.append(mode)
+    if 'slow' in mode and 'body-3' in mode:
+        slow_body_3_mode_options.append(mode)
+    if 'slow' in mode and 'body' in mode:
+        slow_body_mode_options.append(mode)
 
 def alfven_shear_width(mode, K):
     if mode == 'shear-alfven':
@@ -40,25 +83,6 @@ def alfven_shear_width(mode, K):
         return [-K, K]
     
 alfven_amplitude = 0.3
-                
-kink_mode_options = ['slow-kink-surf', 'slow-kink-body-1', 'slow-kink-body-2',
-                     'slow-kink-body-3', 'fast-kink-body-1', 'fast-kink-body-2',
-                     'fast-kink-body-3', 'fast-kink-surf']
-saus_mode_options = ['slow-saus-surf', 'slow-saus-body-1', 'slow-saus-body-2',
-                     'slow-saus-body-3', 'fast-saus-body-1', 'fast-saus-body-2',
-                     'fast-saus-body-3', 'fast-saus-surf']
-slow_surf_mode_options = ['slow-kink-surf', 'slow-saus-surf']
-fast_surf_mode_options = ['fast-kink-surf', 'fast-saus-surf']
-fast_kink_mode_options = ['fast-kink-surf', 'fast-kink-body-3', 'fast-kink-body-2', 
-                          'fast-kink-body 1']
-fast_saus_mode_options = ['fast-saus-surf', 'fast-saus-body-3', 'fast-saus-body-2', 
-                          'fast-saus-body-1']
-slow_body_1_mode_options = ['slow-kink-body-1', 'slow-saus-body-1']
-slow_body_2_mode_options = ['slow-kink-body-2', 'slow-saus-body-2']
-slow_body_3_mode_options = ['slow-kink-body-3', 'slow-saus-body-3']
-fast_body_1_mode_options = ['fast-kink-body-1', 'fast-saus-body-1']
-fast_body_2_mode_options = ['fast-kink-body-2', 'fast-saus-body-2']
-fast_body_3_mode_options = ['fast-kink-body-3', 'fast-saus-body-3']
 
 R2 = 2.
 

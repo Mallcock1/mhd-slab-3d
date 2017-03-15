@@ -4,7 +4,7 @@ Created on Tue Mar 14 16:16:47 2017
 
 @author: Matt
 """
-
+import numpy as np
 from mayavi import mlab
 
 def uniform_lighting(scene):
@@ -114,7 +114,7 @@ def view_position(scene, view, nx, ny, nz):
         scene.scene.camera.clipping_range = [366.21083458278804, 631.07664372567524]
         
 
-def mask_points(var_x, var_y, var_z, mod=4, front_or_top):
+def mask_points(var_x, var_y, var_z, front_or_top, mod, mod_y):
     if front_or_top == 'front':
         var_x_mask = np.copy(var_x)
         var_y_mask = np.copy(var_y)
@@ -126,8 +126,7 @@ def mask_points(var_x, var_y, var_z, mod=4, front_or_top):
                     if (i%mod) != 1 or (j%mod) != 1:
                         var_x_mask[i,j,k] = 0.
                         var_z_mask[i,j,k] = 0.
-                        
-    if front_or_top == 'top':
+    elif front_or_top == 'top':
         var_x_mask = np.copy(var_x)
         var_y_mask = np.copy(var_y)
         var_z_mask = np.copy(var_z)
@@ -135,21 +134,18 @@ def mask_points(var_x, var_y, var_z, mod=4, front_or_top):
         for i in range(var_x_mask.shape[0]):
             for j in range(var_x_mask.shape[1]):
                 for k in range(var_x_mask.shape[2]):
-                    if (i%mod) != 1 or (k%mod_top) != 1:
+                    if (i%mod) != 1 or (k%mod_y) != 1:
                         var_x_mask[i,j,k] = 0.
                         var_z_mask[i,j,k] = 0.
-                        
+    else:
+        raise ValueError("front_or_top can be only 'front' or 'top'")
     return [var_x_mask, var_y_mask, var_z_mask]
 
-def vector_cut_plane(vec_field, scale_factor=4, spacing):
-        
+def vector_cut_plane(vec_field, front_or_top, ny, nz, y_spacing, scale_factor=4):
     scale_factor = 4. # scale factor for direction field vectors
-    
     if front_or_top == 'front':
-        vecfield_front = mlab.pipeline.vector_field(var_x, var_y, var_z, figure=fig)
-        vecfield_front.spacing = spacing
-        vector_cut_plane_front = mlab.pipeline.vector_cut_plane(vdirfield_front, 
-                                                          scale_factor=scalefactor)
+        vector_cut_plane_front = mlab.pipeline.vector_cut_plane(vec_field, 
+                                                                scale_factor=scale_factor)
         vector_cut_plane_front.implicit_plane.widget.normal_to_z_axis = True
         vector_cut_plane_front.implicit_plane.widget.origin = np.array([ 50., 25.91140784, (ny-1)*y_spacing])
         vector_cut_plane_front.glyph.color_mode = 'no_coloring'
@@ -157,74 +153,86 @@ def vector_cut_plane(vec_field, scale_factor=4, spacing):
         vector_cut_plane_front.glyph.glyph_source.glyph_source = vector_cut_plane_front.glyph.glyph_source.glyph_dict['arrow_source']
         vector_cut_plane_front.glyph.glyph_source.glyph_position = 'center'
     
-    if show_mag_vec == True:
-        bdirfield_front = mlab.pipeline.vector_field(bxvals_mask_front_t, bzvals_mask_front_t,
-                                                     byvals_mask_front_t, name="B field front",
-                                                     figure=fig)
-        bdirfield_front.spacing = spacing
-        vector_cut_plane_front = mlab.pipeline.vector_cut_plane(bdirfield_front, 
-                                                          scale_factor=scalefactor)
-        vector_cut_plane_front.implicit_plane.widget.normal_to_z_axis = True
-        vector_cut_plane_front.implicit_plane.widget.origin = np.array([ 50., 25.91140784, (ny-1)*y_spacing])
-        vector_cut_plane_front.glyph.color_mode = 'no_coloring'
-        vector_cut_plane_front.implicit_plane.widget.enabled = False
-        vector_cut_plane_front.glyph.glyph_source.glyph_source = vector_cut_plane_front.glyph.glyph_source.glyph_dict['arrow_source']
-        vector_cut_plane_front.glyph.glyph_source.glyph_position = 'center'
-    
-    
-    if show_vel_top == True or show_vel_top_pert == True:
-        vdirfield_top = mlab.pipeline.vector_field(vxvals_mask_top_t, np.zeros_like(vxvals_mask_top_t),
-                                                    vyvals_mask_top_t, name="V field top",
-                                                    figure=fig)
-        vdirfield_top.spacing = spacing
-        vector_cut_plane_top = mlab.pipeline.vector_cut_plane(vdirfield_top, 
-                                                          scale_factor=scalefactor)
+    if front_or_top == 'top':
+        vector_cut_plane_top = mlab.pipeline.vector_cut_plane(vec_field, 
+                                                              scale_factor=scale_factor)
         vector_cut_plane_top.implicit_plane.widget.normal_to_y_axis = True
         vector_cut_plane_top.glyph.color_mode = 'no_coloring'
         vector_cut_plane_top.implicit_plane.widget.origin = np.array([ 50.,nz-0.1, 50.5])
         vector_cut_plane_top.implicit_plane.widget.enabled = False
         vector_cut_plane_top.glyph.glyph_source.glyph_source = vector_cut_plane_top.glyph.glyph_source.glyph_dict['arrow_source']
         vector_cut_plane_top.glyph.glyph_source.glyph_position = 'center'
-        
-    if show_vel_front == True or show_vel_front_pert == True:
-        vdirfield_front = mlab.pipeline.vector_field(vxvals_mask_front_t, vzvals_mask_front_t,
-                                                     vyvals_mask_front_t, name="V field front",
-                                                     figure=fig)
-        vdirfield_front.spacing = spacing
-        vector_cut_plane_front = mlab.pipeline.vector_cut_plane(vdirfield_front, 
-                                                          scale_factor=scalefactor)
-        vector_cut_plane_front.implicit_plane.widget.normal_to_z_axis = True
-        vector_cut_plane_front.implicit_plane.widget.origin = np.array([ 50., 25.91140784, (ny-1)*y_spacing])
-        vector_cut_plane_front.glyph.color_mode = 'no_coloring'
-        vector_cut_plane_front.implicit_plane.widget.enabled = False
-        vector_cut_plane_front.glyph.glyph_source.glyph_source = vector_cut_plane_front.glyph.glyph_source.glyph_dict['arrow_source']
-        vector_cut_plane_front.glyph.glyph_source.glyph_position = 'center'
     
-    if show_disp_top == True:
-        xidirfield_top = mlab.pipeline.vector_field(xixvals_mask_top_t, np.zeros_like(xixvals_mask_top_t),
-                                                    xiyvals_mask_top_t, name="Xi field top",
-                                                    figure=fig)
-        xidirfield_top.spacing = spacing
-        vector_cut_plane_top = mlab.pipeline.vector_cut_plane(xidirfield_top, 
-                                                          scale_factor=scalefactor)
-        vector_cut_plane_top.implicit_plane.widget.normal_to_y_axis = True
-        vector_cut_plane_top.glyph.color_mode = 'no_coloring'
-        vector_cut_plane_top.implicit_plane.widget.origin = np.array([ 50.,nz-0.1, 50.5])
-        vector_cut_plane_top.implicit_plane.widget.enabled = False
-        vector_cut_plane_top.glyph.glyph_source.glyph_source = vector_cut_plane_top.glyph.glyph_source.glyph_dict['arrow_source']
-        vector_cut_plane_top.glyph.glyph_source.glyph_position = 'center'
-        
-    if show_disp_front == True:
-        xidirfield_front = mlab.pipeline.vector_field(xixvals_mask_front_t, xizvals_mask_front_t,
-                                                     xiyvals_mask_front_t, name="Xi field front",
-                                                     figure=fig)
-        xidirfield_front.spacing = spacing
-        vector_cut_plane_front = mlab.pipeline.vector_cut_plane(xidirfield_front, 
-                                                          scale_factor=scalefactor)
-        vector_cut_plane_front.implicit_plane.widget.normal_to_z_axis = True
-        vector_cut_plane_front.implicit_plane.widget.origin = np.array([ 50., 25.91140784, (ny-1)*y_spacing])
-        vector_cut_plane_front.glyph.color_mode = 'no_coloring'
-        vector_cut_plane_front.implicit_plane.widget.enabled = False
-        vector_cut_plane_front.glyph.glyph_source.glyph_source = vector_cut_plane_front.glyph.glyph_source.glyph_dict['arrow_source']
-        vector_cut_plane_front.glyph.glyph_source.glyph_position = 'center'
+    
+def volume_red_blue(scalar_field, scalar_data):
+    minr = scalar_data.min()
+    maxr = scalar_data.max()
+    
+    #Volume for high pressure
+    rvmin1 = minr + 0.5 * (maxr - minr)
+    rvmax1 = minr + 1. * (maxr - minr)
+    rvol1 = mlab.pipeline.volume(scalar_field, vmin=rvmin1, vmax=rvmax1)
+    
+    # Changing the ctf:
+    from tvtk.util.ctf import ColorTransferFunction
+    ctf1 = ColorTransferFunction()
+    ctf1.add_rgb_point(rvmin1, 1., 1., 0.5)
+    ctf1.add_rgb_point(rvmin1 + 0.4 * (rvmax1 - rvmin1), 1, 0.3, 0.1)
+    ctf1.add_rgb_point(rvmax1, 1., 0., 0.)
+    # ...
+    rvol1._volume_property.set_color(ctf1)
+    rvol1._ctf = ctf1
+    rvol1.update_ctf = True
+    
+    #Changing the opacity of the volume vol1
+    ## Changing the otf:
+    from tvtk.util.ctf import PiecewiseFunction
+    otf = PiecewiseFunction()
+    otf.add_point(rvmin1, 0)
+    otf.add_point(rvmin1 + (rvmax1-rvmin1)*0.2, 0.012)
+    otf.add_point(rvmin1 + (rvmax1-rvmin1)*0.5, 0.05)
+    otf.add_point(rvmax1, 0.15)
+    ##vol1._otf = otf
+    rvol1._volume_property.set_scalar_opacity(otf)
+    
+    # exempt volume from shading and improve overall look by increasing opacity
+    rvol1.volume_property.shade = False
+    rvol1.volume_property.scalar_opacity_unit_distance = 2.0
+    
+    
+    #Volume for low pressure
+    rvmin2 = minr + 0. * (maxr - minr)
+    rvmax2 = minr + 0.5 * (maxr - minr)
+    rvol2 = mlab.pipeline.volume(scalar_field, vmin=rvmin2, vmax=rvmax2)
+    
+    # Changing the ctf:
+    ctf2 = ColorTransferFunction()
+    ctf2.add_rgb_point(rvmin2, 0., 0.5, 1.)
+    ctf2.add_rgb_point(rvmin2 + 0.6 * (rvmax2 - rvmin2), 0.1, 0.7, 1.)
+    ctf2.add_rgb_point(rvmax2, 0.5, 1., 1.)
+    # ...
+    rvol2._volume_property.set_color(ctf2)
+    rvol2._ctf = ctf2
+    rvol2.update_ctf = True
+
+    #Changing the opacity of the volume vol2
+    ## Changing the otf:
+    otf = PiecewiseFunction()
+    otf.add_point(rvmax2, 0)
+    otf.add_point(rvmax2 - (rvmax2-rvmin2)*0.2, 0.012)
+    otf.add_point(rvmax2 - (rvmax2-rvmin2)*0.5, 0.05)
+    otf.add_point(rvmin2, 0.15)
+    ##vol1._otf = otf
+    rvol2._volume_property.set_scalar_opacity(otf)
+    
+    # exempt volume from shading and improve overall look by increasing opacity
+    rvol2.volume_property.shade = False
+    rvol2.volume_property.scalar_opacity_unit_distance = 2.0
+    
+def colormap_fade(module_manager, fade_value=20):
+    lut = module_manager.scalar_lut_manager.lut.table.to_array()
+    lut[:fade_value,-1] = np.linspace(0, 255, fade_value)
+    lut[-fade_value:,-1] = np.linspace(255, 0, fade_value)
+    module_manager.scalar_lut_manager.lut.table = lut
+    
     

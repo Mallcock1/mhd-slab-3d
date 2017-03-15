@@ -340,6 +340,7 @@ for t_ind in range(nt):
             module_manager.scalar_lut_manager.lut.table = mag_lut
 #                    module_manager.scalar_lut_manager.data_range=[-1500,500]
         if show_mag_fade == True:
+            mpf.colormap_fade(module_manager, fade_value=20)
             mag_lut = module_manager.scalar_lut_manager.lut.table.to_array()
             mag_fade_value = 20
             mag_lut[:mag_fade_value,-1] = np.linspace(0, 255, mag_fade_value)
