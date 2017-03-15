@@ -8,18 +8,12 @@
 #import pdb # pause code for debugging at pdb.set_trace()
 
 import numpy as np
-
-import slab_functions as sf
-
+import slab_perturbation_functions as sf
 import move_seed_points as msp
-
 from pysac.plot.mayavi_seed_streamlines import SeedStreamline
-
 from mayavi import mlab
 #mlab.options.offscreen = True
-
 import mayavi_plotting_functions as mpf
-
 import img2vid as i2v
 
 ###############################################################################

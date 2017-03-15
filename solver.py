@@ -2,7 +2,7 @@
 from scipy.optimize import newton
 import numpy as np
 import scipy as sc
-import slab_functions as sf
+import slab_perturbation_functions as sf
 
 
 def solver_forwards(func, W_init, W_fin, ntries):

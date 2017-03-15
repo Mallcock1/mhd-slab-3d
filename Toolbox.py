@@ -1,4 +1,4 @@
-import Toolbox_extended as t
+import toolbox_extended as t
 import numpy as np
 import scipy.optimize as sp
 #import mpmath as mp
