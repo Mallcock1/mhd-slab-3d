@@ -1,5 +1,5 @@
 # mhd-slab-3d
-3D visualisations of MHD waves in asymmetric and symmetric slabs
+3D visualisations of MHD waves in asymmetric an asymmetric slab
 
 Prerequisites:
 Python 2 (https://www.python.org/download/releases/2.7.2/),
