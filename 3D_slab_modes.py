@@ -121,13 +121,13 @@ show_animation = True
 show_mag = True
 #show_mag_scale = True #must also have show_mag = True
 show_mag_fade = True
-show_mag_vec = True
+#show_mag_vec = True
 #show_vel_front = True
 #show_vel_front_pert = True
 #show_vel_top = True
 #show_vel_top_pert = True
 show_disp_top = True
-#show_disp_front = True
+show_disp_front = True
 show_axes = True
 #show_axis_labels = True
 show_mini_axis = True
@@ -139,7 +139,7 @@ res = tuple(101 * np.array((16,9)))
 #res = tuple(51 * np.array((16,9)))
 #res = tuple(21 * np.array((16,9)))
 
-number_of_frames = 1#50
+number_of_frames = 1#20
 
 make_video = False
 #make_video = True
@@ -526,36 +526,42 @@ for mode_ind in [14]: #for an individual mode
                 #                                        colormap='YlGnBu',
                 #                                        vmin=0, vmax=14)
             if show_mag == True:
-                # Create an array of points for which we want mag field seeds
-                nx_seed = 9 #7
-                ny_seed = 13 #10
-                start_x = 30. #38
-                end_x = nx+1 - start_x
-                start_y = 1.
-                if ny == 20:
-                    end_y = ny - 1 #ny-2 for ny = 100
-                elif ny == 100:
-                    end_y = ny - 2
-                else:
-                    end_y = ny - 1
-                seeds=[]
-                dx_res = (end_x - start_x) / (nx_seed-1)
-                dy_res = (end_y - start_y) / (ny_seed-1)
-                for j in range(0,ny_seed):
-                    for i in range(0,nx_seed):
-                        x = start_x + (i * dx_res) * x_spacing
-                        y = start_y + (j * dy_res) * y_spacing
-                        z = 1. #+ (t_start + t_ind*(t_end - t_start)/nt)/zmax * nz
-                        seeds.append((x,z,y))
+                if t_ind == 0:
+                    # Create an array of points for which we want mag field seeds
+                    nx_seed = 9 #7
+                    ny_seed = 13 #10
+                    start_x = 30. #38
+                    end_x = nx+1 - start_x
+                    start_y = 1.
+                    if ny == 20:
+                        end_y = ny - 1 #ny-2 for ny = 100
+                    elif ny == 100:
+                        end_y = ny - 2
+                    else:
+                        end_y = ny - 1
+                    seeds=[]
+                    dx_res = (end_x - start_x) / (nx_seed-1)
+                    dy_res = (end_y - start_y) / (ny_seed-1)
+                    for j in range(0,ny_seed):
+                        for i in range(0,nx_seed):
+                            x = start_x + (i * dx_res) * x_spacing
+                            y = start_y + (j * dy_res) * y_spacing
+                            z = nz / 2. + 2. #1. + (t_start + t_ind*(t_end - t_start)/nt)/zmax * nz
+                            seeds.append((x,z,y))
+                    
+                    if mode in alfven_mode_options:
+                        for i in range(nx_seed):
+                            del seeds[0]
+                            del seeds[-1]
+           
+                    original_seeds = msp.original_seeds(seeds, xixvals_t, xiyvals_t, xizvals_t, 
+                                                        [xmin, ymin, zmin], [xmax, ymax, zmax])
                 
-                if mode in alfven_mode_options:
-                    for i in range(nx_seed):
-                        del seeds[0]
-                        del seeds[-1]
-                        
                 seeds = msp.move_seeds(seeds, xixvals_t, xiyvals_t, xizvals_t, 
                                        [xmin, ymin, zmin], [xmax, ymax, zmax])
-                                       
+#                print(seeds[0])
+                
+                
                 field_lines = SeedStreamline(seed_points=seeds)
                 field_lines.stream_tracer.integration_direction='both'
                 field_lines.streamline_type = 'tube'
@@ -566,7 +572,7 @@ for mode_ind in [14]: #for an individual mode
 #                module_manager.scalar_lut_manager.lut_mode = 'Reds'
 #                module_manager.scalar_lut_manager.data_range=[-30,25]
                 
-                field_lines.stream_tracer.maximum_propagation = 500.
+                field_lines.stream_tracer.maximum_propagation = nz
                 field_lines.tube_filter.number_of_sides = 20
                 field_lines.tube_filter.radius = 0.7
                 field_lines.tube_filter.capping = True
@@ -664,7 +670,7 @@ for mode_ind in [14]: #for an individual mode
         
     if make_video == True:
         i2v.image2video(prefix=prefix, output_name=prefix+'_video', 
-                        out_extension='mp4', fps=20, n_loops=4, 
+                        out_extension='mp4', fps=10, n_loops=4, 
                         delete_images=True, delete_old_videos=True, res=res[1])
         
     print('Finished ' + mode)
