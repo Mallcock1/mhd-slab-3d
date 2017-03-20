@@ -24,8 +24,6 @@ vA1 = 0.9
 def vA_func(x):
     return (vA2 - vA1)/4 * x + vA1
 
-max_amplitude = 1.
-
 
 # Which angle shall we view from?
 view_options = ['front', 'front-parallel', 'top', 'top-parallel' 'front-top',
@@ -39,8 +37,8 @@ view_options = ['front', 'front-parallel', 'top', 'top-parallel' 'front-top',
 view = 'front-top-side'
 
 # Uniform lighting?
-uniform_light = True
-#uniform_light = False
+#uniform_light = True
+uniform_light = False
 
 show_mag = False
 show_mag_scale = False
@@ -122,8 +120,8 @@ nt = number_of_frames
 if nz % nt != 0:
     print("nt doesnt divide nz so there may be a problem with chopping in z direction for each time step")
         
-t_start = 0.
-t_end = 2*zmax
+t_start = 600.
+t_end = 650. #2*zmax
         
 t = t_start
 
@@ -478,6 +476,7 @@ for t_ind in range(nt):
         
     t = t + (t_end - t_start) / nt
     del vxvals_t
+    
 if make_video == True:
 #    i2v.image2video(prefix=prefix, output_name=prefix+'_video', out_extension='mp4', fps=20, n_loops=4, delete_images=True, delete_old_videos=True, res=res[1])
     i2v.image2video(prefix='amd_front-top-side_alfven-mixed-driver', output_name='video', 

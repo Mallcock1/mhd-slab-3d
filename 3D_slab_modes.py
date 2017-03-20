@@ -139,10 +139,10 @@ res = tuple(101 * np.array((16,9)))
 #res = tuple(51 * np.array((16,9)))
 #res = tuple(21 * np.array((16,9)))
 
-number_of_frames = 1#20
-
-make_video = False
-#make_video = True
+number_of_frames = 20
+#
+#make_video = False
+make_video = True
 
 #
 ##
@@ -432,8 +432,8 @@ for mode_ind in [14]: #for an individual mode
                 vxvals_mask_front_t, vyvals_mask_front_t, vzvals_mask_front_t = mpf.mask_points(vxvals_t, vyvals_t, vzvals_t, 
                                                                                                 'front', mod, mod_y)
                                                                                                 
-            zvals, yvals = np.mgrid[0:nz:(nz)*1j,
-                                    0:ny:(ny)*1j]
+            zgrid_zy, ygrid_zy = np.mgrid[0:nz:(nz)*1j,
+                                          0:ny:(ny)*1j]
         
             #
             ##
@@ -464,15 +464,15 @@ for mode_ind in [14]: #for an individual mode
                     lut[:fade_value,-1] = np.linspace(0, 255, fade_value)
                     lut[-fade_value:,-1] = np.linspace(255, 0, fade_value)
                     
-                    boundary_r_thick = mlab.mesh(xix_boundary_r_vals_t, zvals, yvals,
+                    boundary_r_thick = mlab.mesh(xix_boundary_r_vals_t, zgrid_zy, ygrid_zy,
                                                  extent=[ext_min_r, ext_max_r, 1, nz, 0, (ny-1) * y_spacing],
                                                  opacity=1., representation='wireframe',
-                                                 line_width=12., scalars=zvals)
+                                                 line_width=12., scalars=zgrid_zy)
 #                    boundary_r_thick.enable_contours = True
-                    boundary_l_thick = mlab.mesh(xix_boundary_l_vals_t, zvals, yvals,
+                    boundary_l_thick = mlab.mesh(xix_boundary_l_vals_t, zgrid_zy, ygrid_zy,
                                                  extent=[ext_min_l, ext_max_l, 1, nz, 0, (ny-1) * y_spacing],
                                                  opacity=1., representation='wireframe',
-                                                 line_width=12., scalars=zvals)
+                                                 line_width=12., scalars=zgrid_zy)
 #                    boundary_l_thick.enable_contours = True
                     
                     boundary_r_thick.module_manager.scalar_lut_manager.lut.table = lut
@@ -488,13 +488,13 @@ for mode_ind in [14]: #for an individual mode
                     lut[:fade_value,-1] = np.linspace(0, 255, fade_value)
                     lut[-fade_value:,-1] = np.linspace(255, 0, fade_value)
                     
-                    boundary_r = mlab.mesh(xix_boundary_r_vals_t, zvals, yvals,
+                    boundary_r = mlab.mesh(xix_boundary_r_vals_t, zgrid_zy, ygrid_zy,
                                            extent=[ext_min_r, ext_max_r, 1, nz, 0, (ny-1) * y_spacing],
-                                           opacity=0.7, scalars=zvals)
+                                           opacity=0.7, scalars=zgrid_zy)
 
-                    boundary_l = mlab.mesh(xix_boundary_l_vals_t, zvals, yvals,
+                    boundary_l = mlab.mesh(xix_boundary_l_vals_t, zgrid_zy, ygrid_zy,
                                            extent=[ext_min_l, ext_max_l, 1, nz, 0, (ny-1) * y_spacing],
-                                           opacity=0.7, scalars=zvals)
+                                           opacity=0.7, scalars=zgrid_zy)
 
                     boundary_r.module_manager.scalar_lut_manager.lut.table = lut
                     boundary_l.module_manager.scalar_lut_manager.lut.table = lut
@@ -511,12 +511,12 @@ for mode_ind in [14]: #for an individual mode
                 mpf.volume_red_blue(rho, rho_vals_t)
                 
             
-            xvals, zvals, yvals = np.mgrid[0:nx:(nx)*1j,
+            xgrid, zgrid, ygrid = np.mgrid[0:nx:(nx)*1j,
                                            0:nz:(nz)*1j,
                                            0:ny:(ny)*1j]
                 
             field = mlab.pipeline.vector_field(bxvals_t, bzvals_t, byvals_t, name="B field", 
-                                                   figure=fig, scalars=zvals)
+                                                   figure=fig, scalars=zgrid)
             field.spacing = spacing
                 
                 #contours = mlab.pipeline.iso_surface(magnitude,
@@ -553,16 +553,17 @@ for mode_ind in [14]: #for an individual mode
                         for i in range(nx_seed):
                             del seeds[0]
                             del seeds[-1]
-           
-                    original_seeds = msp.original_seeds(seeds, xixvals_t, xiyvals_t, xizvals_t, 
-                                                        [xmin, ymin, zmin], [xmax, ymax, zmax])
+#                    seeds = [(50.,50.,50.), (55.,55., 55.)]
+                    original_seeds = msp.original_seeds_non_int(seeds, [xmin, ymin, zmin], [xmax, ymax, zmax], [nx, ny, nz], 
+                                                                mode, xvals, zvals, t, W, K, R1)
                 
-                seeds = msp.move_seeds(seeds, xixvals_t, xiyvals_t, xizvals_t, 
-                                       [xmin, ymin, zmin], [xmax, ymax, zmax])
-#                print(seeds[0])
+                new_seeds = msp.move_seeds_non_int(original_seeds, [xmin, ymin, zmin], [xmax, ymax, zmax], [nx, ny, nz], 
+                                               mode, xvals, zvals, t, W, K, R1)
+                print(original_seeds[10])
+                print(new_seeds[10])
+                print('t is ' + str(t))
                 
-                
-                field_lines = SeedStreamline(seed_points=seeds)
+                field_lines = SeedStreamline(seed_points=new_seeds)
                 field_lines.stream_tracer.integration_direction='both'
                 field_lines.streamline_type = 'tube'
                 
@@ -666,7 +667,8 @@ for mode_ind in [14]: #for an individual mode
                              + prefix + str(t_ind+1) + '.png')
                 mlab.close(fig)
             
-        t = t + (t_end - t_start) / nt
+            t = t + (t_end - t_start) / nt
+        print(t)
         
     if make_video == True:
         i2v.image2video(prefix=prefix, output_name=prefix+'_video', 

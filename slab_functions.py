@@ -256,7 +256,11 @@ def vyhat(mode, x, K):
                 vyhat_alfven[i] = alfven_amplitude
         return vyhat_alfven
     else:
-        return np.zeros_like(x)
+        if type(x) == np.float64:
+            return 0. + 0.j
+        else:
+            return np.zeros_like(x, dtype=complex)
+        
 
 def vzhat(mode, x, W, K, R1):
     if mode in alfven_mode_options:
@@ -364,7 +368,7 @@ def xix(mode, x, z, t, W, K, R1):
         return np.outer(1j * vxhat(mode, x, W, K, R1) / W, np.exp(1j*(z-t)))
 
 def xiy(mode, x, z, t, W, K):
-    if type(vyhat(mode, x, K)) == np.complex128:
+    if type(vyhat(mode, x, K)) == complex:
         return (1j * vyhat(mode, x, K) / W) * np.exp(1j*(z-t))
     else:
         return np.outer(1j * vyhat(mode, x, K) / W, np.exp(1j*(z-t)))
