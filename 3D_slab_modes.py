@@ -126,8 +126,8 @@ show_mag_fade = True
 #show_vel_front_pert = True
 #show_vel_top = True
 #show_vel_top_pert = True
-show_disp_top = True
-show_disp_front = True
+#show_disp_top = True
+#show_disp_front = True
 show_axes = True
 #show_axis_labels = True
 show_mini_axis = True
@@ -546,21 +546,21 @@ for mode_ind in [14]: #for an individual mode
                         for i in range(0,nx_seed):
                             x = start_x + (i * dx_res) * x_spacing
                             y = start_y + (j * dy_res) * y_spacing
-                            z = nz / 2. + 2. #1. + (t_start + t_ind*(t_end - t_start)/nt)/zmax * nz
+                            z = nz / 2.# + 2. #1. + (t_start + t_ind*(t_end - t_start)/nt)/zmax * nz
                             seeds.append((x,z,y))
                     
                     if mode in alfven_mode_options:
                         for i in range(nx_seed):
                             del seeds[0]
                             del seeds[-1]
-#                    seeds = [(50.,50.,50.), (55.,55., 55.)]
+                    seeds = [(30.,50.,50.), (70., 50., 50.)]
+#                    print(seeds[10])
                     original_seeds = msp.original_seeds_non_int(seeds, [xmin, ymin, zmin], [xmax, ymax, zmax], [nx, ny, nz], 
-                                                                mode, xvals, zvals, t, W, K, R1)
-                
+                                                                mode, xvals, zvals, 0., W, K, R1)
+#                print(original_seeds[10])
                 new_seeds = msp.move_seeds_non_int(original_seeds, [xmin, ymin, zmin], [xmax, ymax, zmax], [nx, ny, nz], 
-                                               mode, xvals, zvals, t, W, K, R1)
-                print(original_seeds[10])
-                print(new_seeds[10])
+                                                   mode, xvals, zvals, t, W, K, R1)
+#                print(new_seeds[10])
                 print('t is ' + str(t))
                 
                 field_lines = SeedStreamline(seed_points=new_seeds)
@@ -668,7 +668,6 @@ for mode_ind in [14]: #for an individual mode
                 mlab.close(fig)
             
             t = t + (t_end - t_start) / nt
-        print(t)
         
     if make_video == True:
         i2v.image2video(prefix=prefix, output_name=prefix+'_video', 
