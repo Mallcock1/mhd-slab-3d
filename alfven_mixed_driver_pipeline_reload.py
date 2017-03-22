@@ -139,90 +139,209 @@ zvals = np.linspace(zmin, zmax, nz, endpoint=False)
 x_spacing = max(nx, ny, nz) / nx
 y_spacing = max(nx, ny, nz) / ny
 z_spacing = max(nx, ny, nz) / nz
-        
+spacing =  np.array([x_spacing, z_spacing, y_spacing])
         
 # For masking points
 mod = int(3 * nx / 100)
 mod_top = int(np.ceil(mod / y_spacing))
 
 
+xixvals_t = np.real(np.repeat(sf.xix_amd(xvals, zvals, t, vA_func)[:, :, np.newaxis], ny, axis=2))
+xizvals_t = np.real(np.repeat(sf.xiz_amd(xvals, zvals, t, vA_func)[:, :, np.newaxis], ny, axis=2))
+xiyvals_t = np.real(np.repeat(sf.xiy_amd(xvals, zvals, t, vA_func)[:, :, np.newaxis], ny, axis=2))
+
+if show_vel_top == True:
+    vxvals_t = np.real(np.repeat(sf.vx_amd(xvals, zvals, t, vA_func)[:, :, np.newaxis], ny, axis=2))
+    vzvals_t = np.real(np.repeat(sf.vz_amd(xvals, zvals, t, vA_func)[:, :, np.newaxis], ny, axis=2))
+    vyvals_t = np.real(np.repeat(sf.vy_amd(xvals, zvals, t, vA_func)[:, :, np.newaxis], ny, axis=2))
+        
+bxvals_t = np.real(np.repeat(sf.bx_amd(xvals, zvals, t, vA_func)[:, :, np.newaxis], ny, axis=2))
+byvals_t = np.real(np.repeat(sf.by_amd(xvals, zvals, t, vA_func)[:, :, np.newaxis], ny, axis=2))
+bz_eq3d = np.repeat(sf.bz_eq_amd(xvals, zvals)[:, :, np.newaxis], ny, axis=2)
+bzvals_t = np.real(np.repeat(-sf.bz_amd(xvals, zvals, t, vA_func)[:, :, np.newaxis], ny, axis=2) +
+                   bz_eq3d)
+
+#Masking points
+if show_mag_vec == True:
+    bxvals_mask_front_t = np.copy(bxvals_t)
+    byvals_mask_front_t = np.copy(byvals_t)
+    bzvals_mask_front_t = np.copy(bzvals_t)
+    
+    for i in range(bxvals_t.shape[0]):
+        for j in range(bxvals_t.shape[1]):
+            for k in range(bxvals_t.shape[2]):
+                if (i%mod) != 1 or (j%mod) != 1:
+                    bxvals_mask_front_t[i,j,k] = 0.
+                    bzvals_mask_front_t[i,j,k] = 0.
+    
+    
+if show_disp_top == True:    
+    xixvals_mask_top_t = np.copy(xixvals_t)
+    xiyvals_mask_top_t = np.copy(xiyvals_t)
+    xizvals_mask_top_t = np.copy(xizvals_t)
+    
+    for i in range(xixvals_t.shape[0]):
+        for j in range(xixvals_t.shape[1]):
+            for k in range(xixvals_t.shape[2]):
+                if (i%mod) != 1 or (k%mod_top) != 1:
+                    xixvals_mask_top_t[i,j,k] = 0.
+                    xizvals_mask_top_t[i,j,k] = 0.
+
+if show_vel_top == True: 
+    vxvals_mask_top_t = np.copy(vxvals_t)
+    vyvals_mask_top_t = np.copy(vyvals_t)
+    vzvals_mask_top_t = np.copy(vzvals_t)
+    
+    for i in range(vxvals_t.shape[0]):
+        for j in range(vxvals_t.shape[1]):
+            for k in range(vxvals_t.shape[2]):
+                if (i%mod) != 1 or (k%mod_top) != 1:
+                    vxvals_mask_top_t[i,j,k] = 0
+                    vyvals_mask_top_t[i,j,k] = 0
+                    vzvals_mask_top_t[i,j,k] = 0
+
 fig = mlab.figure(size=res) # (1920, 1080) for 1080p , tuple(101 * np.array((16,9))) #16:9 aspect ratio for video upload
+
+xgrid, zgrid, ygrid = np.mgrid[0:nx:(nx)*1j,
+                               0:nz:(nz)*1j,
+                               0:ny:(ny)*1j]
+    
+field = mlab.pipeline.vector_field(bxvals_t, bzvals_t, byvals_t, name="B field", 
+                                   figure=fig, scalars=zgrid)
+field.spacing = spacing
+
+field_ms = field.mlab_source
+
+#Set viewing angle
+if view == 'front-parallel':
+    fig.scene.z_plus_view()
+    fig.scene.parallel_projection = True
+    fig.scene.camera.zoom(1.65) # Parallel projection zoom is done in this way, different to perspective projection
+if view == 'front':
+    fig.scene.z_plus_view()
+    fig.scene.camera.view_angle = 21.
+if view == 'top':
+    fig.scene.camera.position = [53.107781380642741, 523.35670183503294, 50.948508989758153]
+    fig.scene.camera.focal_point = [50.821544647216797, 50.413210511207581, 50.159849926829338]
+    fig.scene.camera.view_angle = 14.
+    fig.scene.camera.view_up = [-0, 0, -1]
+    fig.scene.camera.clipping_range = [368.83220888718552, 605.15289607145894]
+if view == 'top-parallel':
+    fig.scene.parallel_projection = True
+    fig.scene.camera.zoom(2.)
+    fig.scene.camera.position = [53.107781380642741, 523.35670183503294, 50.948508989758153]
+    fig.scene.camera.focal_point = [50.821544647216797, 50.413210511207581, 50.159849926829338]
+#            fig.scene.camera.view_angle = 14.
+    fig.scene.camera.view_up = [-0, 0, -1]
+    fig.scene.camera.clipping_range = [368.83220888718552, 605.15289607145894]
+if view == 'front-top':
+    fig.scene.camera.position = [48.764852970361503, 223.64895482756552, 498.62216293273576]
+    fig.scene.camera.focal_point = [50.821544647216797, 46., 50.159849926829338]
+    fig.scene.camera.view_angle = 16.0
+    fig.scene.camera.view_up = [-0.002418791139063777, 0.93281530024654913, -0.36034672896443193]
+    fig.scene.camera.clipping_range = [345.97885880654962, 650.71850659694883]
+ 
+if view == 'front-side':
+    fig.scene.camera.position = [126.6 * nx / 100., 60.5 * nz / 100., 524.8 * ny / 100.]
+    fig.scene.camera.focal_point = [50.8 * nx / 100., 50.4 * nz / 100., 50.2 * ny / 100.]
+    fig.scene.camera.view_angle = 14.
+    fig.scene.camera.view_up = [-0.01695 * nx / 100., 0.999686 * nz / 100., -0.0184509 * ny / 100.]
+    fig.scene.camera.clipping_range = [366.21083458278804, 631.07664372567524]
+
+if view == 'front-top-side':
+    fig.scene.camera.position = [400.86836795744739, 181.09643412881843, 495.9729949005914]
+    fig.scene.camera.focal_point = [50.799999999999997, 50.399999999999999, 50.200000000000003]
+    fig.scene.camera.view_angle = 14.0
+    fig.scene.camera.view_up = [-0.14482357103326407, 0.9744012643898321, -0.17195438124301951]
+    fig.scene.camera.clipping_range = [418.37366265114053, 789.30998655093481]
+
+if show_axes == True:
+    axes = mlab.axes(field, nb_labels=1, line_width=3)
+    axes.axes.label_format = ''
+    if show_axis_labels == True:
+        axes.axes.x_label = 'x'
+        if view == 'front-parallel':
+            axes.axes.y_label = 'z'
+            axes.axes.z_label = ''
+        elif view == 'top-parallel':
+            axes.axes.y_label = ''
+            axes.axes.z_label = 'y'
+        else:
+            axes.axes.y_label = 'z'
+            axes.axes.z_label = 'y'
+    else:
+        axes.axes.x_label = ''
+        axes.axes.y_label = ''
+        axes.axes.z_label = ''
+        
+if show_mini_axis == True:
+    oa = mlab.orientation_axes(xlabel='x', ylabel='z', zlabel='y')
+    oa.marker.set_viewport(0,0,0.25,0.25) # minx, miny, maxx, maxy
+
+if uniform_light == True:
+    #uniform lighting, but if we turn shading of volumes off, we are ok without
+    mpf.uniform_lighting(fig)
+
+#Black background
+mpf.background_colour(fig, (0., 0., 0.))
+
 
 
 for t_ind in range(nt):
-    xvals = np.linspace(xmin, xmax, nx)
-    yvals = np.linspace(ymin, ymax, ny)
-    zvals = np.linspace(zmin, zmax, nz, endpoint=False)
-    
-    xixvals_t = np.real(np.repeat(sf.xix_amd(xvals, zvals, t, vA_func)[:, :, np.newaxis], ny, axis=2))
-    xizvals_t = np.real(np.repeat(sf.xiz_amd(xvals, zvals, t, vA_func)[:, :, np.newaxis], ny, axis=2))
-    xiyvals_t = np.real(np.repeat(sf.xiy_amd(xvals, zvals, t, vA_func)[:, :, np.newaxis], ny, axis=2))
-    
-    if show_vel_top == True:
-        vxvals_t = np.real(np.repeat(sf.vx_amd(xvals, zvals, t, vA_func)[:, :, np.newaxis], ny, axis=2))
-        vzvals_t = np.real(np.repeat(sf.vz_amd(xvals, zvals, t, vA_func)[:, :, np.newaxis], ny, axis=2))
-        vyvals_t = np.real(np.repeat(sf.vy_amd(xvals, zvals, t, vA_func)[:, :, np.newaxis], ny, axis=2))
+    if t_ind != 0:
+        xixvals_t = np.real(np.repeat(sf.xix_amd(xvals, zvals, t, vA_func)[:, :, np.newaxis], ny, axis=2))
+        xizvals_t = np.real(np.repeat(sf.xiz_amd(xvals, zvals, t, vA_func)[:, :, np.newaxis], ny, axis=2))
+        xiyvals_t = np.real(np.repeat(sf.xiy_amd(xvals, zvals, t, vA_func)[:, :, np.newaxis], ny, axis=2))
+        
+        if show_vel_top == True:
+            vxvals_t = np.real(np.repeat(sf.vx_amd(xvals, zvals, t, vA_func)[:, :, np.newaxis], ny, axis=2))
+            vzvals_t = np.real(np.repeat(sf.vz_amd(xvals, zvals, t, vA_func)[:, :, np.newaxis], ny, axis=2))
+            vyvals_t = np.real(np.repeat(sf.vy_amd(xvals, zvals, t, vA_func)[:, :, np.newaxis], ny, axis=2))
+                
+        bxvals_t = np.real(np.repeat(sf.bx_amd(xvals, zvals, t, vA_func)[:, :, np.newaxis], ny, axis=2))
+        byvals_t = np.real(np.repeat(sf.by_amd(xvals, zvals, t, vA_func)[:, :, np.newaxis], ny, axis=2))
+        bz_eq3d = np.repeat(sf.bz_eq_amd(xvals, zvals)[:, :, np.newaxis], ny, axis=2)
+        bzvals_t = np.real(np.repeat(-sf.bz_amd(xvals, zvals, t, vA_func)[:, :, np.newaxis], ny, axis=2) +
+                           bz_eq3d)
+        
+        #Masking points
+        if show_mag_vec == True:
+            bxvals_mask_front_t = np.copy(bxvals_t)
+            byvals_mask_front_t = np.copy(byvals_t)
+            bzvals_mask_front_t = np.copy(bzvals_t)
             
-    bxvals_t = np.real(np.repeat(sf.bx_amd(xvals, zvals, t, vA_func)[:, :, np.newaxis], ny, axis=2))
-    byvals_t = np.real(np.repeat(sf.by_amd(xvals, zvals, t, vA_func)[:, :, np.newaxis], ny, axis=2))
-    bz_eq3d = np.repeat(sf.bz_eq_amd(xvals, zvals)[:, :, np.newaxis], ny, axis=2)
-    bzvals_t = np.real(np.repeat(-sf.bz_amd(xvals, zvals, t, vA_func)[:, :, np.newaxis], ny, axis=2) +
-                       bz_eq3d)
-    
-    
-    
-#    bxvals_t = bxvals
-#    byvals_t = byvals
-#    bzvals_t = bzvals
-    
-#    if show_disp_top == True:
-#        xixvals_t = xixvals
-#        xiyvals_t = xiyvals
-#        xizvals_t = xizvals
-#        
-#    if show_vel_top == True:
-#        vxvals_t = vxvals
-#        vyvals_t = vyvals
-#        vzvals_t = vzvals
-
-    #Masking points
-    if show_mag_vec == True:
-        bxvals_mask_front_t = np.copy(bxvals_t)
-        byvals_mask_front_t = np.copy(byvals_t)
-        bzvals_mask_front_t = np.copy(bzvals_t)
+            for i in range(bxvals_t.shape[0]):
+                for j in range(bxvals_t.shape[1]):
+                    for k in range(bxvals_t.shape[2]):
+                        if (i%mod) != 1 or (j%mod) != 1:
+                            bxvals_mask_front_t[i,j,k] = 0.
+                            bzvals_mask_front_t[i,j,k] = 0.
+            
+            
+        if show_disp_top == True:    
+            xixvals_mask_top_t = np.copy(xixvals_t)
+            xiyvals_mask_top_t = np.copy(xiyvals_t)
+            xizvals_mask_top_t = np.copy(xizvals_t)
+            
+            for i in range(xixvals_t.shape[0]):
+                for j in range(xixvals_t.shape[1]):
+                    for k in range(xixvals_t.shape[2]):
+                        if (i%mod) != 1 or (k%mod_top) != 1:
+                            xixvals_mask_top_t[i,j,k] = 0.
+                            xizvals_mask_top_t[i,j,k] = 0.
         
-        for i in range(bxvals_t.shape[0]):
-            for j in range(bxvals_t.shape[1]):
-                for k in range(bxvals_t.shape[2]):
-                    if (i%mod) != 1 or (j%mod) != 1:
-                        bxvals_mask_front_t[i,j,k] = 0.
-                        bzvals_mask_front_t[i,j,k] = 0.
-        
-        
-    if show_disp_top == True:    
-        xixvals_mask_top_t = np.copy(xixvals_t)
-        xiyvals_mask_top_t = np.copy(xiyvals_t)
-        xizvals_mask_top_t = np.copy(xizvals_t)
-        
-        for i in range(xixvals_t.shape[0]):
-            for j in range(xixvals_t.shape[1]):
-                for k in range(xixvals_t.shape[2]):
-                    if (i%mod) != 1 or (k%mod_top) != 1:
-                        xixvals_mask_top_t[i,j,k] = 0.
-                        xizvals_mask_top_t[i,j,k] = 0.
-    
-    if show_vel_top == True: 
-        vxvals_mask_top_t = np.copy(vxvals_t)
-        vyvals_mask_top_t = np.copy(vyvals_t)
-        vzvals_mask_top_t = np.copy(vzvals_t)
-        
-        for i in range(vxvals_t.shape[0]):
-            for j in range(vxvals_t.shape[1]):
-                for k in range(vxvals_t.shape[2]):
-                    if (i%mod) != 1 or (k%mod_top) != 1:
-                        vxvals_mask_top_t[i,j,k] = 0
-                        vyvals_mask_top_t[i,j,k] = 0
-                        vzvals_mask_top_t[i,j,k] = 0
+        if show_vel_top == True: 
+            vxvals_mask_top_t = np.copy(vxvals_t)
+            vyvals_mask_top_t = np.copy(vyvals_t)
+            vzvals_mask_top_t = np.copy(vzvals_t)
+            
+            for i in range(vxvals_t.shape[0]):
+                for j in range(vxvals_t.shape[1]):
+                    for k in range(vxvals_t.shape[2]):
+                        if (i%mod) != 1 or (k%mod_top) != 1:
+                            vxvals_mask_top_t[i,j,k] = 0
+                            vyvals_mask_top_t[i,j,k] = 0
+                            vzvals_mask_top_t[i,j,k] = 0
 
 #    zvals, yvals = np.mgrid[0:nz:(nz)*1j,
 #                            0:ny:(ny)*1j]
@@ -240,24 +359,15 @@ for t_ind in range(nt):
     
     
     
-    spacing =  np.array([x_spacing, z_spacing, y_spacing])
+
     
                 
 #    xvals, zvals, yvals = np.mgrid[xmin:xmax:(nx)*1j,
 #                                   zmax:zmax:(nz)*1j,
 #                                   ymin:ymax:(ny)*1j]
-    xvals, zvals, yvals = np.mgrid[0:nx:(nx)*1j,
-                                   0:nz:(nz)*1j,
-                                   0:ny:(ny)*1j]
-        
-    field = mlab.pipeline.vector_field(bxvals_t, bzvals_t, byvals_t, name="B field", 
-                                           figure=fig, scalars=zvals)
-    field.spacing = spacing
-    
-    if t_ind == 0:
-        field_ms = field.mlab_source
+
     if t_ind != 0:
-        field_ms.set(bxvals_t=bxvals_t, byvals_t=byvals_t, bzvals_t=bzvals_t)
+        field_ms.set(x=bxvals_t, y=bzvals_t, z=byvals_t)
                 
 #    if show_mag == True:
 #        # Create an array of points for which we want mag field seeds
@@ -397,78 +507,7 @@ for t_ind in range(nt):
         vector_cut_plane_top.glyph.glyph_source.glyph_source = vector_cut_plane_top.glyph.glyph_source.glyph_dict['arrow_source']
         vector_cut_plane_top.glyph.glyph_source.glyph_position = 'center'
 
-    #Set viewing angle
-    if view == 'front-parallel':
-        fig.scene.z_plus_view()
-        fig.scene.parallel_projection = True
-        fig.scene.camera.zoom(1.65) # Parallel projection zoom is done in this way, different to perspective projection
-    if view == 'front':
-        fig.scene.z_plus_view()
-        fig.scene.camera.view_angle = 21.
-    if view == 'top':
-        fig.scene.camera.position = [53.107781380642741, 523.35670183503294, 50.948508989758153]
-        fig.scene.camera.focal_point = [50.821544647216797, 50.413210511207581, 50.159849926829338]
-        fig.scene.camera.view_angle = 14.
-        fig.scene.camera.view_up = [-0, 0, -1]
-        fig.scene.camera.clipping_range = [368.83220888718552, 605.15289607145894]
-    if view == 'top-parallel':
-        fig.scene.parallel_projection = True
-        fig.scene.camera.zoom(2.)
-        fig.scene.camera.position = [53.107781380642741, 523.35670183503294, 50.948508989758153]
-        fig.scene.camera.focal_point = [50.821544647216797, 50.413210511207581, 50.159849926829338]
-#            fig.scene.camera.view_angle = 14.
-        fig.scene.camera.view_up = [-0, 0, -1]
-        fig.scene.camera.clipping_range = [368.83220888718552, 605.15289607145894]
-    if view == 'front-top':
-        fig.scene.camera.position = [48.764852970361503, 223.64895482756552, 498.62216293273576]
-        fig.scene.camera.focal_point = [50.821544647216797, 46., 50.159849926829338]
-        fig.scene.camera.view_angle = 16.0
-        fig.scene.camera.view_up = [-0.002418791139063777, 0.93281530024654913, -0.36034672896443193]
-        fig.scene.camera.clipping_range = [345.97885880654962, 650.71850659694883]
-     
-    if view == 'front-side':
-        fig.scene.camera.position = [126.6 * nx / 100., 60.5 * nz / 100., 524.8 * ny / 100.]
-        fig.scene.camera.focal_point = [50.8 * nx / 100., 50.4 * nz / 100., 50.2 * ny / 100.]
-        fig.scene.camera.view_angle = 14.
-        fig.scene.camera.view_up = [-0.01695 * nx / 100., 0.999686 * nz / 100., -0.0184509 * ny / 100.]
-        fig.scene.camera.clipping_range = [366.21083458278804, 631.07664372567524]
-    
-    if view == 'front-top-side':
-        fig.scene.camera.position = [400.86836795744739, 181.09643412881843, 495.9729949005914]
-        fig.scene.camera.focal_point = [50.799999999999997, 50.399999999999999, 50.200000000000003]
-        fig.scene.camera.view_angle = 14.0
-        fig.scene.camera.view_up = [-0.14482357103326407, 0.9744012643898321, -0.17195438124301951]
-        fig.scene.camera.clipping_range = [418.37366265114053, 789.30998655093481]
 
-    if show_axes == True:
-        axes = mlab.axes(field, nb_labels=1, line_width=3)
-        axes.axes.label_format = ''
-        if show_axis_labels == True:
-            axes.axes.x_label = 'x'
-            if view == 'front-parallel':
-                axes.axes.y_label = 'z'
-                axes.axes.z_label = ''
-            elif view == 'top-parallel':
-                axes.axes.y_label = ''
-                axes.axes.z_label = 'y'
-            else:
-                axes.axes.y_label = 'z'
-                axes.axes.z_label = 'y'
-        else:
-            axes.axes.x_label = ''
-            axes.axes.y_label = ''
-            axes.axes.z_label = ''
-            
-    if show_mini_axis == True:
-        oa = mlab.orientation_axes(xlabel='x', ylabel='z', zlabel='y')
-        oa.marker.set_viewport(0,0,0.25,0.25) # minx, miny, maxx, maxy
-
-    if uniform_light == True:
-        #uniform lighting, but if we turn shading of volumes off, we are ok without
-        mpf.uniform_lighting(fig)
-    
-    #Black background
-    mpf.background_colour(fig, (0., 0., 0.))
 
         
         
