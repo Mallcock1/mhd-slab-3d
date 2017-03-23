@@ -77,6 +77,9 @@ res = tuple(101 * np.array((16,9)))
 
 number_of_frames = 5
 
+#save_images = False
+save_images = True
+
 make_video = False
 #make_video = True
 
@@ -143,7 +146,7 @@ spacing =  np.array([x_spacing, z_spacing, y_spacing])
         
 # For masking points
 mod = int(3 * nx / 100)
-mod_top = int(np.ceil(mod / y_spacing))
+mod_y = int(np.ceil(mod / y_spacing))
 
 
 xixvals_t = np.real(np.repeat(sf.xix_amd(xvals, zvals, t, vA_func)[:, :, np.newaxis], ny, axis=2))
@@ -305,43 +308,14 @@ for t_ind in range(nt):
                            bz_eq3d)
         
         #Masking points
-        if show_mag_vec == True:
-            bxvals_mask_front_t = np.copy(bxvals_t)
-            byvals_mask_front_t = np.copy(byvals_t)
-            bzvals_mask_front_t = np.copy(bzvals_t)
-            
-            for i in range(bxvals_t.shape[0]):
-                for j in range(bxvals_t.shape[1]):
-                    for k in range(bxvals_t.shape[2]):
-                        if (i%mod) != 1 or (j%mod) != 1:
-                            bxvals_mask_front_t[i,j,k] = 0.
-                            bzvals_mask_front_t[i,j,k] = 0.
-            
+        if show_mag_vec == True:                            
+            mpf.mask_points(bxvals_t, byvals_t, bzvals_t, 'front', mod, mod_y)
             
         if show_disp_top == True:    
-            xixvals_mask_top_t = np.copy(xixvals_t)
-            xiyvals_mask_top_t = np.copy(xiyvals_t)
-            xizvals_mask_top_t = np.copy(xizvals_t)
-            
-            for i in range(xixvals_t.shape[0]):
-                for j in range(xixvals_t.shape[1]):
-                    for k in range(xixvals_t.shape[2]):
-                        if (i%mod) != 1 or (k%mod_top) != 1:
-                            xixvals_mask_top_t[i,j,k] = 0.
-                            xizvals_mask_top_t[i,j,k] = 0.
+            mpf.mask_points(xixvals_t, xiyvals_t, xizvals_t, 'top', mod, mod_y)
         
         if show_vel_top == True: 
-            vxvals_mask_top_t = np.copy(vxvals_t)
-            vyvals_mask_top_t = np.copy(vyvals_t)
-            vzvals_mask_top_t = np.copy(vzvals_t)
-            
-            for i in range(vxvals_t.shape[0]):
-                for j in range(vxvals_t.shape[1]):
-                    for k in range(vxvals_t.shape[2]):
-                        if (i%mod) != 1 or (k%mod_top) != 1:
-                            vxvals_mask_top_t[i,j,k] = 0
-                            vyvals_mask_top_t[i,j,k] = 0
-                            vzvals_mask_top_t[i,j,k] = 0
+            mpf.mask_points(vxvals_t, vyvals_t, vzvals_t, 'top', mod, mod_y)
 
 #    zvals, yvals = np.mgrid[0:nz:(nz)*1j,
 #                            0:ny:(ny)*1j]
@@ -367,30 +341,8 @@ for t_ind in range(nt):
 #                                   ymin:ymax:(ny)*1j]
 
     if t_ind != 0:
-        field_ms.set(x=bxvals_t, y=bzvals_t, z=byvals_t)
-                
-#    if show_mag == True:
-#        # Create an array of points for which we want mag field seeds
-#        nx_seed = 15 #7
-#        ny_seed = 13 #10
-#        start_x = xmin #38
-#        end_x = xmax+(xmax-xmin)/nx - start_x
-#        start_y = ymin+(ymax-ymin)/ny
-#        if ny == 20:
-#            end_y = ymax - (ymax-ymin)/ny
-#        elif ny == 100:
-#            end_y = ymax - 2 * (ymax-ymin)/ny
-#        else:
-#            end_y = ymax - (ymax-ymin)/ny
-#        seeds=[]
-#        dx_res = (end_x - start_x) / (nx_seed-1)
-#        dy_res = (end_y - start_y) / (ny_seed-1)
-#        for j in range(0,ny_seed):
-#            for i in range(0,nx_seed):
-#                x = start_x + (i * dx_res) * x_spacing
-#                y = start_y + (j * dy_res) * y_spacing
-#                z = 1. + (t_start + t_ind*(t_end - t_start)/nt)/zmax * nz
-#                seeds.append((x,z,y))
+        field_ms.set(u=bxvals_t, v=bzvals_t, w=byvals_t)
+        
                 
     if show_mag == True:
         # Create an array of points for which we want mag field seeds
@@ -422,21 +374,14 @@ for t_ind in range(nt):
 
         seeds = msp.move_seeds(seeds, xixvals_t, xiyvals_t, xizvals_t, 
                                [xmin, ymin, zmin], [xmax, ymax, zmax])
-        
+        if t_ind != 0:
+            field_lines.remove()
         field_lines = SeedStreamline(seed_points=seeds)
         field_lines.stream_tracer.integration_direction='both'
         field_lines.streamline_type = 'tube'
         
-#                module_manager = field_lines.parent
-#                module_manager.scalar_lut_manager.lut_mode = 'Reds'
-#                module_manager.scalar_lut_manager.data_range=[-30,25]    
-        
-#                magnitude = mlab.pipeline.add_dataset(field)
         field.add_child(field_lines)
         module_manager = field_lines.parent
-#                module_manager.scalar_lut_manager.lut_mode = 'Reds'
-#                module_manager.scalar_lut_manager.data_range=[-30,25]
-        
         
         field_lines.stream_tracer.maximum_propagation = 500.
         field_lines.tube_filter.number_of_sides = 20
@@ -456,11 +401,6 @@ for t_ind in range(nt):
 #                    module_manager.scalar_lut_manager.data_range=[-1500,500]
         if show_mag_fade == True:
             mpf.colormap_fade(module_manager, fade_value=20)
-            mag_lut = module_manager.scalar_lut_manager.lut.table.to_array()
-            mag_fade_value = 20
-            mag_lut[:mag_fade_value,-1] = np.linspace(0, 255, mag_fade_value)
-            mag_lut[-mag_fade_value:,-1] = np.linspace(255, 0, mag_fade_value)
-            module_manager.scalar_lut_manager.lut.table = mag_lut
             
         scalefactor = 4. # scale factor for direction field vectors
         
@@ -469,14 +409,7 @@ for t_ind in range(nt):
                                                          byvals_mask_front_t, name="B field front",
                                                          figure=fig)
             bdirfield_front.spacing = spacing
-            vector_cut_plane_front = mlab.pipeline.vector_cut_plane(bdirfield_front, 
-                                                              scale_factor=scalefactor)
-            vector_cut_plane_front.implicit_plane.widget.normal_to_z_axis = True
-            vector_cut_plane_front.implicit_plane.widget.origin = np.array([ 50., 25.91140784, (ny-1)*y_spacing])
-            vector_cut_plane_front.glyph.color_mode = 'no_coloring'
-            vector_cut_plane_front.implicit_plane.widget.enabled = False
-            vector_cut_plane_front.glyph.glyph_source.glyph_source = vector_cut_plane_front.glyph.glyph_source.glyph_dict['arrow_source']
-            vector_cut_plane_front.glyph.glyph_source.glyph_position = 'center'
+            mpf.vector_cut_plane(bdirfield_front, 'front', ny, nz, y_spacing, scale_factor=scalefactor)
             
             
     if show_vel_top == True:
@@ -484,32 +417,17 @@ for t_ind in range(nt):
                                                     vyvals_mask_top_t, name="V field top",
                                                     figure=fig)
         vdirfield_top.spacing = spacing
-        vector_cut_plane_top = mlab.pipeline.vector_cut_plane(vdirfield_top, 
-                                                          scale_factor=scalefactor)
-        vector_cut_plane_top.implicit_plane.widget.normal_to_y_axis = True
-        vector_cut_plane_top.glyph.color_mode = 'no_coloring'
-        vector_cut_plane_top.implicit_plane.widget.origin = np.array([ 50.,nz-0.1, 50.5])
-        vector_cut_plane_top.implicit_plane.widget.enabled = False
-        vector_cut_plane_top.glyph.glyph_source.glyph_source = vector_cut_plane_top.glyph.glyph_source.glyph_dict['arrow_source']
-        vector_cut_plane_top.glyph.glyph_source.glyph_position = 'center'
+        mpf.vector_cut_plane(vdirfield_top, 'top', ny, nz, y_spacing, scale_factor=scalefactor)
         
     if show_disp_top == True:
         xidirfield_top = mlab.pipeline.vector_field(xixvals_mask_top_t, np.zeros_like(xixvals_mask_top_t),
                                                     xiyvals_mask_top_t, name="Xi field top",
                                                     figure=fig)
         xidirfield_top.spacing = spacing
-        vector_cut_plane_top = mlab.pipeline.vector_cut_plane(xidirfield_top, 
-                                                          scale_factor=scalefactor)
-        vector_cut_plane_top.implicit_plane.widget.normal_to_y_axis = True
-        vector_cut_plane_top.glyph.color_mode = 'no_coloring'
-        vector_cut_plane_top.implicit_plane.widget.origin = np.array([ 50.,nz-0.1, 50.5])
-        vector_cut_plane_top.implicit_plane.widget.enabled = False
-        vector_cut_plane_top.glyph.glyph_source.glyph_source = vector_cut_plane_top.glyph.glyph_source.glyph_dict['arrow_source']
-        vector_cut_plane_top.glyph.glyph_source.glyph_position = 'center'
+        vector_cut_plane(xidirfield_top, 'top', ny, nz, y_spacing, scale_factor=scalefactor)
 
 
 
-        
         
 # Trying and failing to sort out memory issues.
 #        mlab.gcf()
@@ -520,7 +438,7 @@ for t_ind in range(nt):
 #        engine_manager.current_engine = None
 #        registry.engines = {}
         
-    if make_video == True:
+    if save_images == True:
         prefix = 'amd_' + view + '_' + mode
         mlab.savefig('D:\\my_work\\projects\\Asymmetric_slab\\Python\\visualisations\\3D_vis_animations\\'
                  + prefix + str(t_ind+1) + '.png')
