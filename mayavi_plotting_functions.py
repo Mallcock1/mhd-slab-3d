@@ -113,6 +113,13 @@ def view_position(scene, view, nx, ny, nz):
         scene.scene.camera.view_up = [-0.01695 * nx / 100., 0.999686 * nz / 100., -0.0184509 * ny / 100.]
         scene.scene.camera.clipping_range = [366.21083458278804, 631.07664372567524]
         
+    if view == 'front-top-side':
+        scene.scene.camera.position = [400.86836795744739, 181.09643412881843, 495.9729949005914]
+        scene.scene.camera.focal_point = [50.799999999999997, 50.399999999999999, 50.200000000000003]
+        scene.scene.camera.view_angle = 14.0
+        scene.scene.camera.view_up = [-0.14482357103326407, 0.9744012643898321, -0.17195438124301951]
+        scene.scene.camera.clipping_range = [418.37366265114053, 789.30998655093481]
+        
 
 def mask_points(var_x, var_y, var_z, front_or_top, mod, mod_y):
     if front_or_top == 'front':
