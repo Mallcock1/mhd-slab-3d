@@ -352,26 +352,26 @@ for mode_ind in [14]: #for an individual mode
         if show_density_pert == True:
             rho_vals = np.real(np.repeat(sf.rho_pert(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
         
-            bxvals_t = bxvals
-            byvals_t = byvals
-            bzvals_t = bzvals
+        bxvals_t = bxvals
+        byvals_t = byvals
+        bzvals_t = bzvals
+        
+        if show_disp_top == True or show_disp_front == True:
+            xixvals_t = xixvals
+            xiyvals_t = xiyvals
+            xizvals_t = xizvals
             
-            if show_disp_top == True or show_disp_front == True:
-                xixvals_t = xixvals
-                xiyvals_t = xiyvals
-                xizvals_t = xizvals
-                
-            if np.array([show_vel_top, show_vel_top_pert, show_vel_front, show_vel_front_pert]).any() == True:
-                vxvals_t = vxvals
-                vyvals_t = vyvals
-                vzvals_t = vzvals
+        if np.array([show_vel_top, show_vel_top_pert, show_vel_front, show_vel_front_pert]).any() == True:
+            vxvals_t = vxvals
+            vyvals_t = vyvals
+            vzvals_t = vzvals
+        
+        if show_boundary == True:
+            xix_boundary_r_vals_t = xix_boundary_r_vals
+            xix_boundary_l_vals_t = xix_boundary_l_vals
             
-            if show_boundary == True:
-                xix_boundary_r_vals_t = xix_boundary_r_vals
-                xix_boundary_l_vals_t = xix_boundary_l_vals
-                
-            if show_density == True or show_density_pert == True:
-                rho_vals_t = rho_vals
+        if show_density == True or show_density_pert == True:
+            rho_vals_t = rho_vals
             
             
             
@@ -455,88 +455,56 @@ for mode_ind in [14]: #for an individual mode
             rho = mlab.pipeline.scalar_field(rho_vals_t, name="density", figure=fig)
             rho.spacing = spacing
             mpf.volume_red_blue(rho, rho_vals_t)
-            
+        
+        #Masking points
+        if show_mag_vec == True:
+            bxvals_mask_front_t, byvals_mask_front_t, bzvals_mask_front_t = mpf.mask_points(bxvals_t, byvals_t, bzvals_t, 
+                                                                                            'front', mod, mod_y)
+        if show_disp_top == True:    
+            xixvals_mask_top_t, xiyvals_mask_top_t, xizvals_mask_top_t = mpf.mask_points(xixvals_t, xiyvals_t, xizvals_t, 
+                                                                                         'top', mod, mod_y)
+        if show_disp_front == True:
+            xixvals_mask_front_t, xiyvals_mask_front_t, xizvals_mask_front_t = mpf.mask_points(xixvals_t, xiyvals_t, xizvals_t, 
+                                                                                               'front', mod, mod_y)
+        if show_vel_top == True or show_vel_top_pert == True:  
+            vxvals_mask_top_t, vyvals_mask_top_t, vzvals_mask_top_t = mpf.mask_points(vxvals_t, vyvals_t, vzvals_t, 
+                                                                                      'top', mod, mod_y)                                                
+        if show_vel_front == True or show_vel_front_pert == True:
+            vxvals_mask_front_t, vyvals_mask_front_t, vzvals_mask_front_t = mpf.mask_points(vxvals_t, vyvals_t, vzvals_t, 
+                                                                                            'front', mod, mod_y)        
+        
         
         xgrid, zgrid, ygrid = np.mgrid[0:nx:(nx)*1j,
                                        0:nz:(nz)*1j,
                                        0:ny:(ny)*1j]
             
         field = mlab.pipeline.vector_field(bxvals_t, bzvals_t, byvals_t, name="B field", 
-                                               figure=fig, scalars=zgrid)
-        field.spacing = spacing
-            
+                                           figure=fig, scalars=zgrid)
+        field.spacing = spacing        
+        
+        #Set viewing angle
+        mpf.view_position(fig, view, nx, ny, nz)
+        
+        if show_axes == True:
+            mpf.axes(field, show_axis_labels, view)
+                
+        if show_mini_axis == True:
+            mpf.mini_axes()
+
+        if uniform_light == True:
+            #uniform lighting, but if we turn shading of volumes off, we are ok without
+            mpf.uniform_lighting(fig)
+        
+        #Black background
+        mpf.background_colour(fig, (0., 0., 0.))        
+        
             #contours = mlab.pipeline.iso_surface(magnitude,
             #                                        contours=range(2, 14, 3),
             #                                        transparent=True,
             #                                        opacity=0.4,
             #                                        colormap='YlGnBu',
             #                                        vmin=0, vmax=14)
-        if show_mag == True:
-            if t_ind == 0:
-                # Create an array of points for which we want mag field seeds
-                nx_seed = 9 #7
-                ny_seed = 13 #10
-                start_x = 30. #38
-                end_x = nx+1 - start_x
-                start_y = 1.
-                if ny == 20:
-                    end_y = ny - 1 #ny-2 for ny = 100
-                elif ny == 100:
-                    end_y = ny - 2
-                else:
-                    end_y = ny - 1
-                seeds=[]
-                dx_res = (end_x - start_x) / (nx_seed-1)
-                dy_res = (end_y - start_y) / (ny_seed-1)
-                for j in range(0,ny_seed):
-                    for i in range(0,nx_seed):
-                        x = start_x + (i * dx_res) * x_spacing
-                        y = start_y + (j * dy_res) * y_spacing
-                        z = nz / 2.# + 2. #1. + (t_start + t_ind*(t_end - t_start)/nt)/zmax * nz
-                        seeds.append((x,z,y))
-                
-                if mode in alfven_mode_options:
-                    for i in range(nx_seed):
-                        del seeds[0]
-                        del seeds[-1]
-                seeds = [(30.,50.,50.), (70., 50., 50.)]
-#                    print(seeds[10])
-                original_seeds = msp.original_seeds_non_int(seeds, [xmin, ymin, zmin], [xmax, ymax, zmax], [nx, ny, nz], 
-                                                            mode, xvals, zvals, 0., W, K, R1)
-#                print(original_seeds[10])
-            new_seeds = msp.move_seeds_non_int(original_seeds, [xmin, ymin, zmin], [xmax, ymax, zmax], [nx, ny, nz], 
-                                               mode, xvals, zvals, t, W, K, R1)
-#                print(new_seeds[10])
-            print('t is ' + str(t))
-            
-            field_lines = SeedStreamline(seed_points=new_seeds)
-            field_lines.stream_tracer.integration_direction='both'
-            field_lines.streamline_type = 'tube'
-            
-
-            field.add_child(field_lines)
-            module_manager = field_lines.parent
-#                module_manager.scalar_lut_manager.lut_mode = 'Reds'
-#                module_manager.scalar_lut_manager.data_range=[-30,25]
-            
-            field_lines.stream_tracer.maximum_propagation = nz
-            field_lines.tube_filter.number_of_sides = 20
-            field_lines.tube_filter.radius = 0.7
-            field_lines.tube_filter.capping = True
-            field_lines.actor.property.opacity = 1.0
-            
-            if show_mag_scale == True:
-                module_manager.scalar_lut_manager.lut_mode = 'jet'
-                module_manager.scalar_lut_manager.data_range=[7,18]
-            else:
-                mag_lut = module_manager.scalar_lut_manager.lut.table.to_array()
-                mag_lut[:,0] = [220]*256
-                mag_lut[:,1] = [20]*256
-                mag_lut[:,2] = [20]*256
-                module_manager.scalar_lut_manager.lut.table = mag_lut
-#                    module_manager.scalar_lut_manager.data_range=[-1500,500]
-            if show_mag_fade == True:
-                mpf.colormap_fade(module_manager, fade_value=20)
+        
         
         scalefactor = 4. # scale factor for direction field vectors
         
@@ -550,8 +518,8 @@ for mode_ind in [14]: #for an individual mode
         
         if show_vel_top == True or show_vel_top_pert == True:
             vdirfield_top = mlab.pipeline.vector_field(vxvals_mask_top_t, np.zeros_like(vxvals_mask_top_t),
-                                                        vyvals_mask_top_t, name="V field top",
-                                                        figure=fig)
+                                                       vyvals_mask_top_t, name="V field top",
+                                                       figure=fig)
             vdirfield_top.spacing = spacing
             mpf.vector_cut_plane(vdirfield_top, 'top', ny, nz, 
                                  y_spacing, scale_factor=4)
@@ -580,33 +548,19 @@ for mode_ind in [14]: #for an individual mode
             mpf.vector_cut_plane(xidirfield_front, 'front', ny, nz, 
                                  y_spacing, scale_factor=4)
         
-        #Set viewing angle
-        mpf.view_position(fig, view, nx, ny, nz)
-        
-        if show_axes == True:
-            mpf.axes(field, show_axis_labels, view)
-                
-        if show_mini_axis == True:
-            mpf.mini_axes()
 
-        if uniform_light == True:
-            #uniform lighting, but if we turn shading of volumes off, we are ok without
-            mpf.uniform_lighting(fig)
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
         
-        #Black background
-        mpf.background_colour(fig, (0., 0., 0.))
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            
-            field_ms.set(u=bxvals_t, v=bzvals_t, w=byvals_t)
         
         
         
@@ -651,8 +605,7 @@ for mode_ind in [14]: #for an individual mode
                 if show_density == True or show_density_pert == True:
                     rho_vals_t = rho_vals
                 
-                field_ms.set(u=bxvals_t, v=bzvals_t, w=byvals_t)
-                
+                            
             else:
                 bxvals_split = np.split(bxvals, [nz - (nz / nt) * t_ind], axis=1)
                 byvals_split = np.split(byvals, [nz - (nz / nt) * t_ind], axis=1)
@@ -662,6 +615,8 @@ for mode_ind in [14]: #for an individual mode
                 byvals_t = np.concatenate((byvals_split[1], byvals_split[0]), axis=1)
                 bzvals_t = np.concatenate((bzvals_split[1], bzvals_split[0]), axis=1)
                 
+                # Update field data
+                field.mlab_source.set(u=bxvals_t, v=bzvals_t, w=byvals_t)
                 
                 if show_disp_top == True or show_disp_front == True:            
                     xixvals_split = np.split(xixvals, [nz - (nz / nt) * t_ind], axis=1)
@@ -671,6 +626,14 @@ for mode_ind in [14]: #for an individual mode
                     xixvals_t = np.concatenate((xixvals_split[1], xixvals_split[0]), axis=1)
                     xiyvals_t = np.concatenate((xiyvals_split[1], xiyvals_split[0]), axis=1)
                     xizvals_t = np.concatenate((xizvals_split[1], xizvals_split[0]), axis=1)
+                    
+#                    if show_disp_top == True:
+#                        # Update displacement data
+#                        xidirfield_top.mlab_source.set(u=xixvals_t, w=xiyvals_t)
+#                    
+#                    if show_disp_front == True:
+#                        # Update displacement data
+#                        xidirfield_front.mlab_source.set(u=xixvals_t, w=xiyvals_t)
                                         
                 if np.array([show_vel_top, show_vel_top_pert, show_vel_front, show_vel_front_pert]).any() == True:            
                     vxvals_split = np.split(vxvals, [nz - (nz / nt) * t_ind], axis=1)
@@ -692,24 +655,80 @@ for mode_ind in [14]: #for an individual mode
                     rho_vals_split = np.split(rho_vals, [nz - (nz / nt) * t_ind], axis=1)
                     
                     rho_vals_t = np.concatenate((rho_vals_split[1], rho_vals_split[0]), axis=1)                         
+                    
+
             
-            #Masking points
-            if show_mag_vec == True:
-                bxvals_mask_front_t, byvals_mask_front_t, bzvals_mask_front_t = mpf.mask_points(bxvals_t, byvals_t, bzvals_t, 
-                                                                                   'front', mod, mod_y)
-            if show_disp_top == True:    
-                xixvals_mask_top_t, xiyvals_mask_top_t, xizvals_mask_top_t = mpf.mask_points(xixvals_t, xiyvals_t, xizvals_t, 
-                                                                                             'top', mod, mod_y)
-            if show_disp_front == True:
-                xixvals_mask_front_t, xiyvals_mask_front_t, xizvals_mask_front_t = mpf.mask_points(xixvals_t, xiyvals_t, xizvals_t, 
-                                                                                                   'front', mod, mod_y)
-            if show_vel_top == True or show_vel_top_pert == True:  
-                vxvals_mask_top_t, vyvals_mask_top_t, vzvals_mask_top_t = mpf.mask_points(vxvals_t, vyvals_t, vzvals_t, 
-                                                                                          'top', mod, mod_y)                                                
-            if show_vel_front == True or show_vel_front_pert == True:
-                vxvals_mask_front_t, vyvals_mask_front_t, vzvals_mask_front_t = mpf.mask_points(vxvals_t, vyvals_t, vzvals_t, 
-                                                                                                'front', mod, mod_y)
-                                                                                                
+            #Make field lines
+            if show_mag == True:
+                if t_ind == 0:
+                    # Create an array of points for which we want mag field seeds
+                    nx_seed = 9 #7
+                    ny_seed = 13 #10
+                    start_x = 30. #38
+                    end_x = nx+1 - start_x
+                    start_y = 1.
+                    if ny == 20:
+                        end_y = ny - 1 #ny-2 for ny = 100
+                    elif ny == 100:
+                        end_y = ny - 2
+                    else:
+                        end_y = ny - 1
+                    seeds=[]
+                    dx_res = (end_x - start_x) / (nx_seed-1)
+                    dy_res = (end_y - start_y) / (ny_seed-1)
+                    for j in range(0,ny_seed):
+                        for i in range(0,nx_seed):
+                            x = start_x + (i * dx_res) * x_spacing
+                            y = start_y + (j * dy_res) * y_spacing
+                            z = nz / 2.# + 2. #1. + (t_start + t_ind*(t_end - t_start)/nt)/zmax * nz
+                            seeds.append((x,z,y))
+                    
+                    if mode in alfven_mode_options:
+                        for i in range(nx_seed):
+                            del seeds[0]
+                            del seeds[-1]
+                    seeds = [(30.,50.,50.), (70., 50., 50.)]
+    #                    print(seeds[10])
+                    original_seeds = msp.original_seeds_non_int(seeds, [xmin, ymin, zmin], [xmax, ymax, zmax], [nx, ny, nz], 
+                                                                mode, xvals, zvals, 0., W, K, R1)
+    #                print(original_seeds[10])
+                new_seeds = msp.move_seeds_non_int(original_seeds, [xmin, ymin, zmin], [xmax, ymax, zmax], [nx, ny, nz], 
+                                                   mode, xvals, zvals, t, W, K, R1)
+    #                print(new_seeds[10])
+                print('t is ' + str(t))
+                
+                #remove previous field lines
+                if t_ind != 0:
+                    field_lines.remove()
+                    
+                field_lines = SeedStreamline(seed_points=new_seeds)
+                field_lines.stream_tracer.integration_direction='both'
+                field_lines.streamline_type = 'tube'
+                
+    
+                field.add_child(field_lines)
+                module_manager = field_lines.parent
+    #                module_manager.scalar_lut_manager.lut_mode = 'Reds'
+    #                module_manager.scalar_lut_manager.data_range=[-30,25]
+                
+                field_lines.stream_tracer.maximum_propagation = nz
+                field_lines.tube_filter.number_of_sides = 20
+                field_lines.tube_filter.radius = 0.7
+                field_lines.tube_filter.capping = True
+                field_lines.actor.property.opacity = 1.0
+                
+                if show_mag_scale == True:
+                    module_manager.scalar_lut_manager.lut_mode = 'jet'
+                    module_manager.scalar_lut_manager.data_range=[7,18]
+                else:
+                    mag_lut = module_manager.scalar_lut_manager.lut.table.to_array()
+                    mag_lut[:,0] = [220]*256
+                    mag_lut[:,1] = [20]*256
+                    mag_lut[:,2] = [20]*256
+                    module_manager.scalar_lut_manager.lut.table = mag_lut
+    #                    module_manager.scalar_lut_manager.data_range=[-1500,500]
+                if show_mag_fade == True:
+                    mpf.colormap_fade(module_manager, fade_value=20)
 
     
             
@@ -726,15 +745,16 @@ for mode_ind in [14]: #for an individual mode
             if save_images == True:
                 prefix = 'R1_'+str(R1)+'_'+view + '_' + mode
                 mlab.savefig('D:\\my_work\\projects\\Asymmetric_slab\\Python\\visualisations\\3D_vis_animations\\'
-                             + prefix + str(t_ind+1) + '.png')
-                mlab.close(fig)
+                             + prefix + str(t_ind+1) + '.png')                
             
             t = t + (t_end - t_start) / nt
-        
+    
+    mlab.close(fig)
+    
     if make_video == True:
         i2v.image2video(prefix=prefix, output_name=prefix+'_video', 
                         out_extension='mp4', fps=10, n_loops=4, 
                         delete_images=True, delete_old_videos=True, res=res[1])
-        
+    
     print('Finished ' + mode)
     
