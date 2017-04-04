@@ -83,8 +83,16 @@ def view_position(scene, view, nx, ny, nz):
         scene.scene.parallel_projection = True
         scene.scene.camera.zoom(1.65) # Parallel projection zoom is done in this way, different to perspective projection
     if view == 'front':
-        scene.scene.z_plus_view()
-        scene.scene.camera.view_angle = 21.
+#        scene.scene.z_plus_view()
+#        scene.scene.parallel_projection = True
+#        scene.scene.camera.zoom(1.65)
+##        scene.scene.camera.view_angle = 21.
+
+        scene.scene.camera.position = [50.5, 50.5, 382.37955413300307]
+        scene.scene.camera.focal_point = [50.5, 50.5, 50.0]
+        scene.scene.camera.view_angle = 21.0
+        scene.scene.camera.view_up = [0.0, 1.0, 0.0]
+        scene.scene.camera.clipping_range = [229.55575859167305, 462.61524744499809]
     if view == 'top':
         scene.scene.camera.position = [53.107781380642741, 523.35670183503294, 50.948508989758153]
         scene.scene.camera.focal_point = [50.821544647216797, 50.413210511207581, 50.159849926829338]
@@ -241,5 +249,3 @@ def colormap_fade(module_manager, fade_value=20):
     lut[:fade_value,-1] = np.linspace(0, 255, fade_value)
     lut[-fade_value:,-1] = np.linspace(255, 0, fade_value)
     module_manager.scalar_lut_manager.lut.table = lut
-    
-    

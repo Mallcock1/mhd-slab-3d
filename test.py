@@ -1,3 +1,9 @@
+# -*- coding: utf-8 -*-
+"""
+Created on Mon Apr 03 14:09:00 2017
+
+@author: Matt
+"""
 
 #import sys
 #sys.path.append('D:\\my_work\\projects\\Asymmetric_slab\\Python\\visualisations')
@@ -117,13 +123,13 @@ show_animation = True
 # Uncomment the parametrer you would like to see
 # No density perturbations or vel/disp pert for alfven modes.
 #show_density = True
-show_density_pert = True
+#show_density_pert = True
 show_mag = True
 #show_mag_scale = True #must also have show_mag = True
-#show_mag_fade = True
+show_mag_fade = True
 #show_mag_vec = True
 #show_vel_front = True
-show_vel_front_pert = True
+#show_vel_front_pert = True
 #show_vel_top = True
 #show_vel_top_pert = True
 #show_disp_top = True
@@ -139,7 +145,7 @@ res = tuple(101 * np.array((16,9)))
 #res = tuple(51 * np.array((16,9)))
 #res = tuple(21 * np.array((16,9)))
 
-number_of_frames = 50
+number_of_frames = 20
 #
 #save_images = False
 save_images = True
@@ -163,7 +169,7 @@ make_video = True
 
 #for mode_ind in range(14): # for all others. REMEMBER SBB pparameters
 #for mode_ind in [14,15]: #for fast body surf. REMEMBER SBS parameters
-for mode_ind in [0,1]: #for an individual mode
+for mode_ind in [14]: #for an individual mode
     if mode_ind not in range(len(mode_options)):
         raise NameError('Mode not in mode_options')
         
@@ -396,60 +402,58 @@ for mode_ind in [0,1]: #for an individual mode
         fig = mlab.figure(size=res) # (1920, 1080) for 1080p , tuple(101 * np.array((16,9))) #16:9 aspect ratio for video upload
 
         spacing =  np.array([x_spacing, z_spacing, y_spacing])
-#        #Set viewing angle - this is set in each frame separately
-#        mpf.view_position(fig, view, nx, ny, nz)
         
-#        if show_boundary == True: # maybe +1 after nx???? did have this, now removed. but still unsure.
-#            ext_min_r = ((nx) * (xix_boundary_r_vals_t.min() - xmin) / (xmax - xmin)) * x_spacing
-#            ext_max_r = ((nx) * (xix_boundary_r_vals_t.max() - xmin) / (xmax - xmin)) * x_spacing
-#            
-#            ext_min_l = ((nx) * (xix_boundary_l_vals_t.min() - xmin) / (xmax - xmin)) * x_spacing #plus 2 after (xmax-xmin)?
-#            ext_max_l = ((nx) * (xix_boundary_l_vals_t.max() - xmin) / (xmax - xmin)) * x_spacing #plus 2 after (xmax-xmin)?
-#                                               
-#            if view == 'front-parallel':
-#                lut = np.reshape(np.array([150, 150, 150, 255]*256), (256,4))
-#                fade_value = 125
-#                lut[:fade_value,-1] = np.linspace(0, 255, fade_value)
-#                lut[-fade_value:,-1] = np.linspace(255, 0, fade_value)
-#                
-#                boundary_r_thick = mlab.mesh(xix_boundary_r_vals_t, zgrid_zy, ygrid_zy,
-#                                             extent=[ext_min_r, ext_max_r, 1, nz, 0, (ny-1) * y_spacing],
-#                                             opacity=1., representation='wireframe',
-#                                             line_width=12., scalars=zgrid_zy)
-##                    boundary_r_thick.enable_contours = True
-#                boundary_l_thick = mlab.mesh(xix_boundary_l_vals_t, zgrid_zy, ygrid_zy,
-#                                             extent=[ext_min_l, ext_max_l, 1, nz, 0, (ny-1) * y_spacing],
-#                                             opacity=1., representation='wireframe',
-#                                             line_width=12., scalars=zgrid_zy)
-##                    boundary_l_thick.enable_contours = True
-#                
-#                boundary_r_thick.module_manager.scalar_lut_manager.lut.table = lut
-#                boundary_l_thick.module_manager.scalar_lut_manager.lut.table = lut
-#                boundary_r_thick.actor.property.lighting = False
-#                boundary_r_thick.actor.property.shading = False
-#                boundary_l_thick.actor.property.lighting = False
-#                boundary_l_thick.actor.property.shading = False
-#                                             
-#            else:
-#                lut = np.reshape(np.array([150, 150, 150, 255]*256), (256,4))
-#                fade_value = 20
-#                lut[:fade_value,-1] = np.linspace(0, 255, fade_value)
-#                lut[-fade_value:,-1] = np.linspace(255, 0, fade_value)
-#                
-#                boundary_r = mlab.mesh(xix_boundary_r_vals_t, zgrid_zy, ygrid_zy,
-#                                       extent=[ext_min_r, ext_max_r, 1, nz, 0, (ny-1) * y_spacing],
-#                                       opacity=0.7, scalars=zgrid_zy)
-#
-#                boundary_l = mlab.mesh(xix_boundary_l_vals_t, zgrid_zy, ygrid_zy,
-#                                       extent=[ext_min_l, ext_max_l, 1, nz, 0, (ny-1) * y_spacing],
-#                                       opacity=0.7, scalars=zgrid_zy)
-#
-#                boundary_r.module_manager.scalar_lut_manager.lut.table = lut
-#                boundary_l.module_manager.scalar_lut_manager.lut.table = lut
-#                boundary_r.actor.property.lighting = False
-#                boundary_r.actor.property.shading = False
-#                boundary_l.actor.property.lighting = False
-#                boundary_l.actor.property.shading = False
+        if show_boundary == True: # maybe +1 after nx???? did have this, now removed. but still unsure.
+            ext_min_r = ((nx) * (xix_boundary_r_vals_t.min() - xmin) / (xmax - xmin)) * x_spacing
+            ext_max_r = ((nx) * (xix_boundary_r_vals_t.max() - xmin) / (xmax - xmin)) * x_spacing
+            
+            ext_min_l = ((nx) * (xix_boundary_l_vals_t.min() - xmin) / (xmax - xmin)) * x_spacing #plus 2 after (xmax-xmin)?
+            ext_max_l = ((nx) * (xix_boundary_l_vals_t.max() - xmin) / (xmax - xmin)) * x_spacing #plus 2 after (xmax-xmin)?
+                                               
+            if view == 'front-parallel':
+                lut = np.reshape(np.array([150, 150, 150, 255]*256), (256,4))
+                fade_value = 125
+                lut[:fade_value,-1] = np.linspace(0, 255, fade_value)
+                lut[-fade_value:,-1] = np.linspace(255, 0, fade_value)
+                
+                boundary_r_thick = mlab.mesh(xix_boundary_r_vals_t, zgrid_zy, ygrid_zy,
+                                             extent=[ext_min_r, ext_max_r, 1, nz, 0, (ny-1) * y_spacing],
+                                             opacity=1., representation='wireframe',
+                                             line_width=12., scalars=zgrid_zy)
+#                    boundary_r_thick.enable_contours = True
+                boundary_l_thick = mlab.mesh(xix_boundary_l_vals_t, zgrid_zy, ygrid_zy,
+                                             extent=[ext_min_l, ext_max_l, 1, nz, 0, (ny-1) * y_spacing],
+                                             opacity=1., representation='wireframe',
+                                             line_width=12., scalars=zgrid_zy)
+#                    boundary_l_thick.enable_contours = True
+                
+                boundary_r_thick.module_manager.scalar_lut_manager.lut.table = lut
+                boundary_l_thick.module_manager.scalar_lut_manager.lut.table = lut
+                boundary_r_thick.actor.property.lighting = False
+                boundary_r_thick.actor.property.shading = False
+                boundary_l_thick.actor.property.lighting = False
+                boundary_l_thick.actor.property.shading = False
+                                             
+            else:
+                lut = np.reshape(np.array([150, 150, 150, 255]*256), (256,4))
+                fade_value = 20
+                lut[:fade_value,-1] = np.linspace(0, 255, fade_value)
+                lut[-fade_value:,-1] = np.linspace(255, 0, fade_value)
+                
+                boundary_r = mlab.mesh(xix_boundary_r_vals_t, zgrid_zy, ygrid_zy,
+                                       extent=[ext_min_r, ext_max_r, 1, nz, 0, (ny-1) * y_spacing],
+                                       opacity=0.7, scalars=zgrid_zy)
+
+                boundary_l = mlab.mesh(xix_boundary_l_vals_t, zgrid_zy, ygrid_zy,
+                                       extent=[ext_min_l, ext_max_l, 1, nz, 0, (ny-1) * y_spacing],
+                                       opacity=0.7, scalars=zgrid_zy)
+
+                boundary_r.module_manager.scalar_lut_manager.lut.table = lut
+                boundary_l.module_manager.scalar_lut_manager.lut.table = lut
+                boundary_r.actor.property.lighting = False
+                boundary_r.actor.property.shading = False
+                boundary_l.actor.property.lighting = False
+                boundary_l.actor.property.shading = False                                           
                                        
                                              
         if show_density == True or show_density_pert == True:
@@ -484,7 +488,8 @@ for mode_ind in [0,1]: #for an individual mode
                                            figure=fig, scalars=zgrid)
         field.spacing = spacing        
         
-
+        #Set viewing angle
+        mpf.view_position(fig, view, nx, ny, nz)
         
         if show_axes == True:
             mpf.axes(field, show_axis_labels, view)
@@ -580,7 +585,7 @@ for mode_ind in [0,1]: #for an individual mode
         
         
         
-
+        
         
         
         for t_ind in range(nt):
@@ -605,7 +610,8 @@ for mode_ind in [0,1]: #for an individual mode
                     
                 if show_density == True or show_density_pert == True:
                     rho_vals_t = rho_vals
-                     
+                
+                            
             else:
                 bxvals_split = np.split(bxvals, [nz - (nz / nt) * t_ind], axis=1)
                 byvals_split = np.split(byvals, [nz - (nz / nt) * t_ind], axis=1)
@@ -627,10 +633,13 @@ for mode_ind in [0,1]: #for an individual mode
                     xiyvals_t = np.concatenate((xiyvals_split[1], xiyvals_split[0]), axis=1)
                     xizvals_t = np.concatenate((xizvals_split[1], xizvals_split[0]), axis=1)
                     
-                    if show_disp_top == True:
-                        xidirfield_top.mlab_source.set(u=xixvals_t, v=xizvals_t, w=xiyvals_t)
-                    if show_disp_front == True:
-                        xidirfield_front.mlab_source.set(u=xixvals_t, v=xizvals_t, w=xiyvals_t)
+#                    if show_disp_top == True:
+#                        # Update displacement data
+#                        xidirfield_top.mlab_source.set(u=xixvals_t, w=xiyvals_t)
+#                    
+#                    if show_disp_front == True:
+#                        # Update displacement data
+#                        xidirfield_front.mlab_source.set(u=xixvals_t, w=xiyvals_t)
                                         
                 if np.array([show_vel_top, show_vel_top_pert, show_vel_front, show_vel_front_pert]).any() == True:            
                     vxvals_split = np.split(vxvals, [nz - (nz / nt) * t_ind], axis=1)
@@ -640,11 +649,6 @@ for mode_ind in [0,1]: #for an individual mode
                     vxvals_t = np.concatenate((vxvals_split[1], vxvals_split[0]), axis=1)
                     vyvals_t = np.concatenate((vyvals_split[1], vyvals_split[0]), axis=1)
                     vzvals_t = np.concatenate((vzvals_split[1], vzvals_split[0]), axis=1)
-                
-                    if show_vel_top == True or show_vel_top_pert == True:
-                        vdirfield_top.mlab_source.set(u=vxvals_t, v=vzvals_t, w=vyvals_t)
-                    if show_disp_front == True:
-                        vdirfield_front.mlab_source.set(u=vxvals_t, v=vzvals_t, w=vyvals_t)
                 
                 if show_boundary == True:
                     xix_boundary_r_vals_split = np.split(xix_boundary_r_vals, [nz - (nz / nt) * t_ind], axis=0)
@@ -656,148 +660,54 @@ for mode_ind in [0,1]: #for an individual mode
                 if show_density == True or show_density_pert == True:            
                     rho_vals_split = np.split(rho_vals, [nz - (nz / nt) * t_ind], axis=1)
                     
-                    rho_vals_t = np.concatenate((rho_vals_split[1], rho_vals_split[0]), axis=1)    
-
-                    rho.mlab_source.set(scalars=rho_vals_t)                     
+                    rho_vals_t = np.concatenate((rho_vals_split[1], rho_vals_split[0]), axis=1)                         
                     
-
-            
-            if show_boundary == True: # maybe +1 after nx???? did have this, now removed. but still unsure.
-                ext_min_r = ((nx) * (xix_boundary_r_vals_t.min() - xmin) / (xmax - xmin)) * x_spacing
-                ext_max_r = ((nx) * (xix_boundary_r_vals_t.max() - xmin) / (xmax - xmin)) * x_spacing
-                
-                ext_min_l = ((nx) * (xix_boundary_l_vals_t.min() - xmin) / (xmax - xmin)) * x_spacing #plus 2 after (xmax-xmin)?
-                ext_max_l = ((nx) * (xix_boundary_l_vals_t.max() - xmin) / (xmax - xmin)) * x_spacing #plus 2 after (xmax-xmin)?
-                                                   
-                if view == 'front-parallel':
-                    #remove previous boundaries
-                    if t_ind != 0:
-                        boundary_r_thick.remove()
-                        boundary_l_thick.remove()
-                        
-                    lut = np.reshape(np.array([150, 150, 150, 255]*256), (256,4))
-                    fade_value = 125
-                    lut[:fade_value,-1] = np.linspace(0, 255, fade_value)
-                    lut[-fade_value:,-1] = np.linspace(255, 0, fade_value)
-                    
-                    boundary_r_thick = mlab.mesh(xix_boundary_r_vals_t, zgrid_zy, ygrid_zy,
-                                                 extent=[ext_min_r, ext_max_r, 1, nz, 0, (ny-1) * y_spacing],
-                                                 opacity=1., representation='wireframe',
-                                                 line_width=12., scalars=zgrid_zy)
-    #                    boundary_r_thick.enable_contours = True
-                    boundary_l_thick = mlab.mesh(xix_boundary_l_vals_t, zgrid_zy, ygrid_zy,
-                                                 extent=[ext_min_l, ext_max_l, 1, nz, 0, (ny-1) * y_spacing],
-                                                 opacity=1., representation='wireframe',
-                                                 line_width=12., scalars=zgrid_zy)
-    #                    boundary_l_thick.enable_contours = True
-                    
-                    boundary_r_thick.module_manager.scalar_lut_manager.lut.table = lut
-                    boundary_l_thick.module_manager.scalar_lut_manager.lut.table = lut
-                    boundary_r_thick.actor.property.lighting = False
-                    boundary_r_thick.actor.property.shading = False
-                    boundary_l_thick.actor.property.lighting = False
-                    boundary_l_thick.actor.property.shading = False
-                                                 
-                else:
-                    #remove previous boundaries
-                    if t_ind != 0:
-                        boundary_r.remove()
-                        boundary_l.remove()
-                        
-                    lut = np.reshape(np.array([150, 150, 150, 255]*256), (256,4))
-                    fade_value = 20
-                    lut[:fade_value,-1] = np.linspace(0, 255, fade_value)
-                    lut[-fade_value:,-1] = np.linspace(255, 0, fade_value)
-                    
-                    boundary_r = mlab.mesh(xix_boundary_r_vals_t, zgrid_zy, ygrid_zy,
-                                           extent=[ext_min_r, ext_max_r, 1, nz, 0, (ny-1) * y_spacing],
-                                           opacity=0.7, scalars=zgrid_zy)
-    
-                    boundary_l = mlab.mesh(xix_boundary_l_vals_t, zgrid_zy, ygrid_zy,
-                                           extent=[ext_min_l, ext_max_l, 1, nz, 0, (ny-1) * y_spacing],
-                                           opacity=0.7, scalars=zgrid_zy)
-    
-                    boundary_r.module_manager.scalar_lut_manager.lut.table = lut
-                    boundary_l.module_manager.scalar_lut_manager.lut.table = lut
-                    boundary_r.actor.property.lighting = False
-                    boundary_r.actor.property.shading = False
-                    boundary_l.actor.property.lighting = False
-                    boundary_l.actor.property.shading = False               
-            
-            
 
             
             #Make field lines
             if show_mag == True:
-#                #Trying and failing to move seed points with displacement field.
-#                if t_ind == 0:
-#                    # Create an array of points for which we want mag field seeds
-#                    nx_seed = 9 #7
-#                    ny_seed = 13 #10
-#                    start_x = 30. #38
-#                    end_x = nx+1 - start_x
-#                    start_y = 1.
-#                    if ny == 20:
-#                        end_y = ny - 1 #ny-2 for ny = 100
-#                    elif ny == 100:
-#                        end_y = ny - 2
-#                    else:
-#                        end_y = ny - 1
-#                    seeds=[]
-#                    dx_res = (end_x - start_x) / (nx_seed-1)
-#                    dy_res = (end_y - start_y) / (ny_seed-1)
-#                    for j in range(0,ny_seed):
-#                        for i in range(0,nx_seed):
-#                            x = start_x + (i * dx_res) * x_spacing
-#                            y = start_y + (j * dy_res) * y_spacing
-#                            z = nz / 2.# + 2. #1. + (t_start + t_ind*(t_end - t_start)/nt)/zmax * nz #
-#                            seeds.append((x,z,y))
-#                    
-#                    if mode in alfven_mode_options:
-#                        for i in range(nx_seed):
-#                            del seeds[0]
-#                            del seeds[-1]
-##                    seeds = [(30.,50.,50.), (70., 50., 50.)]
-#                    original_seeds = msp.original_seeds_non_int(seeds, [xmin, ymin, zmin], [xmax, ymax, zmax], [nx, ny, nz], 
-#                                                                mode, xvals, zvals, 0., W, K, R1)
-#                new_seeds = msp.move_seeds_non_int(original_seeds, [xmin, ymin, zmin], [xmax, ymax, zmax], [nx, ny, nz], 
-#                                                   mode, xvals, zvals, t, W, K, R1)
-##    #                print(new_seeds[10])
-#                print('t is ' + str(t))
+                if t_ind == 0:
+                    # Create an array of points for which we want mag field seeds
+                    nx_seed = 9 #7
+                    ny_seed = 13 #10
+                    start_x = 30. #38
+                    end_x = nx+1 - start_x
+                    start_y = 1.
+                    if ny == 20:
+                        end_y = ny - 1 #ny-2 for ny = 100
+                    elif ny == 100:
+                        end_y = ny - 2
+                    else:
+                        end_y = ny - 1
+                    seeds=[]
+                    dx_res = (end_x - start_x) / (nx_seed-1)
+                    dy_res = (end_y - start_y) / (ny_seed-1)
+                    for j in range(0,ny_seed):
+                        for i in range(0,nx_seed):
+                            x = start_x + (i * dx_res) * x_spacing
+                            y = start_y + (j * dy_res) * y_spacing
+                            z = nz / 2.# + 2. #1. + (t_start + t_ind*(t_end - t_start)/nt)/zmax * nz
+                            seeds.append((x,z,y))
+                    
+                    if mode in alfven_mode_options:
+                        for i in range(nx_seed):
+                            del seeds[0]
+                            del seeds[-1]
+                    seeds = [(30.,50.,50.), (70., 50., 50.)]
+    #                    print(seeds[10])
+                    original_seeds = msp.original_seeds_non_int(seeds, [xmin, ymin, zmin], [xmax, ymax, zmax], [nx, ny, nz], 
+                                                                mode, xvals, zvals, 0., W, K, R1)
+    #                print(original_seeds[10])
+                new_seeds = msp.move_seeds_non_int(original_seeds, [xmin, ymin, zmin], [xmax, ymax, zmax], [nx, ny, nz], 
+                                                   mode, xvals, zvals, t, W, K, R1)
+    #                print(new_seeds[10])
+                print('t is ' + str(t))
                 
-                #move seed points up with wave speed.
-                # Create an array of points for which we want mag field seeds
-                nx_seed = 9 #7
-                ny_seed = 13 #10
-                start_x = 30. #38
-                end_x = nx+1 - start_x
-                start_y = 1.
-                if ny == 20:
-                    end_y = ny - 1 #ny-2 for ny = 100
-                elif ny == 100:
-                    end_y = ny - 2
-                else:
-                    end_y = ny - 1
-                seeds=[]
-                dx_res = (end_x - start_x) / (nx_seed-1)
-                dy_res = (end_y - start_y) / (ny_seed-1)
-                for j in range(0,ny_seed):
-                    for i in range(0,nx_seed):
-                        x = start_x + (i * dx_res) * x_spacing
-                        y = start_y + (j * dy_res) * y_spacing
-                        z = 1. + (t_start + t_ind*(t_end - t_start)/nt)/zmax * nz
-                        seeds.append((x,z,y))
-                
-                if mode in alfven_mode_options:
-                    for i in range(nx_seed):
-                        del seeds[0]
-                        del seeds[-1]
-
                 #remove previous field lines
                 if t_ind != 0:
                     field_lines.remove()
                     
-                field_lines = SeedStreamline(seed_points=seeds)
+                field_lines = SeedStreamline(seed_points=new_seeds)
                 field_lines.stream_tracer.integration_direction='both'
                 field_lines.streamline_type = 'tube'
                 
@@ -825,11 +735,10 @@ for mode_ind in [0,1]: #for an individual mode
     #                    module_manager.scalar_lut_manager.data_range=[-1500,500]
                 if show_mag_fade == True:
                     mpf.colormap_fade(module_manager, fade_value=20)
-    
-            #Set viewing angle - For some unknown reason we must redefine the camera position each time.
-            #This is something to do with the boundaries being replaced each time.
-            mpf.view_position(fig, view, nx, ny, nz)
 
+    
+            
+            
     # Trying and failing to sort out memory issues.
     #        mlab.gcf()
     #        mlab.clf()
@@ -840,18 +749,17 @@ for mode_ind in [0,1]: #for an individual mode
     #        registry.engines = {}
             
             if save_images == True:
-                prefix = 'R1_'+str(R1)+'_'+ mode + '_' + view
+                prefix = 'R1_'+str(R1)+'_'+view + '_' + mode
                 mlab.savefig('D:\\my_work\\projects\\Asymmetric_slab\\Python\\visualisations\\3D_vis_animations\\'
                              + prefix + str(t_ind+1) + '.png')                
             
             t = t + (t_end - t_start) / nt
-
+    
+    mlab.close(fig)
     
     if make_video == True:
-        mlab.close(fig)
         i2v.image2video(prefix=prefix, output_name=prefix+'_video', 
-                        out_extension='mp4', fps=20, n_loops=4, 
+                        out_extension='mp4', fps=10, n_loops=4, 
                         delete_images=True, delete_old_videos=True, res=res[1])
     
     print('Finished ' + mode)
-    
