@@ -5,7 +5,7 @@
 #sys.path.append('D:\\my_work\\projects\\Asymmetric_slab\\Python\\visualisations\\ffmpeg')
 ##sys.path.append(u'W7_DATA/my_work/projects/Asymmetric_slab/Python/visualisations/ffmpeg/')
 
-#import pdb # pause code for debugging at pdb.set_trace()
+import pdb # pause code for debugging at pdb.set_trace()
 
 import numpy as np
 import toolbox as tool
@@ -76,13 +76,14 @@ for mode in mode_options:
 
 # Which angle shall we view from?
 view_options = ['front', 'front-parallel', 'top', 'top-parallel' 'front-top',
-                'front-side']
+                'front-side', 'front_top_side']
 view = 'front'
 #view = 'front-parallel'
 #view = 'top'
 #view = 'top-parallel'
 #view = 'front-top'
 #view = 'front-side'
+#view = 'front-top-side'
 
 # Uniform lighting?
 #uniform_light = True
@@ -111,19 +112,19 @@ show_dispersion = False
 #show_dispersion = True
 
 # Wanna see the animation? Of course you do
-#show_animation = False
-show_animation = True
+show_animation = False
+#show_animation = True
 
 # Uncomment the parametrer you would like to see
 # No density perturbations or vel/disp pert for alfven modes.
-#show_density = True
-show_density_pert = True
+show_density = True
+#show_density_pert = True
 show_mag = True
 #show_mag_scale = True #must also have show_mag = True
-#show_mag_fade = True
+show_mag_fade = True
 #show_mag_vec = True
-#show_vel_front = True
-show_vel_front_pert = True
+show_vel_front = True
+#show_vel_front_pert = True
 #show_vel_top = True
 #show_vel_top_pert = True
 #show_disp_top = True
@@ -162,8 +163,9 @@ make_video = True
 #    raise NameError('Cannot show density or vel/disp pert for this mode')
 
 #for mode_ind in range(14): # for all others. REMEMBER SBB pparameters
-#for mode_ind in [14,15]: #for fast body surf. REMEMBER SBS parameters
-for mode_ind in [0,1]: #for an individual mode
+#for mode_ind in [17]: #for fast body surf. REMEMBER SBS parameters
+#for mode_ind in [0,1]: #for an individual mode
+for mode_ind in range(2,14): 
     if mode_ind not in range(len(mode_options)):
         raise NameError('Mode not in mode_options')
         
@@ -191,8 +193,8 @@ for mode_ind in [0,1]: #for an individual mode
         raise NameError('Mode not found')
             
 #    R1 = 1.5 # Higher denisty on left than right
-#    R1 = 1.8
-    R1 = 2. # Symmetric slab
+    R1 = 1.8
+#    R1 = 2. # Symmetric slab
         
     def disp_rel_asym_2var(W, K):
         return sf.disp_rel_asym(W, K, R1)
@@ -255,11 +257,14 @@ for mode_ind in [0,1]: #for an individual mode
     else:
         W = np.real(W)
         
-    # Quick plot to see if we are hitting correct mode    
-    #    plt.plot([K] * len(Woptions), Woptions, '.')
-    #    plt.plot(K+0.5, W, 'go')
-    #    plt.xlim([0,23])
+#     Quick plot to see if we are hitting correct mode    
+    plt.plot([K] * len(Woptions), Woptions, '.')
+    plt.plot(K+0.5, W, 'go')
+    plt.xlim([0,23])
+    plt.show()
     
+#    pdb.set_trace()    
+
     # Dependent variables:
     # x = k*x
     # y = k*y
@@ -293,7 +298,7 @@ for mode_ind in [0,1]: #for an individual mode
         
         # You can change ny but be careful changing nx, nz.
         nx = 100 #100
-        ny = 100 #100#20 #100
+        ny = 100 #100 #100#20 #100
         nz = 100 #100
         nt = number_of_frames
         
@@ -364,7 +369,7 @@ for mode_ind in [0,1]: #for an individual mode
         if np.array([show_vel_top, show_vel_top_pert, show_vel_front, show_vel_front_pert]).any() == True:
             vxvals_t = vxvals
             vyvals_t = vyvals
-            vzvals_t = vzvals
+            vzvals_t = vzvals 
         
         if show_boundary == True:
             xix_boundary_r_vals_t = xix_boundary_r_vals
@@ -618,6 +623,11 @@ for mode_ind in [0,1]: #for an individual mode
                 # Update field data
                 field.mlab_source.set(u=bxvals_t, v=bzvals_t, w=byvals_t)
                 
+                if show_mag_vec == True:
+                    bxvals_mask_front_t, byvals_mask_front_t, bzvals_mask_front_t = mpf.mask_points(bxvals_t, byvals_t, bzvals_t, 
+                                                                                                    'front', mod, mod_y)
+                    bdirfield_front.mlab_source.set(u=bxvals_mask_front_t, v=bzvals_mask_front_t, w=byvals_mask_front_t)                                                                                        
+                
                 if show_disp_top == True or show_disp_front == True:            
                     xixvals_split = np.split(xixvals, [nz - (nz / nt) * t_ind], axis=1)
                     xiyvals_split = np.split(xiyvals, [nz - (nz / nt) * t_ind], axis=1)
@@ -628,9 +638,13 @@ for mode_ind in [0,1]: #for an individual mode
                     xizvals_t = np.concatenate((xizvals_split[1], xizvals_split[0]), axis=1)
                     
                     if show_disp_top == True:
-                        xidirfield_top.mlab_source.set(u=xixvals_t, v=xizvals_t, w=xiyvals_t)
+                        xixvals_mask_top_t, xiyvals_mask_top_t, xizvals_mask_top_t = mpf.mask_points(xixvals_t, xiyvals_t, xizvals_t, 
+                                                                                                     'top', mod, mod_y)
+                        xidirfield_top.mlab_source.set(u=xixvals_mask_top_t, v=xizvals_mask_top_t, w=xiyvals_mask_top_t)
                     if show_disp_front == True:
-                        xidirfield_front.mlab_source.set(u=xixvals_t, v=xizvals_t, w=xiyvals_t)
+                        xixvals_mask_front_t, xiyvals_mask_front_t, xizvals_mask_front_t = mpf.mask_points(xixvals_t, xiyvals_t, xizvals_t, 
+                                                                                                           'front', mod, mod_y)
+                        xidirfield_front.mlab_source.set(u=xixvals_mask_front_t, v=xizvals_mask_front_t, w=xiyvals_mask_front_t)
                                         
                 if np.array([show_vel_top, show_vel_top_pert, show_vel_front, show_vel_front_pert]).any() == True:            
                     vxvals_split = np.split(vxvals, [nz - (nz / nt) * t_ind], axis=1)
@@ -640,11 +654,15 @@ for mode_ind in [0,1]: #for an individual mode
                     vxvals_t = np.concatenate((vxvals_split[1], vxvals_split[0]), axis=1)
                     vyvals_t = np.concatenate((vyvals_split[1], vyvals_split[0]), axis=1)
                     vzvals_t = np.concatenate((vzvals_split[1], vzvals_split[0]), axis=1)
-                
+        
                     if show_vel_top == True or show_vel_top_pert == True:
-                        vdirfield_top.mlab_source.set(u=vxvals_t, v=vzvals_t, w=vyvals_t)
-                    if show_disp_front == True:
-                        vdirfield_front.mlab_source.set(u=vxvals_t, v=vzvals_t, w=vyvals_t)
+                        vxvals_mask_top_t, vyvals_mask_top_t, vzvals_mask_top_t = mpf.mask_points(vxvals_t, vyvals_t, vzvals_t, 
+                                                                                                  'top', mod, mod_y)                                                
+                        vdirfield_top.mlab_source.set(u=vxvals_mask_top_t, v=vzvals_mask_top_t, w=vyvals_mask_top_t)
+                    if show_vel_front == True or show_vel_front_pert == True:
+                        vxvals_mask_front_t, vyvals_mask_front_t, vzvals_mask_front_t = mpf.mask_points(vxvals_t, vyvals_t, vzvals_t, 
+                                                                                                        'front', mod, mod_y) 
+                        vdirfield_front.mlab_source.set(u=vxvals_mask_front_t, v=vzvals_mask_front_t, w=vyvals_mask_front_t)
                 
                 if show_boundary == True:
                     xix_boundary_r_vals_split = np.split(xix_boundary_r_vals, [nz - (nz / nt) * t_ind], axis=0)
@@ -847,11 +865,11 @@ for mode_ind in [0,1]: #for an individual mode
             t = t + (t_end - t_start) / nt
 
     
-    if make_video == True:
-        mlab.close(fig)
-        i2v.image2video(prefix=prefix, output_name=prefix+'_video', 
-                        out_extension='mp4', fps=20, n_loops=4, 
-                        delete_images=True, delete_old_videos=True, res=res[1])
-    
-    print('Finished ' + mode)
+        if make_video == True:
+            mlab.close(fig)
+            i2v.image2video(prefix=prefix, output_name=prefix+'_video', 
+                            out_extension='mp4', fps=20, n_loops=4, 
+                            delete_images=True, delete_old_videos=True, res=res[1])
+        
+        print('Finished ' + mode)
     

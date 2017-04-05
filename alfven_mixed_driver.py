@@ -75,10 +75,10 @@ res = tuple(101 * np.array((16,9)))
 #res = tuple(51 * np.array((16,9)))
 #res = tuple(21 * np.array((16,9)))
 
-number_of_frames = 5
+number_of_frames = 1#5
 
-#save_images = False
-save_images = True
+save_images = False
+#save_images = True
 
 make_video = False
 #make_video = True
