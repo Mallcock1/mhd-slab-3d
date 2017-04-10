@@ -26,7 +26,7 @@ import img2vid as i2v
 ###############################################################################
 
 vA2 = 1.
-vA1 = 0.5
+vA1 = 0.9
 
 def vA_func(x):
     return (vA2 - vA1)/4 * x + vA1
@@ -62,9 +62,9 @@ show_mini_axis = False
 show_mag = True
 #show_mag_scale = True #must also have show_mag = True
 show_mag_fade = True
-show_mag_vec = True
+#show_mag_vec = True
 show_vel_top = True
-show_disp_top = True
+#show_disp_top = True
 show_axes = True
 #show_axis_labels = True
 show_mini_axis = True
@@ -75,13 +75,13 @@ res = tuple(101 * np.array((16,9)))
 #res = tuple(51 * np.array((16,9)))
 #res = tuple(21 * np.array((16,9)))
 
-number_of_frames = 1#5
+number_of_frames = 250
 
-save_images = False
-#save_images = True
+#save_images = False
+save_images = True
 
-make_video = False
-#make_video = True
+#make_video = False
+make_video = True
 
 mode = 'alfven-mixed-driver'
 
@@ -127,11 +127,8 @@ ny = 100 #100#20 #100
 nz = 100 #100
 nt = number_of_frames
         
-if nz % nt != 0:
-    print("nt doesnt divide nz so there may be a problem with chopping in z direction for each time step")
-        
 t_start = 0.
-t_end = 2*zmax
+t_end = 5*2*zmax
         
 t = t_start
 
@@ -188,8 +185,17 @@ field.spacing = spacing
 
 field_ms = field.mlab_source
 
+scalefactor = 4. # scale factor for direction field vectors
+
+if show_vel_top == True:
+    vdirfield_top = mlab.pipeline.vector_field(vxvals_mask_top_t, np.zeros_like(vxvals_mask_top_t),
+                                                vyvals_mask_top_t, name="V field top",
+                                                figure=fig)
+    vdirfield_top.spacing = spacing
+    mpf.vector_cut_plane(vdirfield_top, 'top', ny, nz, y_spacing, scale_factor=scalefactor)
+
 #Set viewing angle
-mpf.view_position(field, view, nx, ny, nz)
+mpf.view_position(fig, view, nx, ny, nz)
 
 if show_axes == True:
     mpf.axes(field, 'false', view)
@@ -319,7 +325,7 @@ for t_ind in range(nt):
         if show_mag_fade == True:
             mpf.colormap_fade(module_manager, fade_value=20)
             
-        scalefactor = 4. # scale factor for direction field vectors
+        
         
         if show_mag_vec == True:
             bdirfield_front = mlab.pipeline.vector_field(bxvals_mask_front_t, bzvals_mask_front_t,
@@ -330,11 +336,9 @@ for t_ind in range(nt):
             
             
     if show_vel_top == True:
-        vdirfield_top = mlab.pipeline.vector_field(vxvals_mask_top_t, np.zeros_like(vxvals_mask_top_t),
-                                                    vyvals_mask_top_t, name="V field top",
-                                                    figure=fig)
-        vdirfield_top.spacing = spacing
-        mpf.vector_cut_plane(vdirfield_top, 'top', ny, nz, y_spacing, scale_factor=scalefactor)
+        vxvals_mask_top_t, vyvals_mask_top_t, vzvals_mask_top_t = mpf.mask_points(vxvals_t, vyvals_t, vzvals_t, 
+                                                                                                  'top', mod, mod_y)                                                
+        vdirfield_top.mlab_source.set(u=vxvals_mask_top_t, v=vzvals_mask_top_t, w=vyvals_mask_top_t)
         
     if show_disp_top == True:
         xidirfield_top = mlab.pipeline.vector_field(xixvals_mask_top_t, np.zeros_like(xixvals_mask_top_t),
@@ -343,7 +347,8 @@ for t_ind in range(nt):
         xidirfield_top.spacing = spacing
         mpf.vector_cut_plane(xidirfield_top, 'top', ny, nz, y_spacing, scale_factor=scalefactor)
 
-
+    #Set viewing angle
+    mpf.view_position(fig, view, nx, ny, nz)
 
         
 # Trying and failing to sort out memory issues.
@@ -356,7 +361,7 @@ for t_ind in range(nt):
 #        registry.engines = {}
         
     if save_images == True:
-        prefix = 'amd_' + view + '_' + mode
+        prefix = 'amd_' + mode + '_' + view + '_vel_top'
         mlab.savefig('D:\\my_work\\projects\\Asymmetric_slab\\Python\\visualisations\\3D_vis_animations\\'
                  + prefix + str(t_ind+1) + '.png')
 #        mlab.close(fig)
@@ -364,9 +369,10 @@ for t_ind in range(nt):
     t = t + (t_end - t_start) / nt
     
 if make_video == True:
+    mlab.close(fig)
 #    i2v.image2video(prefix=prefix, output_name=prefix+'_video', out_extension='mp4', fps=20, n_loops=4, delete_images=True, delete_old_videos=True, res=res[1])
-    i2v.image2video(prefix='amd_front-top-side_alfven-mixed-driver', output_name='video', 
+    i2v.image2video(prefix=prefix, output_name=prefix + '_video', 
                     out_extension='mp4', fps=20, n_loops=1, delete_images=True,
-                    delete_old_videos=True, cover_page=True)
+                    delete_old_videos=True, cover_page=False, res=res[1])
 print('Finished ' + mode)
     

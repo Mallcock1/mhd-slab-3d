@@ -5,7 +5,7 @@
 #sys.path.append('D:\\my_work\\projects\\Asymmetric_slab\\Python\\visualisations\\ffmpeg')
 ##sys.path.append(u'W7_DATA/my_work/projects/Asymmetric_slab/Python/visualisations/ffmpeg/')
 
-import pdb # pause code for debugging at pdb.set_trace()
+#import pdb # pause code for debugging at pdb.set_trace()
 
 import numpy as np
 import toolbox as tool
@@ -77,13 +77,13 @@ for mode in mode_options:
 # Which angle shall we view from?
 view_options = ['front', 'front-parallel', 'top', 'top-parallel' 'front-top',
                 'front-side', 'front_top_side']
-view = 'front'
+#view = 'front'
 #view = 'front-parallel'
 #view = 'top'
 #view = 'top-parallel'
 #view = 'front-top'
 #view = 'front-side'
-#view = 'front-top-side'
+view = 'front-top-side'
 
 # Uniform lighting?
 #uniform_light = True
@@ -107,25 +107,17 @@ show_mini_axis = False
 show_boundary = False
 
 
-# Set to True if you would like the dispersion diagram with this mode highlighted.
-show_dispersion = False
-#show_dispersion = True
-
-# Wanna see the animation? Of course you do
-show_animation = False
-#show_animation = True
-
 # Uncomment the parametrer you would like to see
 # No density perturbations or vel/disp pert for alfven modes.
-show_density = True
+#show_density = True
 #show_density_pert = True
 show_mag = True
 #show_mag_scale = True #must also have show_mag = True
-show_mag_fade = True
+#show_mag_fade = True
 #show_mag_vec = True
-show_vel_front = True
+#show_vel_front = True
 #show_vel_front_pert = True
-#show_vel_top = True
+show_vel_top = True
 #show_vel_top_pert = True
 #show_disp_top = True
 #show_disp_front = True
@@ -133,6 +125,20 @@ show_axes = True
 #show_axis_labels = True
 show_mini_axis = True
 show_boundary = True
+
+
+# Set to True if you would like the dispersion diagram with this mode highlighted.
+show_dispersion = False
+#show_dispersion = True
+
+# Wanna see the animation? Of course you do
+#show_animation = False
+show_animation = True
+
+show_quick_plot = False
+#show_quick_plot = True
+
+
 
 # Video resolution
 #res = (1920,1080)
@@ -144,8 +150,7 @@ number_of_frames = 50
 #
 #save_images = False
 save_images = True
-
-
+#
 #make_video = False
 make_video = True
 
@@ -163,9 +168,9 @@ make_video = True
 #    raise NameError('Cannot show density or vel/disp pert for this mode')
 
 #for mode_ind in range(14): # for all others. REMEMBER SBB pparameters
-#for mode_ind in [17]: #for fast body surf. REMEMBER SBS parameters
+for mode_ind in [16,17]: #for fast body surf. REMEMBER SBS parameters
 #for mode_ind in [0,1]: #for an individual mode
-for mode_ind in range(2,14): 
+#for mode_ind in range(2,14): 
     if mode_ind not in range(len(mode_options)):
         raise NameError('Mode not in mode_options')
         
@@ -191,9 +196,10 @@ for mode_ind in range(2,14):
         K = 8. #6.
     else:
         raise NameError('Mode not found')
-            
+
 #    R1 = 1.5 # Higher denisty on left than right
-    R1 = 1.8
+#    R1 = 1.8#
+    R1 = 1.9           
 #    R1 = 2. # Symmetric slab
         
     def disp_rel_asym_2var(W, K):
@@ -256,12 +262,13 @@ for mode_ind in range(2,14):
         W = sf.vA
     else:
         W = np.real(W)
-        
-#     Quick plot to see if we are hitting correct mode    
-    plt.plot([K] * len(Woptions), Woptions, '.')
-    plt.plot(K+0.5, W, 'go')
-    plt.xlim([0,23])
-    plt.show()
+    
+    if show_quick_plot == True:
+    #     Quick plot to see if we are hitting correct mode    
+        plt.plot([K] * len(Woptions), Woptions, '.')
+        plt.plot(K+0.5, W, 'go')
+        plt.xlim([0,23])
+        plt.show()
     
 #    pdb.set_trace()    
 
@@ -284,7 +291,7 @@ for mode_ind in range(2,14):
 #        plt.tight_layout() # seems to make it chop the sides off with this
         plt.savefig('D:\\my_work\\projects\\Asymmetric_slab\\Python\\visualisations\\3D_vis_dispersion_diagrams\\'
                     + 'R1_' + str(R1) + '_' + mode + '.png')   
-#        plt.close()
+        plt.close()
     
     ##############################################################################
     
@@ -858,7 +865,7 @@ for mode_ind in range(2,14):
     #        registry.engines = {}
             
             if save_images == True:
-                prefix = 'R1_'+str(R1)+'_'+ mode + '_' + view
+                prefix = 'R1_'+str(R1)+'_'+ mode + '_' + view + '_norho_'
                 mlab.savefig('D:\\my_work\\projects\\Asymmetric_slab\\Python\\visualisations\\3D_vis_animations\\'
                              + prefix + str(t_ind+1) + '.png')                
             

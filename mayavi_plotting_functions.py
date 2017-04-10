@@ -140,6 +140,7 @@ def mask_points(var_x, var_y, var_z, front_or_top, mod, mod_y):
                 for k in range(var_x_mask.shape[2]):
                     if (i%mod) != 1 or (j%mod) != 1:
                         var_x_mask[i,j,k] = 0.
+                        var_y_mask[i,j,k] = 0.
                         var_z_mask[i,j,k] = 0.
     elif front_or_top == 'top':
         var_x_mask = np.copy(var_x)
@@ -151,6 +152,7 @@ def mask_points(var_x, var_y, var_z, front_or_top, mod, mod_y):
                 for k in range(var_x_mask.shape[2]):
                     if (i%mod) != 1 or (k%mod_y) != 1:
                         var_x_mask[i,j,k] = 0.
+                        var_y_mask[i,j,k] = 0.
                         var_z_mask[i,j,k] = 0.
     else:
         raise ValueError("front_or_top can be only 'front' or 'top'")
