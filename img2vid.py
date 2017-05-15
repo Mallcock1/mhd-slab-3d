@@ -32,8 +32,8 @@ def image2video(filepath=None, prefix='', in_extension='png',
         "'+filepath+output_name+'_overlay.'+out_extension+'" "'+filepath+output_name+'_overlay2.'+out_extension+'"'
 
 
-    logo_height = str(int(100. * res / 1080.))
-    logo_width = str(int(300. * res / 1080.))
+    logo_height = str(int(150. * res / 1080.))
+    logo_width = str(int(450. * res / 1080.))
     
     overlay_image_sp2rc = 'ffmpeg -y -i '+filepath+output_name+'.'+out_extension+' -i \
     sp2rc_logo2.png -filter_complex "[1:0] scale=-1:'+logo_height+' [logo]; \
