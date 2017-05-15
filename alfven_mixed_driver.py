@@ -26,7 +26,7 @@ import img2vid as i2v
 ###############################################################################
 
 vA2 = 1.
-vA1 = 0.9
+vA1 = 0.5
 
 def vA_func(x):
     return (vA2 - vA1)/4 * x + vA1
@@ -61,9 +61,9 @@ show_mini_axis = False
 # No density perturbations or vel/disp pert for alfven modes.
 show_mag = True
 #show_mag_scale = True #must also have show_mag = True
-show_mag_fade = True
+#show_mag_fade = True
 #show_mag_vec = True
-show_vel_top = True
+#show_vel_top = True
 #show_disp_top = True
 show_axes = True
 #show_axis_labels = True
@@ -75,7 +75,9 @@ res = tuple(101 * np.array((16,9)))
 #res = tuple(51 * np.array((16,9)))
 #res = tuple(21 * np.array((16,9)))
 
-number_of_frames = 250
+number_of_frames = 50
+
+fps = 20
 
 #save_images = False
 save_images = True
@@ -128,7 +130,7 @@ nz = 100 #100
 nt = number_of_frames
         
 t_start = 0.
-t_end = 5*2*zmax
+t_end = 2*zmax
         
 t = t_start
 
@@ -287,7 +289,7 @@ for t_ind in range(nt):
             for i in range(0,nx_seed):
                 x = start_x + (i * dx_res) * x_spacing
                 y = start_y + (j * dy_res) * y_spacing
-                z = 1. #+ (t_start + t_ind*(t_end - t_start)/nt)/zmax * nz
+                z = 1.# + (t_start + t_ind*(t_end - t_start)/nt)/zmax * nz
                 seeds.append((x,z,y))
         
         for i in range(nx_seed):
@@ -361,7 +363,7 @@ for t_ind in range(nt):
 #        registry.engines = {}
         
     if save_images == True:
-        prefix = 'amd_' + mode + '_' + view + '_vel_top'
+        prefix = 'bouncing_field_test_amd_' + mode + '_' + view + '_vel_top_bounce_test'
         mlab.savefig('D:\\my_work\\projects\\Asymmetric_slab\\Python\\visualisations\\3D_vis_animations\\'
                  + prefix + str(t_ind+1) + '.png')
 #        mlab.close(fig)
@@ -372,7 +374,7 @@ if make_video == True:
     mlab.close(fig)
 #    i2v.image2video(prefix=prefix, output_name=prefix+'_video', out_extension='mp4', fps=20, n_loops=4, delete_images=True, delete_old_videos=True, res=res[1])
     i2v.image2video(prefix=prefix, output_name=prefix + '_video', 
-                    out_extension='mp4', fps=20, n_loops=1, delete_images=True,
+                    out_extension='mp4', fps=fps, n_loops=1, delete_images=True,
                     delete_old_videos=True, cover_page=False, res=res[1])
 print('Finished ' + mode)
     

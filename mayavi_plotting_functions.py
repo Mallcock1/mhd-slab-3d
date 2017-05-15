@@ -88,45 +88,46 @@ def view_position(scene, view, nx, ny, nz):
 #        scene.scene.camera.zoom(1.65)
 ##        scene.scene.camera.view_angle = 21.
 
-        scene.scene.camera.position = [50.5, 50.5, 382.37955413300307]
-        scene.scene.camera.focal_point = [50.5, 50.5, 50.0]
+        scene.scene.camera.position = [50.5 * nx / 100., 50.5 * nz / 100., 382.37955413300307  * ny / 100.]
+        scene.scene.camera.focal_point = [50.5 * nx / 100., 50.5 * nz / 100., 50.0 * ny / 100.]
         scene.scene.camera.view_angle = 21.0
         scene.scene.camera.view_up = [0.0, 1.0, 0.0]
-        scene.scene.camera.clipping_range = [229.55575859167305, 462.61524744499809]
+        scene.scene.camera.clipping_range = [200, 1000]#229.55575859167305 * 2, 462.61524744499809 * 2]
+
     if view == 'top':
-        scene.scene.camera.position = [53.107781380642741, 523.35670183503294, 50.948508989758153]
-        scene.scene.camera.focal_point = [50.821544647216797, 50.413210511207581, 50.159849926829338]
+        scene.scene.camera.position = [53.10 * nx / 100., 523.36 * nz / 100., 50.95 * ny / 100.]
+        scene.scene.camera.focal_point = [50.82 * nx / 100., 50.41 * nz / 100., 50.16 * ny / 100.]
         scene.scene.camera.view_angle = 14.
         scene.scene.camera.view_up = [-0, 0, -1]
-        scene.scene.camera.clipping_range = [368.83220888718552, 605.15289607145894]
+        scene.scene.camera.clipping_range = [368.83 * nx / 100., 605.15 * nx / 100.]
     if view == 'top-parallel':
         scene.scene.parallel_projection = True
-        scene.scene.camera.zoom(2.)
-        scene.scene.camera.position = [53.107781380642741, 523.35670183503294, 50.948508989758153]
-        scene.scene.camera.focal_point = [50.821544647216797, 50.413210511207581, 50.159849926829338]
+        scene.scene.camera.zoom(1.65)
+        scene.scene.camera.position = [53.11 * nx / 100., 523.36 * nz / 100., 50.95 * ny / 100.]
+        scene.scene.camera.focal_point = [50.82 * nx / 100., 50.41 * nz / 100., 50.16 * ny / 100.]
 #            scene.scene.camera.view_angle = 14.
-        scene.scene.camera.view_up = [-0, 0, -1]
-        scene.scene.camera.clipping_range = [368.83220888718552, 605.15289607145894]
+        scene.scene.camera.view_up = [0, 0, -1]
+        scene.scene.camera.clipping_range = [368.83 * nx / 100., 605.15 * nx / 100.]
     if view == 'front-top':
-        scene.scene.camera.position = [48.764852970361503, 223.64895482756552, 498.62216293273576]
-        scene.scene.camera.focal_point = [50.821544647216797, 46., 50.159849926829338]
+        scene.scene.camera.position = [48.76 * nx / 100., 223.65 * nz / 100., 498.62 * ny / 100.]
+        scene.scene.camera.focal_point = [50.82 * nx / 100., 46. * nz / 100., 50.16 * ny / 100.]
         scene.scene.camera.view_angle = 16.0
         scene.scene.camera.view_up = [-0.002418791139063777, 0.93281530024654913, -0.36034672896443193]
-        scene.scene.camera.clipping_range = [345.97885880654962, 650.71850659694883]
+        scene.scene.camera.clipping_range = [345.98 * nx / 100., 650.72 * nx / 100.]
      
     if view == 'front-side':
         scene.scene.camera.position = [126.6 * nx / 100., 60.5 * nz / 100., 524.8 * ny / 100.]
         scene.scene.camera.focal_point = [50.8 * nx / 100., 50.4 * nz / 100., 50.2 * ny / 100.]
         scene.scene.camera.view_angle = 14.
-        scene.scene.camera.view_up = [-0.01695 * nx / 100., 0.999686 * nz / 100., -0.0184509 * ny / 100.]
-        scene.scene.camera.clipping_range = [366.21083458278804, 631.07664372567524]
+        scene.scene.camera.view_up = [-0.01695, 0.999686, -0.0184509]
+        scene.scene.camera.clipping_range = [366.21 * nx / 100., 631.08 * nx / 100.]
         
     if view == 'front-top-side':
-        scene.scene.camera.position = [400.86836795744739, 181.09643412881843, 495.9729949005914]
-        scene.scene.camera.focal_point = [50.799999999999997, 50.399999999999999, 50.200000000000003]
-        scene.scene.camera.view_angle = 14.0
+        scene.scene.camera.position = [400.87 * nx / 100., 181.10 * nz / 100., 495.97 * ny / 100.]
+        scene.scene.camera.focal_point = [50.80 * nx / 100., 43. * nz / 100., 50.20 * ny / 100.]
+        scene.scene.camera.view_angle = 13.0
         scene.scene.camera.view_up = [-0.14482357103326407, 0.9744012643898321, -0.17195438124301951]
-        scene.scene.camera.clipping_range = [418.37366265114053, 789.30998655093481]
+        scene.scene.camera.clipping_range = [418.37 * nx / 100., 789.31 * nx / 100.]
         
 
 def mask_points(var_x, var_y, var_z, front_or_top, mod, mod_y):

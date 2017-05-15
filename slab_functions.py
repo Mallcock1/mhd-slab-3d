@@ -219,7 +219,7 @@ def vxhat(mode, x, W, K, R1):
     if mode in alfven_mode_options:
         vxhatfunction = np.zeros_like(x)
     else:
-        if type(x) == np.float64:
+        if type(x) == float or type(x) == np.float64:
             if np.abs(x) <= K:
                 vxhatfunction = (constB(mode, W, K, R1)*sc.cosh(m0(W)*x) + 
                                 constC(mode, W, K, R1)*sc.sinh(m0(W)*x))
@@ -256,7 +256,7 @@ def vyhat(mode, x, K):
                 vyhat_alfven[i] = alfven_amplitude
         return vyhat_alfven
     else:
-        if type(x) == np.float64:
+        if type(x) == np.float64 or type(x) == float:
             return 0. + 0.j
         else:
             return np.zeros_like(x, dtype=complex)
@@ -266,7 +266,7 @@ def vzhat(mode, x, W, K, R1):
     if mode in alfven_mode_options:
         vzhat_function = np.zeros_like(x)
     else:
-        if type(x) == np.float64:
+        if type(x) == float or type(x) == np.float64:
             if np.abs(x) <= K:
                 vzhat_function = (1j * c0**2 / (c0**2 - W**2)) * m0(W)*(constB(mode, W, K, R1)*sc.sinh(m0(W)*x) +
                                            constC(mode, W, K, R1)*sc.cosh(m0(W)*x))
@@ -368,7 +368,7 @@ def xix(mode, x, z, t, W, K, R1):
         return np.outer(1j * vxhat(mode, x, W, K, R1) / W, np.exp(1j*(z-t)))
 
 def xiy(mode, x, z, t, W, K):
-    if type(vyhat(mode, x, K)) == complex:
+    if type(vyhat(mode, x, K)) == complex or type(vyhat(mode, x, K)) == np.complex128:
         return (1j * vyhat(mode, x, K) / W) * np.exp(1j*(z-t))
     else:
         return np.outer(1j * vyhat(mode, x, K) / W, np.exp(1j*(z-t)))

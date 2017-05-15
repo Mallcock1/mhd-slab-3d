@@ -14,6 +14,7 @@ from pysac.plot.mayavi_seed_streamlines import SeedStreamline
 import matplotlib.pyplot as plt
 from mayavi import mlab
 #mlab.options.offscreen = True
+import gc
 import move_seed_points as msp
 import mayavi_plotting_functions as mpf
 import dispersion_diagram
@@ -109,6 +110,7 @@ show_boundary = False
 
 # Uncomment the parametrer you would like to see
 # No density perturbations or vel/disp pert for alfven modes.
+
 #show_density = True
 #show_density_pert = True
 show_mag = True
@@ -117,7 +119,7 @@ show_mag = True
 #show_mag_vec = True
 #show_vel_front = True
 #show_vel_front_pert = True
-show_vel_top = True
+#show_vel_top = True
 #show_vel_top_pert = True
 #show_disp_top = True
 #show_disp_front = True
@@ -125,6 +127,17 @@ show_axes = True
 #show_axis_labels = True
 show_mini_axis = True
 show_boundary = True
+
+vis_modules = [show_density, show_density_pert, show_mag, show_mag_scale, 
+               show_mag_fade, show_mag_vec, show_vel_front, show_vel_front_pert,
+               show_vel_top, show_vel_top_pert, show_disp_top, show_disp_front]
+vis_modules_strings = ['show_density', 'show_density_pert', 'show_mag', 'show_mag_scale', 
+                       'show_mag_fade', 'show_mag_vec', 'show_vel_front', 'show_vel_front_pert',
+                       'show_vel_top', 'show_vel_top_pert', 'show_disp_top', 'show_disp_front']
+vis_mod_string = ''
+for i in range(len(vis_modules)):
+    if vis_modules[i] == True:
+        vis_mod_string = vis_mod_string + vis_modules_strings[i][5:] + '_'
 
 
 # Set to True if you would like the dispersion diagram with this mode highlighted.
@@ -146,13 +159,16 @@ res = tuple(101 * np.array((16,9)))
 #res = tuple(51 * np.array((16,9)))
 #res = tuple(21 * np.array((16,9)))
 
-number_of_frames = 50
+number_of_frames = 1#50
+
+#frames per second
+fps = 20
 #
-#save_images = False
-save_images = True
+save_images = False
+#save_images = True
 #
-#make_video = False
-make_video = True
+make_video = False
+#make_video = True
 
 #
 ##
@@ -168,8 +184,8 @@ make_video = True
 #    raise NameError('Cannot show density or vel/disp pert for this mode')
 
 #for mode_ind in range(14): # for all others. REMEMBER SBB pparameters
-for mode_ind in [16,17]: #for fast body surf. REMEMBER SBS parameters
-#for mode_ind in [0,1]: #for an individual mode
+#for mode_ind in [14,15]: #for fast body surf. REMEMBER SBS parameters
+for mode_ind in [0]: #for an individual mode
 #for mode_ind in range(2,14): 
     if mode_ind not in range(len(mode_options)):
         raise NameError('Mode not in mode_options')
@@ -304,9 +320,9 @@ for mode_ind in [16,17]: #for fast body surf. REMEMBER SBS parameters
         zmax = 2*np.pi
         
         # You can change ny but be careful changing nx, nz.
-        nx = 100 #100
-        ny = 100 #100 #100#20 #100
-        nz = 100 #100
+        nx = 300#100 #100 #300 gives us reduced bouncing of field lines for thr same video size, but there is significant computational cost.
+        ny = 300#100 #100 #100#20 #100
+        nz = 300#100 #100
         nt = number_of_frames
         
         if nz % nt != 0:
@@ -619,13 +635,26 @@ for mode_ind in [16,17]: #for fast body surf. REMEMBER SBS parameters
                     rho_vals_t = rho_vals
                      
             else:
-                bxvals_split = np.split(bxvals, [nz - (nz / nt) * t_ind], axis=1)
-                byvals_split = np.split(byvals, [nz - (nz / nt) * t_ind], axis=1)
-                bzvals_split = np.split(bzvals, [nz - (nz / nt) * t_ind], axis=1)
                 
-                bxvals_t = np.concatenate((bxvals_split[1], bxvals_split[0]), axis=1)
-                byvals_t = np.concatenate((byvals_split[1], byvals_split[0]), axis=1)
-                bzvals_t = np.concatenate((bzvals_split[1], bzvals_split[0]), axis=1)
+                bxvals = np.real(np.repeat(sf.bx(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
+                byvals = np.real(np.repeat(sf.by(mode, xvals, zvals, t, K)[:, :, np.newaxis], ny, axis=2))
+                bz_eq3d = np.repeat(sf.bz_eq(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2)
+                bzvals = np.real(np.repeat(-sf.bz(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2) +
+                                 bz_eq3d)
+                
+                bxvals_t = bxvals
+                byvals_t = byvals
+                bzvals_t = bzvals
+                
+                
+                
+#                bxvals_split = np.split(bxvals, [nz - (nz / nt) * t_ind], axis=1)
+#                byvals_split = np.split(byvals, [nz - (nz / nt) * t_ind], axis=1)
+#                bzvals_split = np.split(bzvals, [nz - (nz / nt) * t_ind], axis=1)
+#                
+#                bxvals_t = np.concatenate((bxvals_split[1], bxvals_split[0]), axis=1)
+#                byvals_t = np.concatenate((byvals_split[1], byvals_split[0]), axis=1)
+#                bzvals_t = np.concatenate((bzvals_split[1], bzvals_split[0]), axis=1)
                 
                 # Update field data
                 field.mlab_source.set(u=bxvals_t, v=bzvals_t, w=byvals_t)
@@ -753,7 +782,7 @@ for mode_ind in [16,17]: #for fast body surf. REMEMBER SBS parameters
 
             
             #Make field lines
-            if show_mag == True:
+#            if show_mag == True:
 #                #Trying and failing to move seed points with displacement field.
 #                if t_ind == 0:
 #                    # Create an array of points for which we want mag field seeds
@@ -782,19 +811,31 @@ for mode_ind in [16,17]: #for fast body surf. REMEMBER SBS parameters
 #                        for i in range(nx_seed):
 #                            del seeds[0]
 #                            del seeds[-1]
+##                    pdb.set_trace()
 ##                    seeds = [(30.,50.,50.), (70., 50., 50.)]
-#                    original_seeds = msp.original_seeds_non_int(seeds, [xmin, ymin, zmin], [xmax, ymax, zmax], [nx, ny, nz], 
-#                                                                mode, xvals, zvals, 0., W, K, R1)
-#                new_seeds = msp.move_seeds_non_int(original_seeds, [xmin, ymin, zmin], [xmax, ymax, zmax], [nx, ny, nz], 
-#                                                   mode, xvals, zvals, t, W, K, R1)
-##    #                print(new_seeds[10])
-#                print('t is ' + str(t))
+##                    print(seeds[3])
+##                    original_seeds = msp.original_seeds_non_int(seeds, [xmin, ymin, zmin], [xmax, ymax, zmax], [nx, ny, nz], 
+##                                                                mode, xvals, zvals, t, W, K, R1)
+##                    print(original_seeds[3])                                            
+##                new_seeds = msp.move_seeds_non_int(original_seeds, [xmin, ymin, zmin], [xmax, ymax, zmax], [nx, ny, nz], 
+##                                                   mode, xvals, zvals, t, W, K, R1)
+##                print(seeds)
+##                pdb.set_trace()
+#                if t_ind != 0:
+###                    seeds = msp.move_seeds_step(seeds, [xmin, ymin, zmin], [xmax, ymax, zmax], t_start, t_end, [nx, ny, nz], nt,
+###                                                mode, xvals, zvals, t, W, K, R1)
+#                    new_seeds = msp.move_seeds(seeds, xixvals_t, xiyvals_t, xizvals_t, 
+#                                           [xmin, ymin, zmin], [xmax, ymax, zmax])
+##                    pdb.set_trace()
+##                print(new_seeds[3])
+###    #                print(new_seeds[10])
+##                print('t is ' + str(t))
                 
-                #move seed points up with wave speed.
+                #move seed points up with phase speed.
                 # Create an array of points for which we want mag field seeds
                 nx_seed = 9 #7
                 ny_seed = 13 #10
-                start_x = 30. #38
+                start_x = 30. * nx / 100. #38
                 end_x = nx+1 - start_x
                 start_y = 1.
                 if ny == 20:
@@ -817,11 +858,14 @@ for mode_ind in [16,17]: #for fast body surf. REMEMBER SBS parameters
                     for i in range(nx_seed):
                         del seeds[0]
                         del seeds[-1]
-
+                    
+#                seeds = msp.move_seeds(seeds, xixvals_t, xiyvals_t, xizvals_t, 
+#                                       [xmin, ymin, zmin], [xmax, ymax, zmax])
+#                print(seeds[8])
                 #remove previous field lines
                 if t_ind != 0:
                     field_lines.remove()
-                    
+#                    field_lines = SeedStreamline(seed_points=new_seeds)
                 field_lines = SeedStreamline(seed_points=seeds)
                 field_lines.stream_tracer.integration_direction='both'
                 field_lines.streamline_type = 'tube'
@@ -832,9 +876,9 @@ for mode_ind in [16,17]: #for fast body surf. REMEMBER SBS parameters
     #                module_manager.scalar_lut_manager.lut_mode = 'Reds'
     #                module_manager.scalar_lut_manager.data_range=[-30,25]
                 
-                field_lines.stream_tracer.maximum_propagation = nz
+                field_lines.stream_tracer.maximum_propagation = nz * 2
                 field_lines.tube_filter.number_of_sides = 20
-                field_lines.tube_filter.radius = 0.7
+                field_lines.tube_filter.radius = 0.7 * max(nx, ny, nz) / 100.
                 field_lines.tube_filter.capping = True
                 field_lines.actor.property.opacity = 1.0
                 
@@ -856,26 +900,31 @@ for mode_ind in [16,17]: #for fast body surf. REMEMBER SBS parameters
             mpf.view_position(fig, view, nx, ny, nz)
 
     # Trying and failing to sort out memory issues.
-    #        mlab.gcf()
-    #        mlab.clf()
-    #        mlab.close()
-    #        gc.collect()
-    #        del fig
-    #        engine_manager.current_engine = None
-    #        registry.engines = {}
+#            mlab.gcf()
+#            mlab.clf()
+##            mlab.close()
+#            gc.collect()
+##            del fig
+##            engine_manager.current_engine = None
+##            registry.engines = {}
             
             if save_images == True:
-                prefix = 'R1_'+str(R1)+'_'+ mode + '_' + view + '_norho_'
+                prefix = 'R1_'+str(R1) + '_' + mode + '_' + vis_mod_string + view# + '_norho_'
                 mlab.savefig('D:\\my_work\\projects\\Asymmetric_slab\\Python\\visualisations\\3D_vis_animations\\'
-                             + prefix + str(t_ind+1) + '.png')                
+                             + prefix + str(t_ind+1) + '.png')
+                print('Finished frame number ' + str(t_ind + 1) + ' out of ' + str(number_of_frames))
+                
+            #Release some memory
+            gc.collect()
             
             t = t + (t_end - t_start) / nt
+            
 
     
         if make_video == True:
             mlab.close(fig)
             i2v.image2video(prefix=prefix, output_name=prefix+'_video', 
-                            out_extension='mp4', fps=20, n_loops=4, 
+                            out_extension='mp4', fps=fps, n_loops=4, 
                             delete_images=True, delete_old_videos=True, res=res[1])
         
         print('Finished ' + mode)
