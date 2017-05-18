@@ -111,7 +111,7 @@ show_boundary = False
 # Uncomment the parametrer you would like to see
 # No density perturbations or vel/disp pert for alfven modes.
 
-#show_density = True
+show_density = True
 #show_density_pert = True
 show_mag = True
 #show_mag_scale = True #must also have show_mag = True
@@ -183,9 +183,10 @@ make_video = True
 #if np.array([show_density, show_vel_front_pert, show_vel_top_pert]).any()  == True:
 #    raise NameError('Cannot show density or vel/disp pert for this mode')
 
-for mode_ind in range(14): # for all others. REMEMBER SBB pparameters
+for mode_ind in range(8,14): # for all others. REMEMBER SBB pparameters
 #for mode_ind in [14,15]: #for fast body surf. REMEMBER SBS parameters
-#for mode_ind in [1]: #for an individual mode
+#for mode_ind in [16, 17]:
+#for mode_ind in [0,1]: #for an individual mode
 #for mode_ind in range(2,14): 
     if mode_ind not in range(len(mode_options)):
         raise NameError('Mode not in mode_options')

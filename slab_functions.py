@@ -78,7 +78,7 @@ for mode in mode_options:
 
 def alfven_shear_width(mode, K):
     if mode == 'shear-alfven':
-        return [-14*K/16, -13*K/16]
+        return [-8*K/16, -5*K/16]#[-14*K/16, -13*K/16]
     elif mode == 'shear-alfven-broadband':
         return [-K, K]
     

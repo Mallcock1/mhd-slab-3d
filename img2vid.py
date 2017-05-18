@@ -28,8 +28,7 @@ def image2video(filepath=None, prefix='', in_extension='png',
         delete_old_videos_cmd = 'DEL "'+filepath+output_name+'.'+out_extension+'" \
         "'+filepath+output_name+'_overlay.'+out_extension+'"'
     else:
-        delete_old_videos_cmd = 'DEL "'+filepath+output_name+'.'+out_extension+'" \
-        "'+filepath+output_name+'_overlay.'+out_extension+'" "'+filepath+output_name+'_overlay2.'+out_extension+'"'
+        delete_old_videos_cmd = 'DEL "'+filepath+output_name+'_overlay.'+out_extension+'" "'+filepath+output_name+'_overlay2.'+out_extension+'"'
 
 
     logo_height = str(int(150. * res / 1080.))
