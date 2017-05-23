@@ -76,6 +76,13 @@ def axes(scene, show_axis_labels, view):
         axes.axes.y_label = ''
         axes.axes.z_label = ''
         
+def axes_no_label(scene):
+    axes = mlab.axes(scene, nb_labels=1, line_width=3)
+    axes.axes.label_format = ''
+    axes.axes.x_label = ''
+    axes.axes.y_label = ''
+    axes.axes.z_label = ''
+        
 def view_position(scene, view, nx, ny, nz):
     #Set viewing angle
     if view == 'front-parallel':
@@ -87,7 +94,7 @@ def view_position(scene, view, nx, ny, nz):
 #        scene.scene.parallel_projection = True
 #        scene.scene.camera.zoom(1.65)
 ##        scene.scene.camera.view_angle = 21.
-
+        scene.scene.parallel_projection = False
         scene.scene.camera.position = [50.5 * nx / 100., 50.5 * nz / 100., 382.37955413300307  * ny / 100.]
         scene.scene.camera.focal_point = [50.5 * nx / 100., 50.5 * nz / 100., 50.0 * ny / 100.]
         scene.scene.camera.view_angle = 21.0
@@ -95,6 +102,7 @@ def view_position(scene, view, nx, ny, nz):
         scene.scene.camera.clipping_range = [200, 1000]#229.55575859167305 * 2, 462.61524744499809 * 2]
 
     if view == 'top':
+        scene.scene.parallel_projection = False
         scene.scene.camera.position = [53.10 * nx / 100., 523.36 * nz / 100., 50.95 * ny / 100.]
         scene.scene.camera.focal_point = [50.82 * nx / 100., 50.41 * nz / 100., 50.16 * ny / 100.]
         scene.scene.camera.view_angle = 14.
@@ -109,6 +117,7 @@ def view_position(scene, view, nx, ny, nz):
         scene.scene.camera.view_up = [0, 0, -1]
         scene.scene.camera.clipping_range = [368.83 * nx / 100., 605.15 * nx / 100.]
     if view == 'front-top':
+        scene.scene.parallel_projection = False
         scene.scene.camera.position = [48.76 * nx / 100., 223.65 * nz / 100., 498.62 * ny / 100.]
         scene.scene.camera.focal_point = [50.82 * nx / 100., 46. * nz / 100., 50.16 * ny / 100.]
         scene.scene.camera.view_angle = 16.0
@@ -116,6 +125,7 @@ def view_position(scene, view, nx, ny, nz):
         scene.scene.camera.clipping_range = [345.98 * nx / 100., 650.72 * nx / 100.]
      
     if view == 'front-side':
+        scene.scene.parallel_projection = False
         scene.scene.camera.position = [126.6 * nx / 100., 60.5 * nz / 100., 524.8 * ny / 100.]
         scene.scene.camera.focal_point = [50.8 * nx / 100., 50.4 * nz / 100., 50.2 * ny / 100.]
         scene.scene.camera.view_angle = 14.
@@ -123,6 +133,7 @@ def view_position(scene, view, nx, ny, nz):
         scene.scene.camera.clipping_range = [366.21 * nx / 100., 631.08 * nx / 100.]
         
     if view == 'front-top-side':
+        scene.scene.parallel_projection = False
         scene.scene.camera.position = [400.87 * nx / 100., 181.10 * nz / 100., 495.97 * ny / 100.]
         scene.scene.camera.focal_point = [50.80 * nx / 100., 43. * nz / 100., 50.20 * ny / 100.]
         scene.scene.camera.view_angle = 13.0
@@ -159,13 +170,13 @@ def mask_points(var_x, var_y, var_z, front_or_top, mod, mod_y):
         raise ValueError("front_or_top can be only 'front' or 'top'")
     return [var_x_mask, var_y_mask, var_z_mask]
 
-def vector_cut_plane(vec_field, front_or_top, ny, nz, y_spacing, scale_factor=4):
-    scale_factor = 4. # scale factor for direction field vectors
+def vector_cut_plane(vec_field, front_or_top, nx, ny, nz, y_spacing, scale_factor=8):
+#    scale_factor = 4. # scale factor for direction field vectors
     if front_or_top == 'front':
         vector_cut_plane_front = mlab.pipeline.vector_cut_plane(vec_field, 
                                                                 scale_factor=scale_factor)
         vector_cut_plane_front.implicit_plane.widget.normal_to_z_axis = True
-        vector_cut_plane_front.implicit_plane.widget.origin = np.array([ 50., 25.91140784, (ny-1)*y_spacing])
+        vector_cut_plane_front.implicit_plane.widget.origin = np.array([ nx / 2., nz / 4., (ny-1)*y_spacing])
         vector_cut_plane_front.glyph.color_mode = 'no_coloring'
         vector_cut_plane_front.implicit_plane.widget.enabled = False
         vector_cut_plane_front.glyph.glyph_source.glyph_source = vector_cut_plane_front.glyph.glyph_source.glyph_dict['arrow_source']
@@ -176,7 +187,7 @@ def vector_cut_plane(vec_field, front_or_top, ny, nz, y_spacing, scale_factor=4)
                                                               scale_factor=scale_factor)
         vector_cut_plane_top.implicit_plane.widget.normal_to_y_axis = True
         vector_cut_plane_top.glyph.color_mode = 'no_coloring'
-        vector_cut_plane_top.implicit_plane.widget.origin = np.array([ 50.,nz-0.1, 50.5])
+        vector_cut_plane_top.implicit_plane.widget.origin = np.array([ nx / 2.,nz-0.1, nx / 2.])
         vector_cut_plane_top.implicit_plane.widget.enabled = False
         vector_cut_plane_top.glyph.glyph_source.glyph_source = vector_cut_plane_top.glyph.glyph_source.glyph_dict['arrow_source']
         vector_cut_plane_top.glyph.glyph_source.glyph_position = 'center'
