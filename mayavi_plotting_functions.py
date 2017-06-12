@@ -170,7 +170,7 @@ def mask_points(var_x, var_y, var_z, front_or_top, mod, mod_y):
         raise ValueError("front_or_top can be only 'front' or 'top'")
     return [var_x_mask, var_y_mask, var_z_mask]
 
-def vector_cut_plane(vec_field, front_or_top, nx, ny, nz, y_spacing, scale_factor=8):
+def vector_cut_plane(vec_field, front_or_top, nx, ny, nz, y_spacing, scale_factor):
 #    scale_factor = 4. # scale factor for direction field vectors
     if front_or_top == 'front':
         vector_cut_plane_front = mlab.pipeline.vector_cut_plane(vec_field, 

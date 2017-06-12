@@ -112,15 +112,15 @@ show_boundary = False
 # No density perturbations or vel/disp pert for alfven modes.
 
 #show_density = True
-show_density_pert = True
+#show_density_pert = True
 show_mag = True
 #show_mag_scale = True #must also have show_mag = True
 #show_mag_fade = True
 #show_mag_vec = True
 #show_vel_front = True
-show_vel_front_pert = True
+#show_vel_front_pert = True
 #show_vel_top = True
-#show_vel_top_pert = True
+show_vel_top_pert = True
 #show_disp_top = True
 #show_disp_front = True
 show_axes = True
@@ -184,9 +184,9 @@ make_video = True
 #    raise NameError('Cannot show density or vel/disp pert for this mode')
 
 for mode_ind in [0,1]:#range(8,14): # for all others. REMEMBER SBB pparameters
-#for mode_ind in [15]: #for fast body surf. REMEMBER SBS parameters
+#for mode_ind in [14,15]: #for fast body surf. REMEMBER SBS parameters
 #for mode_ind in [16, 17]:
-#for mode_ind in [0,1]: #for an individual mode
+#for mode_ind in [13]: #for an individual mode
 #for mode_ind in range(2,14): 
     if mode_ind not in range(len(mode_options)):
         raise NameError('Mode not in mode_options')
@@ -216,8 +216,8 @@ for mode_ind in [0,1]:#range(8,14): # for all others. REMEMBER SBB pparameters
 
 #    R1 = 1.5 # Higher denisty on left than right
 #    R1 = 1.8#
-    R1 = 1.9           
-#    R1 = 2. # Symmetric slab
+#    R1 = 1.9           
+    R1 = 2. # Symmetric slab
         
     def disp_rel_asym_2var(W, K):
         return sf.disp_rel_asym(W, K, R1)
@@ -347,7 +347,7 @@ for mode_ind in [0,1]:#range(8,14): # for all others. REMEMBER SBB pparameters
         
         
         # For masking points
-        mod = int(3 * nx / 100)
+        mod = int(4 * nx / 100)
         mod_y = int(np.ceil(mod / y_spacing))
         
         if show_disp_top == True or show_disp_front == True:
@@ -539,7 +539,7 @@ for mode_ind in [0,1]:#range(8,14): # for all others. REMEMBER SBB pparameters
             #                                        vmin=0, vmax=14)
         
         
-        scalefactor = 10. # scale factor for direction field vectors
+        scalefactor = 8. * nx / 100. # scale factor for direction field vectors
         
         if show_mag_vec == True:
             bdirfield_front = mlab.pipeline.vector_field(bxvals_mask_front_t, bzvals_mask_front_t,
@@ -680,7 +680,7 @@ for mode_ind in [0,1]:#range(8,14): # for all others. REMEMBER SBB pparameters
                     if show_disp_top == True:
                         xixvals_mask_top_t, xiyvals_mask_top_t, xizvals_mask_top_t = mpf.mask_points(xixvals_t, xiyvals_t, xizvals_t, 
                                                                                                      'top', mod, mod_y)
-                        xidirfield_top.mlab_source.set(u=xixvals_mask_top_t, v=xizvals_mask_top_t, w=xiyvals_mask_top_t)
+                        xidirfield_top.mlab_source.set(u=xixvals_mask_top_t, v=np.zeros_like(xixvals_mask_top_t), w=xiyvals_mask_top_t)
                     if show_disp_front == True:
                         xixvals_mask_front_t, xiyvals_mask_front_t, xizvals_mask_front_t = mpf.mask_points(xixvals_t, xiyvals_t, xizvals_t, 
                                                                                                            'front', mod, mod_y)
@@ -698,7 +698,7 @@ for mode_ind in [0,1]:#range(8,14): # for all others. REMEMBER SBB pparameters
                     if show_vel_top == True or show_vel_top_pert == True:
                         vxvals_mask_top_t, vyvals_mask_top_t, vzvals_mask_top_t = mpf.mask_points(vxvals_t, vyvals_t, vzvals_t, 
                                                                                                   'top', mod, mod_y)                                                
-                        vdirfield_top.mlab_source.set(u=vxvals_mask_top_t, v=vzvals_mask_top_t, w=vyvals_mask_top_t)
+                        vdirfield_top.mlab_source.set(u=vxvals_mask_top_t, v=np.zeros_like(vxvals_mask_top_t), w=vyvals_mask_top_t)
                     if show_vel_front == True or show_vel_front_pert == True:
                         vxvals_mask_front_t, vyvals_mask_front_t, vzvals_mask_front_t = mpf.mask_points(vxvals_t, vyvals_t, vzvals_t, 
                                                                                                         'front', mod, mod_y) 
@@ -846,7 +846,7 @@ for mode_ind in [0,1]:#range(8,14): # for all others. REMEMBER SBB pparameters
                     end_y = ny - 1. #ny-2 for ny = 100
                 elif ny == 100:
                     end_y = ny - 2.
-                if ny == 300:
+                elif ny == 300:
                     end_y = ny - 6.
                 else:
                     end_y = ny - 1
@@ -912,9 +912,9 @@ for mode_ind in [0,1]:#range(8,14): # for all others. REMEMBER SBB pparameters
 ##            engine_manager.current_engine = None
 ##            registry.engines = {}
             
-
-            for view_ind in [1,4,5,6]:#range(7):
-                view = view_options[view_ind]
+            views_selected = [2,3]#[0,1,4,5,6] #range(7) #[2,3]
+            for view_ind in range(len(views_selected)):
+                view = view_options[views_selected[view_ind]]
 
                 if show_boundary == True:
                     if view == 'front-parallel':

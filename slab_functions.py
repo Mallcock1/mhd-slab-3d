@@ -3,17 +3,18 @@ import numpy as np
 import scipy as sc
 from scipy.optimize import fsolve
 
-# SBB
-# Define the sound speeds and alfven speeds.
-c2 = 1.2
-c0 = 1.
-vA = 0.9
 
-
-## for xi of x slow surface sf GS and maybe others
-#c2 = 0.7
+### SBB
+## Define the sound speeds and alfven speeds.
+#c2 = 1.2
 #c0 = 1.
-#vA = 0.4
+#vA = 0.9
+
+
+# for xi of x slow surface sf GS and maybe others
+c2 = 0.7
+c0 = 1.
+vA = 0.4
 
 
 ## SBS
@@ -146,12 +147,20 @@ def required_xi(mode, K):
         print('Not a recognised mode')
 
 def const(mode, W, K, R1):
-    const_val_r = (W * required_xi(mode, K) / (constB_dash(mode, W, K, R1)*sc.cosh(m0(W)*K) +
-                                     constC_dash(mode, W, K, R1)*sc.sinh(m0(W)*K)))
-    const_val_l = (W * required_xi(mode, K) / (constB_dash(mode, W, K, R1)*sc.cosh(m0(W)*-K) +
-                                     constC_dash(mode, W, K, R1)*sc.sinh(m0(W)*-K)))
-    return min(const_val_r, const_val_l)
-
+#    const_val_r = (W * required_xi(mode, K) / (constB_dash(mode, W, K, R1)*sc.cosh(m0(W)*K) +
+#                                     constC_dash(mode, W, K, R1)*sc.sinh(m0(W)*K)))
+#    const_val_l = (W * required_xi(mode, K) / (constB_dash(mode, W, K, R1)*sc.cosh(m0(W)*-K) +
+#                                     constC_dash(mode, W, K, R1)*sc.sinh(m0(W)*-K)))
+#    return min(const_val_r, const_val_l)
+    if mode in slow_surf_mode_options:
+        return 0.05
+    elif mode in slow_body_1_mode_options:
+        return 0.23
+    elif mode in slow_body_2_mode_options:
+        return 0.1
+    elif mode in fast_body_1_mode_options:
+        return 0.9
+print('WARNING: Limited const in slab_functions')
 
 def disp_rel_asym(W, K, R1):
     return ((W**4*m0(W)**2*R1*R2 + (vA**2 - W**2)**2*m1(W, R1)*m2(W) -
