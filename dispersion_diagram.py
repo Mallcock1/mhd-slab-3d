@@ -11,6 +11,31 @@ import toolbox as tool
 import matplotlib.pyplot as plt
 import matplotlib
 
+def density_diagram(disp_rel, K, W, R1, R1min, R1max,
+                    just_dots=False):
+    
+    Wmin = sf.cT
+    Wmax = sf.vA
+    
+    R1_range = np.linspace(R1min, R1max, 51)
+    W_range = np.linspace(Wmin, Wmax, 51)
+    
+    
+    font = {'size': 15}
+    matplotlib.rc('font', **font)
+    
+    plt.figure(num=None, figsize=(10, 11), facecolor='w', edgecolor='k')
+    ax = plt.subplot()
+        
+    if just_dots == True:
+        #Plot the dots
+        W_array = tool.point_finder_scipy(disp_rel, R1_range, W_range,
+                                          args=(None))
+        ax.plot(R1_range, W_array, '.', color = 'b')
+        ax.set_xlim(0, R1_range[-1])
+        ax.set_ylim(Wmin, Wmax)
+
+
 def dispersion_diagram(mode_options, chosen_mode, disp_rel, K, W, R1,
                        just_dots=False):
     alfven_mode_options = []

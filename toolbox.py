@@ -209,9 +209,7 @@ def line_trace_scipy(func, x, y, step_size, x_end_left, x_end_right, args=None):
         flip = lambda *args: func(*args[::-1])
         flip_f = partial(flip, *out[::-1])
         x_values, root_list = root_find_scipy(flip_f, root_list, x, y, -step_size, x_values)
-
         x -= step_size
-#    print x
     x = x_values[-1] + step_size
     x_values_new = []
     root_list_new = []
