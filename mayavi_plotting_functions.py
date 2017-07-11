@@ -4,6 +4,9 @@ Created on Tue Mar 14 16:16:47 2017
 
 @author: Matt
 """
+
+# Functions that will initiate mayavi plotting modules
+
 import numpy as np
 from mayavi import mlab
 

@@ -1,13 +1,16 @@
 
 import os
 
-# jsallcock 11/16
-
+# Using ffmpeg, we can take the images created for the visualisation and create 
+# a video with the research logos overlayed.
+#
+# The procedure is:
+# - define strings which are the ffmpeg command line commands,
+# - Use pythons os package to run those commands in the command line.
 def image2video(filepath=None, prefix='', in_extension='png',
             out_extension='avi', output_name=None, fps=10, n_loops=1, 
             delete_images=False, delete_old_videos=False, res=1080,
             overlay=True, cover_page=False):
-                
     if filepath == None:
         filepath = 'D:\\my_work\\projects\\Asymmetric_slab\\Python\\visualisations\\3D_vis_animations\\'
 #        filepath = u'/media/matthew/W7_DATA/my_work/projects/Asymmetric_slab/Python/visualisations/ffmpeg/'
@@ -73,7 +76,7 @@ def image2video(filepath=None, prefix='', in_extension='png',
     loop = 'ffmpeg -y -f concat -safe 0 -i '+filepath+'loop_list.txt -c copy \
     '+filepath+output_name+'_overlay2_looped.'+out_extension
 
-    
+    # Apply the commands in the command line
     os.system(image_2_video)
     if overlay == True:
         os.system(overlay_image_sp2rc)

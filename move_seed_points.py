@@ -9,7 +9,7 @@ Move seed points by displacement field
 from scipy.optimize import fsolve
 import slab_functions as sf
 import numpy as np
-H = 1.
+
 def move_seeds(seeds, disp_x, disp_y, disp_z, mins, maxes):
     """
     Move seed points by displacement field
@@ -40,6 +40,7 @@ def move_seeds(seeds, disp_x, disp_y, disp_z, mins, maxes):
     
 def move_seeds_step(seeds, mins, maxes, tmin, tmax, n, nt,
                       mode, x, z, t, W, K, R1):
+    # IGNORE THIS
     """
     Move seed points by displacement field - previous displacement field
     
@@ -89,8 +90,10 @@ def move_seeds_step(seeds, mins, maxes, tmin, tmax, n, nt,
         print('\n\n')
     return moved_seeds
     
+H = 1.
 def move_seeds_non_int(seeds, mins, maxes, n, 
                       mode, x, z, t, W, K, R1):
+    # CANT GET THIS TO WORK
     """
     Move seed points by displacement field
     
@@ -129,6 +132,7 @@ def move_seeds_non_int(seeds, mins, maxes, n,
     
 def original_seeds_non_int(moved_seeds, mins, maxes, n, 
                            mode, x, z, t, W, K, R1):
+    # CANT GET THIS TO WORK
     """
     Find original seed points
     

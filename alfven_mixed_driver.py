@@ -5,29 +5,19 @@ Created on Tue Mar 21 14:00:14 2017
 @author: Matt
 """
 
-
-#import sys
-#sys.path.append('D:\\my_work\\projects\\Asymmetric_slab\\Python\\visualisations')
-#sys.path.append('D:\\my_work\\projects\\Asymmetric_slab\\Python\\Mihai')
-#sys.path.append('D:\\my_work\\projects\\Asymmetric_slab\\Python\\visualisations\\ffmpeg')
-##sys.path.append(u'W7_DATA/my_work/projects/Asymmetric_slab/Python/visualisations/ffmpeg/')
-
-#import pdb # pause code for debugging at pdb.set_trace()
-
 import numpy as np
 import slab_functions as sf
 import move_seed_points as msp
 from pysac.plot.mayavi_seed_streamlines import SeedStreamline
 from mayavi import mlab
-#mlab.options.offscreen = True
 import mayavi_plotting_functions as mpf
 import img2vid as i2v
 
 ###############################################################################
 
+# Set the Alfven speed distribution - varying in the x-direction
 vA2 = 1.
 vA1 = 0.5
-
 def vA_func(x):
     return (vA2 - vA1)/4 * x + vA1
 
@@ -102,7 +92,6 @@ print('Starting ' + mode)
     
 # Specify oscillation parameters
 K = 2.
-
 W = vA1
     
 # Dependent variables:
@@ -115,7 +104,7 @@ W = vA1
     
 #################################################################################
     
-
+# Grid range
 xmin = 0.
 xmax = 4.
 ymin = 0.
@@ -128,7 +117,8 @@ nx = 100 #100
 ny = 100 #100#20 #100
 nz = 100 #100
 nt = number_of_frames
-        
+
+# t (time) range.
 t_start = 0.
 t_end = 2*zmax
         
@@ -147,23 +137,25 @@ spacing =  np.array([x_spacing, z_spacing, y_spacing])
 mod = int(3 * nx / 100)
 mod_y = int(np.ceil(mod / y_spacing))
 
-
+# Displacement data
 xixvals_t = np.real(np.repeat(sf.xix_amd(xvals, zvals, t, vA_func)[:, :, np.newaxis], ny, axis=2))
 xizvals_t = np.real(np.repeat(sf.xiz_amd(xvals, zvals, t, vA_func)[:, :, np.newaxis], ny, axis=2))
 xiyvals_t = np.real(np.repeat(sf.xiy_amd(xvals, zvals, t, vA_func)[:, :, np.newaxis], ny, axis=2))
 
+# Velocity field data
 if show_vel_top == True:
     vxvals_t = np.real(np.repeat(sf.vx_amd(xvals, zvals, t, vA_func)[:, :, np.newaxis], ny, axis=2))
     vzvals_t = np.real(np.repeat(sf.vz_amd(xvals, zvals, t, vA_func)[:, :, np.newaxis], ny, axis=2))
     vyvals_t = np.real(np.repeat(sf.vy_amd(xvals, zvals, t, vA_func)[:, :, np.newaxis], ny, axis=2))
         
+# Magnetic field data
 bxvals_t = np.real(np.repeat(sf.bx_amd(xvals, zvals, t, vA_func)[:, :, np.newaxis], ny, axis=2))
 byvals_t = np.real(np.repeat(sf.by_amd(xvals, zvals, t, vA_func)[:, :, np.newaxis], ny, axis=2))
 bz_eq3d = np.repeat(sf.bz_eq_amd(xvals, zvals)[:, :, np.newaxis], ny, axis=2)
 bzvals_t = np.real(np.repeat(-sf.bz_amd(xvals, zvals, t, vA_func)[:, :, np.newaxis], ny, axis=2) +
                    bz_eq3d)
 
-#Masking points   
+#Masking points - Have to do this manually due to Mayavi bug
 if show_mag_vec == True:
     bxvals_mask_front_t, byvals_mask_front_t, bzvals_mask_front_t = mpf.mask_points(bxvals_t, byvals_t, bzvals_t, 
                                                                        'front', mod, mod_y)
@@ -174,21 +166,22 @@ if show_vel_top == True:
     vxvals_mask_top_t, vyvals_mask_top_t, vzvals_mask_top_t = mpf.mask_points(vxvals_t, vyvals_t, vzvals_t, 
                                                                               'top', mod, mod_y)
                                                                                     
-
+# Initialise figure
 fig = mlab.figure(size=res) # (1920, 1080) for 1080p , tuple(101 * np.array((16,9))) #16:9 aspect ratio for video upload
 
 xgrid, zgrid, ygrid = np.mgrid[0:nx:(nx)*1j,
                                0:nz:(nz)*1j,
                                0:ny:(ny)*1j]
-    
+
+# Create magnetic field visualisation
 field = mlab.pipeline.vector_field(bxvals_t, bzvals_t, byvals_t, name="B field", 
                                    figure=fig, scalars=zgrid)
 field.spacing = spacing
-
 field_ms = field.mlab_source
 
 scalefactor = 4. # scale factor for direction field vectors
 
+# Velocity direction field at the top of the domain
 if show_vel_top == True:
     vdirfield_top = mlab.pipeline.vector_field(vxvals_mask_top_t, np.zeros_like(vxvals_mask_top_t),
                                                 vyvals_mask_top_t, name="V field top",
@@ -213,10 +206,9 @@ if uniform_light == True:
 #Black background
 mpf.background_colour(fig, (0., 0., 0.))
 
-
-
 for t_ind in range(nt):
     if t_ind != 0:
+        # Update datasets at each time step
         xixvals_t = np.real(np.repeat(sf.xix_amd(xvals, zvals, t, vA_func)[:, :, np.newaxis], ny, axis=2))
         xizvals_t = np.real(np.repeat(sf.xiz_amd(xvals, zvals, t, vA_func)[:, :, np.newaxis], ny, axis=2))
         xiyvals_t = np.real(np.repeat(sf.xiy_amd(xvals, zvals, t, vA_func)[:, :, np.newaxis], ny, axis=2))
@@ -241,9 +233,6 @@ for t_ind in range(nt):
         
         if show_vel_top == True: 
             mpf.mask_points(vxvals_t, vyvals_t, vzvals_t, 'top', mod, mod_y)
-
-#    zvals, yvals = np.mgrid[0:nz:(nz)*1j,
-#                            0:ny:(ny)*1j]
         
     #
     ##
@@ -254,30 +243,21 @@ for t_ind in range(nt):
     ###
     ##
     #
-            
-    
-    
-    
 
-    
-                
-#    xvals, zvals, yvals = np.mgrid[xmin:xmax:(nx)*1j,
-#                                   zmax:zmax:(nz)*1j,
-#                                   ymin:ymax:(ny)*1j]
-
+    # Update mag field visualisation
     if t_ind != 0:
         field_ms.set(u=bxvals_t, v=bzvals_t, w=byvals_t)
-        
-                
+    
+    # Create field lines
     if show_mag == True:
         # Create an array of points for which we want mag field seeds
-        nx_seed = 9 #7
-        ny_seed = 13 #10
-        start_x = 2. #38
+        nx_seed = 9
+        ny_seed = 13
+        start_x = 2.
         end_x = nx+1 - start_x
         start_y = 1.
         if ny == 20:
-            end_y = ny - 1 #ny-2 for ny = 100
+            end_y = ny - 1
         elif ny == 100:
             end_y = ny - 2
         else:
@@ -296,26 +276,27 @@ for t_ind in range(nt):
             del seeds[0]
             del seeds[-1]
         
-
+        # I have managed to get the move_seeds function to work here.
+        # Seed points are moved by the velocity field.
         seeds = msp.move_seeds(seeds, xixvals_t, xiyvals_t, xizvals_t, 
                                [xmin, ymin, zmin], [xmax, ymax, zmax])
         if t_ind != 0:
             field_lines.remove()
         field_lines = SeedStreamline(seed_points=seeds)
         field_lines.stream_tracer.integration_direction='both'
-        field_lines.streamline_type = 'tube'
-        
-        field.add_child(field_lines)
-        module_manager = field_lines.parent
-        
+        field_lines.streamline_type = 'tube'        
         field_lines.stream_tracer.maximum_propagation = 500.
         field_lines.tube_filter.number_of_sides = 20
         field_lines.tube_filter.radius = 0.7
         field_lines.tube_filter.capping = True
         field_lines.actor.property.opacity = 1.0
+                
+        field.add_child(field_lines)
+        module_manager = field_lines.parent
         
+        # Colormap of magnetic field strength plotted on the field lines
         if show_mag_scale == True:
-            module_manager.scalar_lut_manager.lut_mode = 'jet'
+            module_manager.scalar_lut_manager.lut_mode = 'coolwarm'
             module_manager.scalar_lut_manager.data_range=[7,18]
         else:
             mag_lut = module_manager.scalar_lut_manager.lut.table.to_array()
@@ -323,12 +304,10 @@ for t_ind in range(nt):
             mag_lut[:,1] = [20]*256
             mag_lut[:,2] = [20]*256
             module_manager.scalar_lut_manager.lut.table = mag_lut
-#                    module_manager.scalar_lut_manager.data_range=[-1500,500]
         if show_mag_fade == True:
             mpf.colormap_fade(module_manager, fade_value=20)
             
-        
-        
+        # Direction field of Magntic field vectors
         if show_mag_vec == True:
             bdirfield_front = mlab.pipeline.vector_field(bxvals_mask_front_t, bzvals_mask_front_t,
                                                          byvals_mask_front_t, name="B field front",
@@ -352,27 +331,15 @@ for t_ind in range(nt):
     #Set viewing angle
     mpf.view_position(fig, view, nx, ny, nz)
 
-        
-# Trying and failing to sort out memory issues.
-#        mlab.gcf()
-#        mlab.clf()
-#        mlab.close()
-#        gc.collect()
-#        del fig
-#        engine_manager.current_engine = None
-#        registry.engines = {}
-        
     if save_images == True:
         prefix = 'bouncing_field_test_amd_' + mode + '_' + view + '_vel_top_bounce_test'
         mlab.savefig('D:\\my_work\\projects\\Asymmetric_slab\\Python\\visualisations\\3D_vis_animations\\'
                  + prefix + str(t_ind+1) + '.png')
-#        mlab.close(fig)
         
     t = t + (t_end - t_start) / nt
     
 if make_video == True:
     mlab.close(fig)
-#    i2v.image2video(prefix=prefix, output_name=prefix+'_video', out_extension='mp4', fps=20, n_loops=4, delete_images=True, delete_old_videos=True, res=res[1])
     i2v.image2video(prefix=prefix, output_name=prefix + '_video', 
                     out_extension='mp4', fps=fps, n_loops=1, delete_images=True,
                     delete_old_videos=True, cover_page=False, res=res[1])

@@ -11,16 +11,18 @@ import toolbox as tool
 import matplotlib.pyplot as plt
 import matplotlib
 
+
 def density_diagram(disp_rel, K, W, R1, R1min, R1max,
                     just_dots=False):
-    
+    # Plot omega/k against rho_1/rho_0 for eigenmodes
+                    
     Wmin = sf.cT
     Wmax = sf.vA
     
     R1_range = np.linspace(R1min, R1max, 51)
     W_range = np.linspace(Wmin, Wmax, 51)
     
-    
+    # Global font change
     font = {'size': 15}
     matplotlib.rc('font', **font)
     
@@ -29,7 +31,7 @@ def density_diagram(disp_rel, K, W, R1, R1min, R1max,
         
     if just_dots == True:
         #Plot the dots
-        W_array = tool.point_finder_scipy(disp_rel, R1_range, W_range,
+        W_array = tool.point_find(disp_rel, R1_range, W_range,
                                           args=(None))
         ax.plot(R1_range, W_array, '.', color = 'b')
         ax.set_xlim(0, R1_range[-1])
@@ -38,7 +40,11 @@ def density_diagram(disp_rel, K, W, R1, R1min, R1max,
 
 def dispersion_diagram(mode_options, chosen_mode, disp_rel, K, W, R1,
                        just_dots=False):
-    alfven_mode_options = []
+    
+    # Dispersion diagram for eigenmodes given by mode_options.
+    # Can only do R1=1.5, 1.8, 2.0.
+    
+    # Create sublists of modes
     kink_mode_options = []
     saus_mode_options = []
     slow_surf_mode_options = []
@@ -54,8 +60,6 @@ def dispersion_diagram(mode_options, chosen_mode, disp_rel, K, W, R1,
     fast_body_3_mode_options = []
     
     for mode in mode_options:
-        if 'alfven' in mode:
-            alfven_mode_options.append(mode)
         if 'kink' in mode:
             kink_mode_options.append(mode)
         if 'saus' in mode:
@@ -83,7 +87,7 @@ def dispersion_diagram(mode_options, chosen_mode, disp_rel, K, W, R1,
         if 'slow' in mode and 'body' in mode:
             slow_body_mode_options.append(mode)  
     
-    # Plot the dispersion diagram with the chosen_mode highlighted
+    # Set plotting range
     Kmin = 0.
     Kmax = 23.#10.
     
@@ -93,14 +97,15 @@ def dispersion_diagram(mode_options, chosen_mode, disp_rel, K, W, R1,
     K_range = np.linspace(Kmin, Kmax, 51)
     W_range = np.linspace(Wmin, Wmax, 51)
     
-    
+    # Global font change
     font = {'size': 15}
     matplotlib.rc('font', **font)
     
+    # Initialise plot
     plt.figure(num=None, figsize=(10, 11), facecolor='w', edgecolor='k')
     ax = plt.subplot()
     
-    # colours 
+    # line colours - g=chosen, b=body, r=surface
     def colour(mode):
         colours = []
         if mode in fast_surf_mode_options:
@@ -129,6 +134,7 @@ def dispersion_diagram(mode_options, chosen_mode, disp_rel, K, W, R1,
                     colours.append('b')
         return colours
      
+    # line styles - '--'=kink, '-'=sausage
     def ls(mode):
         linestyles = []
         if mode in fast_surf_mode_options:
@@ -149,15 +155,16 @@ def dispersion_diagram(mode_options, chosen_mode, disp_rel, K, W, R1,
                 else:
                     linestyles.append('-')
         return linestyles
-        
+    
+    # Basic, but much fast plot to get an idea of the solutions.
     if just_dots == True:
         #Plot the dots
-        W_array = tool.point_finder_scipy(disp_rel, K_range, W_range,
+        W_array = tool.point_find(disp_rel, K_range, W_range,
                                           args=(None))
         ax.plot(K_range, W_array, '.', color = 'b')
         
     else:
-    
+    # Do the full plot
         if R1 == 1.5:
             if chosen_mode in fast_surf_mode_options:
                 K_guess = [1., 1., 10.12, 8.74, 5.98, 5.98, 3.68, 1.84, 6., 6.]
@@ -258,11 +265,11 @@ def dispersion_diagram(mode_options, chosen_mode, disp_rel, K, W, R1,
         else:
             raise ValueError('R1 can only take the values 1.5, 1.8, 2.0')
         
+        # line width
         lw = 1.5
         disp_modes = range(len(K_guess))
-    #        disp_modes = [-1]
         for i in disp_modes:
-            K_values, root_array = tool.line_trace_scipy(disp_rel, K_guess[i], 
+            K_values, root_array = tool.line_trace(disp_rel, K_guess[i], 
                                                          W_guess[i], step[i], K_start[i],
                                                          K_end[i], (None))
             ax.plot(K_values, root_array, color=colour(chosen_mode)[i], linewidth=lw, 
@@ -276,6 +283,7 @@ def dispersion_diagram(mode_options, chosen_mode, disp_rel, K, W, R1,
                     markerfacecolor='None', markeredgecolor=colour(chosen_mode)[i+8],
                     markeredgewidth=lw, markersize=8)
         
+        # Labels, annotations etc...
         ax.set_ylabel(r'$v_{ph}/c_0$', fontsize = 20)
         ax.set_xlabel(r'$k x_0$', fontsize = 20)
         
@@ -327,6 +335,6 @@ def dispersion_diagram(mode_options, chosen_mode, disp_rel, K, W, R1,
                 ax.annotate(r'$c_1$', xy=(K_range[-1] + 0.03, sf.c1(R1) - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
                 ax.annotate(r'$c_2$', xy=(K_range[-1] + 0.03, sf.c2 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
     
-                    
+        # Plot a green circle where the chosen mode is
         ax.plot(K, W, 'go', markersize=10)
     #        plt.tight_layout() # seems to make it chop the sides off with this

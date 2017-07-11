@@ -1,7 +1,6 @@
 import toolbox_extended as t
 import numpy as np
 import scipy.optimize as sp
-#import mpmath as mp
 from functools import partial
 
 # Attempts to find the roots of a defined function in a box defined by two
@@ -35,29 +34,7 @@ from functools import partial
 # Your output will be a numpy array called y_pts.
 # You may then use plot(x_range, y_pts).
 
-#Mihai's original
-#def point_finder_scipy(func, x_range, y_range, args=None):
-#    y_pts = []
-#    if args is None:
-#        args = [None]
-#    for x in x_range:
-#        out = []
-#        for a in args:
-#            if a is None:
-#                a = x
-#            out.append(a)
-#        root_temp = []
-#        for y in y_range:
-#            try:
-#                root = sp.newton(func, y, args = tuple(out), tol = 1e-20)
-#                root_temp = t.check(root, root_temp, 10**(-6))
-#            except RuntimeError:
-#                pass
-#        y_pts.append(root_temp)
-#    y_array = t.list_to_array(y_pts)
-#    return y_array
-
-def point_finder_scipy(func, x_range, y_range, args=None):
+def point_find(func, x_range, y_range, args=None):
     y_pts = []
     if args is None:
         args = [None]
@@ -91,30 +68,6 @@ def point_finder_scipy(func, x_range, y_range, args=None):
     y_array = t.list_to_array(y_pts)
     return y_array
 
-#def point_finder_mpmath(func, x_range, y_range, args=None):
-#    y_pts = []
-#    if args is None:
-#        args = [None]
-#    for x in x_range:
-#        out = []
-#        for a in args:
-#            if a is None:
-#                a = x
-#            out.append(a)
-#        flip = lambda *args: func(*args[::-1])
-#        flip_f = partial(flip, *out[::-1])
-#        root_temp = []
-#        for y in y_range:
-#            try:
-#                root = mp.findroot(flip_f, y, solver='newton', tol = 1e-20)
-#                root = float(mp.re(root)) + 1j * float(mp.im(root))
-#                root_temp = t.check(root, root_temp, 10**(-6))
-#            except:
-#                pass
-#        y_pts.append(root_temp)
-#    y_array = t.list_to_array(y_pts)
-#    return y_array
-
 # Attempts to find a root that is close to a root inputted into the finder.
 # Arguments:
 # func - The function. Must depend on a single variable.
@@ -124,7 +77,7 @@ def point_finder_scipy(func, x_range, y_range, args=None):
 # step_size - The step size to be used in calculating the next point.
 # x_values -
 
-def root_find_scipy(func, root_list, x, y, step_size, x_values):
+def root_find(func, root_list, x, y, step_size, x_values):
     if len(root_list) == 0:
         root = sp.newton(func, y, maxiter = 2000)
         root_list.append(root)
@@ -154,37 +107,6 @@ def root_find_scipy(func, root_list, x, y, step_size, x_values):
             x_values.append(x)
     return x_values, root_list
 
-#def root_find_mpmath(func, root_list, y, x, step_size, x_values):
-#    if len(root_list) == 0:
-#        root_mp = mp.findroot(func, y, solver='mnewton', tol=10**(25))
-#        root = float(mp.re(root_mp)) + 1j*float(mp.im(root_mp))
-#        root_list.append(root)
-#        x_values.append(x)
-#    elif len(root_list) == 1:
-#        root_mp = mp.findroot(func, root_list[-1], solver='mnewton', tol=10**(25))
-#        root = float(mp.re(root_mp)) + 1j*float(mp.im(root_mp))
-#        root_list.append(root)
-#        x_values.append(x)
-#    elif len(root_list) == 2:
-#        grad = (root_list[-1] - root_list[-2]) * np.abs(step_size/(x_values[-1] - x_values[-2]))
-#        root_mp = mp.findroot(func, root_list[-1] + grad, solver='mnewton',tol=10**(25))
-#        root = float(mp.re(root_mp)) + 1j*float(mp.im(root_mp))
-#        if np.abs(root - root_list[-1]) > 0.1:
-#            raise Exception('largegrad at {}'.format(x_values[-1]))
-#        else:
-#            root_list.append(root)
-#            x_values.append(x)
-#    else:
-#        grad = ((root_list[-1] - root_list[-2]) + (root_list[-1] - 2*root_list[-2] + root_list[-3])) * np.abs(step_size/(x_values[-1] - x_values[-2]))
-#        root_mp = mp.findroot(func, root_list[-1] + grad, solver='mnewton', tol=10**(25))
-#        root = float(mp.re(root_mp)) + 1j*float(mp.im(root_mp))
-#        if np.abs(root-root_list[-1]) > 0.1:
-#            raise Exception('largegrad at {}'.format(x_values[-1]))
-#        else:
-#            root_list.append(root)
-#            x_values.append(x)
-#    return x_values, root_list
-
 # Attempts to trace a line of roots of a function.
 # Arguments:
 # func - The function. This can have any number of variables, 
@@ -195,7 +117,7 @@ def root_find_scipy(func, root_list, x, y, step_size, x_values):
 # x_end_left, x_end_right - These define the limits of the interval in which
 # line is to be traced.
 
-def line_trace_scipy(func, x, y, step_size, x_end_left, x_end_right, args=None):
+def line_trace(func, x, y, step_size, x_end_left, x_end_right, args=None):
     if args is None:
         args = [None]
     x_values = []
@@ -208,7 +130,7 @@ def line_trace_scipy(func, x, y, step_size, x_end_left, x_end_right, args=None):
             out.append(a)
         flip = lambda *args: func(*args[::-1])
         flip_f = partial(flip, *out[::-1])
-        x_values, root_list = root_find_scipy(flip_f, root_list, x, y, -step_size, x_values)
+        x_values, root_list = root_find(flip_f, root_list, x, y, -step_size, x_values)
         x -= step_size
     x = x_values[-1] + step_size
     x_values_new = []
@@ -221,42 +143,9 @@ def line_trace_scipy(func, x, y, step_size, x_end_left, x_end_right, args=None):
             out.append(a)
         flip = lambda *args: func(*args[::-1])
         flip_f = partial(flip, *out[::-1])
-        x_values, root_list = root_find_scipy(flip_f, root_list, x, y, step_size, x_values)
+        x_values, root_list = root_find(flip_f, root_list, x, y, step_size, x_values)
         x_values_new.append(x_values[-1])
         root_list_new.append(root_list[-1])
         x += step_size
-#    print x
     root_array = np.array(root_list_new)
     return x_values_new, root_array
-
-#def line_trace_mpmath(func, x, y, step_size, x_end_left, x_end_right, args=None):
-#    if args is None:
-#        args = [None]
-#    x_values = []
-#    root_list = []
-#    while x > x_end_left:
-#        out = []
-#        for a in args:
-#            if a is None:
-#                a = x
-#            out.append(a)
-#        flip = lambda *args: func(*args[::-1])
-#        flip_f = partial(flip, *out[::-1])
-#        x_values, root_list = root_find_mpmath(flip_f, root_list, y, x, -step_size, x_values)
-#        x -= step_size
-##    print x
-#    root_list, x_values = list(reversed(root_list)), list(reversed(x_values))
-#    x = x_values[-1] + step_size
-#    while x <= x_end_right:
-#        out = []
-#        for a in args:
-#            if a is None:
-#                a = x
-#            out.append(a)
-#        flip = lambda *args: func(*args[::-1])
-#        flip_f = partial(flip, *out[::-1])
-#        x_values, root_list = root_find_mpmath(flip_f, root_list, y, x, step_size, x_values)
-#        x += step_size
-##    print x
-#    root_array = np.array(root_list)
-#    return x_values, root_array
