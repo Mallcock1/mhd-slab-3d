@@ -6,11 +6,11 @@ from scipy.optimize import fsolve
 #Different modes can be found with different characteristic speed orderings
 # Choose wisely!
 #
-## SBB
-## Define the sound speeds and alfven speeds.
-#c2 = 1.2
-#c0 = 1.
-#vA = 0.9
+# SBB
+# Define the sound speeds and alfven speeds.
+c2 = 1.2
+c0 = 1.
+vA = 0.9
 
 #
 ## for xi of x slow surface and maybe others
@@ -19,11 +19,12 @@ from scipy.optimize import fsolve
 #vA = 0.4
 
 
-# SBS
-# Define the sound speeds and alfven speed and tube speed.
-c2 = 1.2
-c0 = 1.
-vA = 1.3
+## SBS
+## Define the sound speeds and alfven speed and tube speed.
+#c2 = 1.2
+#c0 = 1.
+#vA = 1.3
+
 cT = sc.sqrt(c0**2 * vA**2*(c0**2 + vA**2)**(-1))
 
 mode_options = ['slow-kink-surf', 'slow-saus-surf', 'slow-saus-body-3',
@@ -50,7 +51,7 @@ def c1(R1):
 # Equilibrium magnetic field strength within the slab:
 B0 = 1.
 
-# variables:
+# variables (reference only):
 # x = k*x
 # y = k*y
 # z = k*z
@@ -108,7 +109,23 @@ def required_xi(mode, K):
         print('Not a recognised mode')
 
 def const(mode, W, K, R1):
-    return 0.6
+#    return 0.6
+    const_val_r = (W * required_xi(mode, K) / (constB_dash(mode, W, K, R1)*sc.cosh(m0(W)*K) +
+                                     constC_dash(mode, W, K, R1)*sc.sinh(m0(W)*K)))
+    const_val_l = (W * required_xi(mode, K) / (constB_dash(mode, W, K, R1)*sc.cosh(m0(W)*-K) +
+                                     constC_dash(mode, W, K, R1)*sc.sinh(m0(W)*-K)))
+    return min(const_val_r, const_val_l)
+#print('WARNING: Limited const in slab_functions')
+#    if mode in slow_surf_mode_options:
+#        return 0.05
+#    elif mode in slow_body_1_mode_options:
+#        return 0.23
+#    elif mode in slow_body_2_mode_options:
+#        return 0.1
+#    elif mode in slow_body_3_mode_options:
+#        return 0.1
+#    elif mode in fast_body_1_mode_options:
+#        return 0.9
 
 # Dispersion relation for an asymmetric magnetic slab
 def disp_rel_asym(W, K, R1):

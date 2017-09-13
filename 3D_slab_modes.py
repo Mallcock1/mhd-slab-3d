@@ -11,6 +11,7 @@ import gc
 import mayavi_plotting_functions as mpf
 import dispersion_diagram
 import img2vid as i2v
+from functools import partial
 
 # ================================
 # Preamble: set mode options and view parameters
@@ -61,7 +62,7 @@ show_mag = True
 #show_vel_front = True
 #show_vel_front_pert = True
 #show_vel_top = True
-show_vel_top_pert = True
+#show_vel_top_pert = True
 #show_disp_top = True
 #show_disp_front = True
 show_axes = True
@@ -77,8 +78,8 @@ vis_modules_strings = ['show_density', 'show_density_pert', 'show_mag', 'show_ma
                        'show_mag_fade', 'show_mag_vec', 'show_vel_front', 'show_vel_front_pert',
                        'show_vel_top', 'show_vel_top_pert', 'show_disp_top', 'show_disp_front']
 vis_mod_string = ''
-for i in range(len(vis_modules)):
-    if vis_modules[i] == True:
+for i, j in enumerate(vis_modules):
+    if vis_modules[i]:
         vis_mod_string = vis_mod_string + vis_modules_strings[i][5:] + '_'
 
 
@@ -100,16 +101,16 @@ res = tuple(101 * np.array((16,9)))
 #res = tuple(51 * np.array((16,9)))
 #res = tuple(21 * np.array((16,9)))
 
-number_of_frames = 50
+number_of_frames = 1
 
 # Frames per second of output video
 fps = 20
 
-#save_images = False
-save_images = True
+save_images = False
+#save_images = True
 
-#make_video = False
-make_video = True
+make_video = False
+#make_video = True
 
 # ================================
 # Visualisation set-up
@@ -124,7 +125,7 @@ make_video = True
 # t = omega*t
 
 # Loop through selected modes
-for mode_ind in [0,1]:#range(8,14): # for all others. REMEMBER SBB pparameters
+for mode_ind in [0]:#range(8,14): # for all others. REMEMBER SBB pparameters
 #for mode_ind in [14,15]: #for fast body surf. REMEMBER SBS parameters
 #for mode_ind in [16, 17]:
 #for mode_ind in [13]: #for an individual mode
@@ -159,39 +160,35 @@ for mode_ind in [0,1]:#range(8,14): # for all others. REMEMBER SBB pparameters
     R1 = 2. # Symmetric slab
     
     # Reduce number of variables in dispersion relation
-    def disp_rel_asym_2var(W, K):
-        return sf.disp_rel_asym(W, K, R1)
+    disp_rel_partial = partial(sf.disp_rel_asym, R1=R1)
     
     # find eigenfrequencies W (= omega/k) within the range Wrange for the given parameters.
     Wrange1 = np.linspace(0., sf.cT, 11)
     Wrange2 = np.linspace(sf.cT, sf.c0, 401)
     Wrange3 = np.linspace(sf.c0, sf.c2, 11)
     
-    Woptions_slow_surf = np.real(tool.point_find(disp_rel_asym_2var, np.array(K), Wrange1, args=None).transpose())
-    Woptions_slow_body = np.real(tool.point_find(disp_rel_asym_2var, np.array(K), Wrange2, args=None).transpose())
-    Woptions_fast = np.real(tool.point_find(disp_rel_asym_2var, np.array(K), Wrange3, args=None).transpose())
+    Woptions_slow_surf = np.real(tool.point_find(disp_rel_partial, np.array(K), Wrange1, args=None).transpose())
+    Woptions_slow_body = np.real(tool.point_find(disp_rel_partial, np.array(K), Wrange2, args=None).transpose())
+    Woptions_fast = np.real(tool.point_find(disp_rel_partial, np.array(K), Wrange3, args=None).transpose())
     
     # Remove W values that are very close to characteristic speeds - these are spurious solutions
     tol = 1e-2
     indices_to_rm = []
-    for i in range(len(Woptions_slow_surf)):
-        w = Woptions_slow_surf[i]
+    for i, w in enumerate(Woptions_slow_surf):
         if min(abs(np.array([w, w - sf.c0, w - sf.c1(R1), w - sf.c2, w - sf.vA]))) < tol or w < 0 or w > sf.cT:
             indices_to_rm.append(i)
     Woptions_slow_surf = np.delete(Woptions_slow_surf, indices_to_rm)
     Woptions_slow_surf.sort()
     
     indices_to_rm = []
-    for i in range(len(Woptions_slow_body)):
-        w = Woptions_slow_body[i]
+    for i, w in enumerate(Woptions_slow_body):
         if min(abs(np.array([w, w - sf.c0, w - sf.c1(R1), w - sf.c2, w - sf.vA]))) < tol or w < sf.cT or w > sf.c0:
             indices_to_rm.append(i)
     Woptions_slow_body = np.delete(Woptions_slow_body, indices_to_rm)
     Woptions_slow_body.sort()
     
     indices_to_rm = []
-    for i in range(len(Woptions_fast)):
-        w = Woptions_fast[i]
+    for i, w in enumerate(Woptions_fast):
         if min(abs(np.array([w, w - sf.c0, w - sf.c1(R1), w - sf.c2, w - sf.vA]))) < tol or w < sf.c0 or w > min(sf.c1, sf.c2):
             indices_to_rm.append(i)
     Woptions_fast = np.delete(Woptions_fast, indices_to_rm)
@@ -218,7 +215,7 @@ for mode_ind in [0,1]:#range(8,14): # for all others. REMEMBER SBB pparameters
         W = np.real(W)
         
     # Quick plot to see if we are hitting correct mode    
-    if show_quick_plot == True:
+    if show_quick_plot:
         plt.plot([K] * len(Woptions), Woptions, '.')
         plt.plot(K+0.5, W, 'go')
         plt.xlim([0,23])
@@ -228,12 +225,12 @@ for mode_ind in [0,1]:#range(8,14): # for all others. REMEMBER SBB pparameters
 # Dispersion diagram
 # ================================
 
-    if show_dispersion == True:
+    if show_dispersion:
         if 'alfven' in mode:
             raise NameError('Disperion plot requested for an alfven mode. Cant do it')
         
         dispersion_diagram.dispersion_diagram(mode_options, mode, 
-                                              disp_rel_asym_2var, K, W, R1)
+                                              disp_rel_partial, K, W, R1)
 #        plt.tight_layout() # seems to make it chop the sides off with this
         plt.savefig('D:\\my_work\\projects\\Asymmetric_slab\\Python\\visualisations\\3D_vis_dispersion_diagrams\\'
                     + 'R1_' + str(R1) + '_' + mode + '.png')   
@@ -243,7 +240,7 @@ for mode_ind in [0,1]:#range(8,14): # for all others. REMEMBER SBB pparameters
 # Animation
 # ================================
     
-    if show_animation == True:
+    if show_animation:
         print('Starting ' + mode)
         
         # set grid parameters
@@ -281,17 +278,17 @@ for mode_ind in [0,1]:#range(8,14): # for all others. REMEMBER SBB pparameters
         mod_y = int(np.ceil(mod / y_spacing))
         
         # Get the data xi=displacement, v=velocity, b=mag field
-        if show_disp_top == True or show_disp_front == True:
+        if show_disp_top or show_disp_front:
             xixvals = np.real(np.repeat(sf.xix(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
             xizvals = np.real(np.repeat(sf.xiz(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
             xiyvals = np.real(np.repeat(sf.xiy(mode, xvals, zvals, t, W, K)[:, :, np.newaxis], ny, axis=2))
         
-        if show_vel_front == True or show_vel_top == True:
+        if show_vel_front or show_vel_top:
             vxvals = np.real(np.repeat(sf.vx(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
             vzvals = np.real(np.repeat(sf.vz(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
             vyvals = np.real(np.repeat(sf.vy(mode, xvals, zvals, t, K)[:, :, np.newaxis], ny, axis=2))
         
-        if show_vel_front_pert == True or show_vel_top_pert == True:
+        if show_vel_front_pert or show_vel_top_pert:
             vxvals = np.real(np.repeat(sf.vx_pert(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
             vzvals = np.real(np.repeat(sf.vz_pert(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
             vyvals = np.zeros_like(vxvals)
@@ -304,35 +301,35 @@ for mode_ind in [0,1]:#range(8,14): # for all others. REMEMBER SBB pparameters
                          bz_eq3d)
         
         # displacement at the right and left boundaries
-        if show_boundary == True:
+        if show_boundary:
             xix_boundary_r_vals = np.real(np.repeat(K + sf.xix_boundary(mode, zvals, t, W, K, R1, boundary='r')[:, np.newaxis], ny, axis=1))
             xix_boundary_l_vals = np.real(np.repeat(-K + sf.xix_boundary(mode, zvals, t, W, K, R1, boundary='l')[:, np.newaxis], ny, axis=1))
         
-        if show_density == True:
+        if show_density:
             rho_vals = np.real(np.repeat(sf.rho(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
         
-        if show_density_pert == True:
+        if show_density_pert:
             rho_vals = np.real(np.repeat(sf.rho_pert(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
         
         bxvals_t = bxvals
         byvals_t = byvals
         bzvals_t = bzvals
         
-        if show_disp_top == True or show_disp_front == True:
+        if show_disp_top or show_disp_front:
             xixvals_t = xixvals
             xiyvals_t = xiyvals
             xizvals_t = xizvals
             
-        if np.array([show_vel_top, show_vel_top_pert, show_vel_front, show_vel_front_pert]).any() == True:
+        if np.array([show_vel_top, show_vel_top_pert, show_vel_front, show_vel_front_pert]).any():
             vxvals_t = vxvals
             vyvals_t = vyvals
             vzvals_t = vzvals 
         
-        if show_boundary == True:
+        if show_boundary:
             xix_boundary_r_vals_t = xix_boundary_r_vals
             xix_boundary_l_vals_t = xix_boundary_l_vals
             
-        if show_density == True or show_density_pert == True:
+        if show_density or show_density_pert:
             rho_vals_t = rho_vals
             
             
@@ -360,26 +357,26 @@ for mode_ind in [0,1]:#range(8,14): # for all others. REMEMBER SBB pparameters
         # Spacing of grid so that we can display a visualisation cube without having the same number of grid points in each dimension
         spacing =  np.array([x_spacing, z_spacing, y_spacing])                     
                                              
-        if show_density == True or show_density_pert == True:
+        if show_density or show_density_pert:
             # Scalar field density   
             rho = mlab.pipeline.scalar_field(rho_vals_t, name="density", figure=fig)
             rho.spacing = spacing
             mpf.volume_red_blue(rho, rho_vals_t)
         
         #Masking points
-        if show_mag_vec == True:
+        if show_mag_vec:
             bxvals_mask_front_t, byvals_mask_front_t, bzvals_mask_front_t = mpf.mask_points(bxvals_t, byvals_t, bzvals_t, 
                                                                                             'front', mod, mod_y)
-        if show_disp_top == True:    
+        if show_disp_top:    
             xixvals_mask_top_t, xiyvals_mask_top_t, xizvals_mask_top_t = mpf.mask_points(xixvals_t, xiyvals_t, xizvals_t, 
                                                                                          'top', mod, mod_y)
-        if show_disp_front == True:
+        if show_disp_front:
             xixvals_mask_front_t, xiyvals_mask_front_t, xizvals_mask_front_t = mpf.mask_points(xixvals_t, xiyvals_t, xizvals_t, 
                                                                                                'front', mod, mod_y)
-        if show_vel_top == True or show_vel_top_pert == True:  
+        if show_vel_top or show_vel_top_pert:  
             vxvals_mask_top_t, vyvals_mask_top_t, vzvals_mask_top_t = mpf.mask_points(vxvals_t, vyvals_t, vzvals_t, 
                                                                                       'top', mod, mod_y)                                                
-        if show_vel_front == True or show_vel_front_pert == True:
+        if show_vel_front or show_vel_front_pert:
             vxvals_mask_front_t, vyvals_mask_front_t, vzvals_mask_front_t = mpf.mask_points(vxvals_t, vyvals_t, vzvals_t, 
                                                                                             'front', mod, mod_y)        
         
@@ -394,13 +391,13 @@ for mode_ind in [0,1]:#range(8,14): # for all others. REMEMBER SBB pparameters
         
 
         
-        if show_axes == True:
+        if show_axes:
             mpf.axes_no_label(field)
                 
-        if show_mini_axis == True:
+        if show_mini_axis:
             mpf.mini_axes()
 
-        if uniform_light == True:
+        if uniform_light:
             #uniform lighting, but if we turn shading of volumes off, we are ok without
             mpf.uniform_lighting(fig)
         
@@ -418,7 +415,7 @@ for mode_ind in [0,1]:#range(8,14): # for all others. REMEMBER SBB pparameters
         scalefactor = 8. * nx / 100. # scale factor for direction field vectors
         
         # Set up visualisation modules
-        if show_mag_vec == True:
+        if show_mag_vec:
             bdirfield_front = mlab.pipeline.vector_field(bxvals_mask_front_t, bzvals_mask_front_t,
                                                          byvals_mask_front_t, name="B field front",
                                                          figure=fig)
@@ -426,7 +423,7 @@ for mode_ind in [0,1]:#range(8,14): # for all others. REMEMBER SBB pparameters
             mpf.vector_cut_plane(bdirfield_front, 'front', nx, ny, nz, 
                                  y_spacing, scale_factor=scalefactor)
         
-        if show_vel_top == True or show_vel_top_pert == True:
+        if show_vel_top or show_vel_top_pert:
             vdirfield_top = mlab.pipeline.vector_field(vxvals_mask_top_t, np.zeros_like(vxvals_mask_top_t),
                                                        vyvals_mask_top_t, name="V field top",
                                                        figure=fig)
@@ -434,7 +431,7 @@ for mode_ind in [0,1]:#range(8,14): # for all others. REMEMBER SBB pparameters
             mpf.vector_cut_plane(vdirfield_top, 'top', nx, ny, nz, 
                                  y_spacing, scale_factor=scalefactor)
             
-        if show_vel_front == True or show_vel_front_pert == True:
+        if show_vel_front or show_vel_front_pert:
             vdirfield_front = mlab.pipeline.vector_field(vxvals_mask_front_t, vzvals_mask_front_t,
                                                          vyvals_mask_front_t, name="V field front",
                                                          figure=fig)
@@ -442,7 +439,7 @@ for mode_ind in [0,1]:#range(8,14): # for all others. REMEMBER SBB pparameters
             mpf.vector_cut_plane(vdirfield_front,'front', nx, ny, nz, 
                                  y_spacing, scale_factor=scalefactor)
         
-        if show_disp_top == True:
+        if show_disp_top:
             xidirfield_top = mlab.pipeline.vector_field(xixvals_mask_top_t, np.zeros_like(xixvals_mask_top_t),
                                                         xiyvals_mask_top_t, name="Xi field top",
                                                         figure=fig)
@@ -450,7 +447,7 @@ for mode_ind in [0,1]:#range(8,14): # for all others. REMEMBER SBB pparameters
             mpf.vector_cut_plane(xidirfield_top, 'top', nx, ny, nz, 
                                  y_spacing, scale_factor=scalefactor)
             
-        if show_disp_front == True:
+        if show_disp_front:
             xidirfield_front = mlab.pipeline.vector_field(xixvals_mask_front_t, xizvals_mask_front_t,
                                                          xiyvals_mask_front_t, name="Xi field front",
                                                          figure=fig)
@@ -465,21 +462,21 @@ for mode_ind in [0,1]:#range(8,14): # for all others. REMEMBER SBB pparameters
                 byvals_t = byvals
                 bzvals_t = bzvals
                 
-                if show_disp_top == True or show_disp_front == True:
+                if show_disp_top or show_disp_front:
                     xixvals_t = xixvals
                     xiyvals_t = xiyvals
                     xizvals_t = xizvals
                     
-                if np.array([show_vel_top, show_vel_top_pert, show_vel_front, show_vel_front_pert]).any() == True:
+                if np.array([show_vel_top, show_vel_top_pert, show_vel_front, show_vel_front_pert]).any():
                     vxvals_t = vxvals
                     vyvals_t = vyvals
                     vzvals_t = vzvals
                 
-                if show_boundary == True:
+                if show_boundary:
                     xix_boundary_r_vals_t = xix_boundary_r_vals
                     xix_boundary_l_vals_t = xix_boundary_l_vals
                     
-                if show_density == True or show_density_pert == True:
+                if show_density or show_density_pert:
                     rho_vals_t = rho_vals
                      
             else:
@@ -498,13 +495,13 @@ for mode_ind in [0,1]:#range(8,14): # for all others. REMEMBER SBB pparameters
                 field.mlab_source.set(u=bxvals_t, v=bzvals_t, w=byvals_t)
                 
                 # Update mag field visualisation module
-                if show_mag_vec == True:
+                if show_mag_vec:
                     bxvals_mask_front_t, byvals_mask_front_t, bzvals_mask_front_t = mpf.mask_points(bxvals_t, byvals_t, bzvals_t, 
                                                                                                     'front', mod, mod_y)
                     bdirfield_front.mlab_source.set(u=bxvals_mask_front_t, v=bzvals_mask_front_t, w=byvals_mask_front_t)                                                                                        
                 
                 # Update displacement field data
-                if show_disp_top == True or show_disp_front == True:            
+                if show_disp_top or show_disp_front:            
                     xixvals_split = np.split(xixvals, [nz - (nz / nt) * t_ind], axis=1)
                     xiyvals_split = np.split(xiyvals, [nz - (nz / nt) * t_ind], axis=1)
                     xizvals_split = np.split(xizvals, [nz - (nz / nt) * t_ind], axis=1)
@@ -514,17 +511,17 @@ for mode_ind in [0,1]:#range(8,14): # for all others. REMEMBER SBB pparameters
                     xizvals_t = np.concatenate((xizvals_split[1], xizvals_split[0]), axis=1)
                     
                     # Update displacement field visualisation module
-                    if show_disp_top == True:
+                    if show_disp_top:
                         xixvals_mask_top_t, xiyvals_mask_top_t, xizvals_mask_top_t = mpf.mask_points(xixvals_t, xiyvals_t, xizvals_t, 
                                                                                                      'top', mod, mod_y)
                         xidirfield_top.mlab_source.set(u=xixvals_mask_top_t, v=np.zeros_like(xixvals_mask_top_t), w=xiyvals_mask_top_t)
-                    if show_disp_front == True:
+                    if show_disp_front:
                         xixvals_mask_front_t, xiyvals_mask_front_t, xizvals_mask_front_t = mpf.mask_points(xixvals_t, xiyvals_t, xizvals_t, 
                                                                                                            'front', mod, mod_y)
                         xidirfield_front.mlab_source.set(u=xixvals_mask_front_t, v=xizvals_mask_front_t, w=xiyvals_mask_front_t)
                 
                 # Update velocity field data
-                if np.array([show_vel_top, show_vel_top_pert, show_vel_front, show_vel_front_pert]).any() == True:            
+                if np.array([show_vel_top, show_vel_top_pert, show_vel_front, show_vel_front_pert]).any():            
                     vxvals_split = np.split(vxvals, [nz - (nz / nt) * t_ind], axis=1)
                     vyvals_split = np.split(vyvals, [nz - (nz / nt) * t_ind], axis=1)
                     vzvals_split = np.split(vzvals, [nz - (nz / nt) * t_ind], axis=1)
@@ -534,17 +531,17 @@ for mode_ind in [0,1]:#range(8,14): # for all others. REMEMBER SBB pparameters
                     vzvals_t = np.concatenate((vzvals_split[1], vzvals_split[0]), axis=1)
                     
                     # Update velocity field visualisation module
-                    if show_vel_top == True or show_vel_top_pert == True:
+                    if show_vel_top or show_vel_top_pert:
                         vxvals_mask_top_t, vyvals_mask_top_t, vzvals_mask_top_t = mpf.mask_points(vxvals_t, vyvals_t, vzvals_t, 
                                                                                                   'top', mod, mod_y)                                                
                         vdirfield_top.mlab_source.set(u=vxvals_mask_top_t, v=np.zeros_like(vxvals_mask_top_t), w=vyvals_mask_top_t)
-                    if show_vel_front == True or show_vel_front_pert == True:
+                    if show_vel_front or show_vel_front_pert:
                         vxvals_mask_front_t, vyvals_mask_front_t, vzvals_mask_front_t = mpf.mask_points(vxvals_t, vyvals_t, vzvals_t, 
                                                                                                         'front', mod, mod_y) 
                         vdirfield_front.mlab_source.set(u=vxvals_mask_front_t, v=vzvals_mask_front_t, w=vyvals_mask_front_t)
                 
                 # Update boundary displacement data
-                if show_boundary == True:
+                if show_boundary:
                     xix_boundary_r_vals_split = np.split(xix_boundary_r_vals, [nz - (nz / nt) * t_ind], axis=0)
                     xix_boundary_l_vals_split = np.split(xix_boundary_l_vals, [nz - (nz / nt) * t_ind], axis=0)
         
@@ -552,7 +549,7 @@ for mode_ind in [0,1]:#range(8,14): # for all others. REMEMBER SBB pparameters
                     xix_boundary_l_vals_t = np.concatenate((xix_boundary_l_vals_split[1], xix_boundary_l_vals_split[0]), axis=0)
                 
                 # Update density data
-                if show_density == True or show_density_pert == True:            
+                if show_density or show_density_pert:            
                     rho_vals_split = np.split(rho_vals, [nz - (nz / nt) * t_ind], axis=1)
                     
                     rho_vals_t = np.concatenate((rho_vals_split[1], rho_vals_split[0]), axis=1)    
@@ -560,7 +557,7 @@ for mode_ind in [0,1]:#range(8,14): # for all others. REMEMBER SBB pparameters
                     rho.mlab_source.set(scalars=rho_vals_t)                     
             
             # Boundary data - Letting mayavi know where to plot the boundary
-            if show_boundary == True:
+            if show_boundary:
                 ext_min_r = ((nx) * (xix_boundary_r_vals_t.min() - xmin) / (xmax - xmin)) * x_spacing
                 ext_max_r = ((nx) * (xix_boundary_r_vals_t.max() - xmin) / (xmax - xmin)) * x_spacing
                 
@@ -569,7 +566,7 @@ for mode_ind in [0,1]:#range(8,14): # for all others. REMEMBER SBB pparameters
                                                    
  
             #Make field lines
-            if show_mag == True:
+            if show_mag:
                 # move seed points up with phase speed. - Bit of a fudge.
                 # Create an array of points for which we want mag field seeds
                 nx_seed = 9
@@ -588,8 +585,8 @@ for mode_ind in [0,1]:#range(8,14): # for all others. REMEMBER SBB pparameters
                 seeds=[]
                 dx_res = (end_x - start_x) / (nx_seed-1)
                 dy_res = (end_y - start_y) / (ny_seed-1)
-                for j in range(0,ny_seed):
-                    for i in range(0,nx_seed):
+                for j in range(ny_seed):
+                    for i in range(nx_seed):
                         x = start_x + (i * dx_res) * x_spacing
                         y = start_y + (j * dy_res) * y_spacing
                         z = 1. + (t_start + t_ind*(t_end - t_start)/nt)/zmax * nz
@@ -618,7 +615,7 @@ for mode_ind in [0,1]:#range(8,14): # for all others. REMEMBER SBB pparameters
                 module_manager = field_lines.parent
                 
                 # Colormap of magnetic field strength plotted on the field lines
-                if show_mag_scale == True:
+                if show_mag_scale:
                     module_manager.scalar_lut_manager.lut_mode = 'coolwarm'
                     module_manager.scalar_lut_manager.data_range=[7,18]
                 else:
@@ -627,17 +624,17 @@ for mode_ind in [0,1]:#range(8,14): # for all others. REMEMBER SBB pparameters
                     mag_lut[:,1] = [20]*256
                     mag_lut[:,2] = [20]*256
                     module_manager.scalar_lut_manager.lut.table = mag_lut
-                if show_mag_fade == True:
+                if show_mag_fade:
                     mpf.colormap_fade(module_manager, fade_value=20)
 
             
             # Which views do you want to show? Options are defined at the start
             views_selected = [2,3]#[0,1,4,5,6] #range(7) #[2,3]
-            for view_ind in range(len(views_selected)):
-                view = view_options[views_selected[view_ind]]
+            for view_ind, view_selected in enumerate(views_selected):
+                view = view_options[view_selected]
                 
                 # Display boundary - cannot be updated each time
-                if show_boundary == True:
+                if show_boundary:
                     # Boundaries should look different depending on view
                     if view == 'front-parallel':
                         #remove previous boundaries
@@ -702,12 +699,12 @@ for mode_ind in [0,1]:#range(8,14): # for all others. REMEMBER SBB pparameters
                 # This is something to do with the boundaries being replaced each time.
                 mpf.view_position(fig, view, nx, ny, nz)
                 
-                if save_images == True:
+                if save_images:
                     prefix = 'R1_'+str(R1) + '_' + mode + '_' + vis_mod_string + view + '_'# + '_norho_'
                     mlab.savefig('D:\\my_work\\projects\\Asymmetric_slab\\Python\\visualisations\\3D_vis_animations\\'
                                  + prefix + str(t_ind+1) + '.png')
                 if t_ind == nt - 1:
-                    if make_video == True:
+                    if make_video:
                         i2v.image2video(prefix=prefix, output_name=prefix+'video', 
                                         out_extension='mp4', fps=fps, n_loops=4, 
                                         delete_images=True, delete_old_videos=True, res=res[1])
@@ -723,7 +720,7 @@ for mode_ind in [0,1]:#range(8,14): # for all others. REMEMBER SBB pparameters
             t = t + (t_end - t_start) / nt
             
         # Close Mayavi window each time if we cant to make a video
-        if make_video == True:
+        if make_video:
             mlab.close(fig)
         print('Finished ' + mode)
                             
