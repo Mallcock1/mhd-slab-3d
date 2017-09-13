@@ -12,7 +12,9 @@ import mayavi_plotting_functions as mpf
 import dispersion_diagram
 import img2vid as i2v
 
-###############################################################################
+# ================================
+# Preamble: set mode options and view parameters
+# ================================
 
 # What mode do you want? OPTIONS:
 mode_options = ['slow-kink-surf', 'slow-saus-surf', 'slow-saus-body-3',
@@ -21,52 +23,6 @@ mode_options = ['slow-kink-surf', 'slow-saus-surf', 'slow-saus-body-3',
                 'fast-kink-body-1', 'fast-saus-body-2', 'fast-kink-body-2',
                 'fast-saus-body-3', 'fast-kink-body-3', 'fast-kink-surf',
                 'fast-saus-surf', 'shear-alfven', 'shear-alfven-broadband']
-
-# Create sublists of modes
-alfven_mode_options = []
-kink_mode_options = []
-saus_mode_options = []
-slow_surf_mode_options = []
-fast_surf_mode_options = []
-fast_kink_mode_options = []
-fast_saus_mode_options = []
-slow_body_1_mode_options = []
-slow_body_2_mode_options = []
-slow_body_3_mode_options = []
-slow_body_mode_options = []
-fast_body_1_mode_options = []
-fast_body_2_mode_options = []
-fast_body_3_mode_options = []
-
-for mode in mode_options:
-    if 'alfven' in mode:
-        alfven_mode_options.append(mode)
-    if 'kink' in mode:
-        kink_mode_options.append(mode)
-    if 'saus' in mode:
-        saus_mode_options.append(mode)
-    if 'slow' in mode and 'surf' in mode:
-        slow_surf_mode_options.append(mode)
-    if 'fast' in mode and 'surf' in mode:
-        fast_surf_mode_options.append(mode)
-    if 'fast' in mode and 'kink' in mode:
-        fast_kink_mode_options.append(mode)
-    if 'fast' in mode and 'saus' in mode:
-        fast_saus_mode_options.append(mode)
-    if 'fast' in mode and 'body-1' in mode:
-        fast_body_1_mode_options.append(mode)
-    if 'fast' in mode and 'body-2' in mode:
-        fast_body_2_mode_options.append(mode)
-    if 'fast' in mode and 'body-3' in mode:
-        fast_body_3_mode_options.append(mode)
-    if 'slow' in mode and 'body-1' in mode:
-        slow_body_1_mode_options.append(mode)
-    if 'slow' in mode and 'body-2' in mode:
-        slow_body_2_mode_options.append(mode)
-    if 'slow' in mode and 'body-3' in mode:
-        slow_body_3_mode_options.append(mode)
-    if 'slow' in mode and 'body' in mode:
-        slow_body_mode_options.append(mode)
 
 # Which angle shall we view from? OPTIONS:
 view_options = ['front', 'front-parallel', 'top', 'top-parallel', 'front-top',
@@ -155,26 +111,17 @@ save_images = True
 #make_video = False
 make_video = True
 
-#
-##
-###
-####
-#####
-######
-#######
-########
-#########
+# ================================
+# Visualisation set-up
+# ================================
 
-# Variable definitions:
+# Variable definitions (for reference):
 # x = k*x
 # y = k*y
 # z = k*z
 # W = omega/k
 # K = k*x_0
 # t = omega*t
-
-if np.array([show_density, show_vel_front_pert, show_vel_top_pert]).any() == True and mode in alfven_mode_options:
-    raise NameError('Cannot show density or vel/disp pert for this mode')
 
 # Loop through selected modes
 for mode_ind in [0,1]:#range(8,14): # for all others. REMEMBER SBB pparameters
@@ -265,7 +212,7 @@ for mode_ind in [0,1]:#range(8,14): # for all others. REMEMBER SBB pparameters
     elif 'slow' in mode and 'body' in mode:
         W = Woptions_slow_body[mode_ind-2]
     
-    if mode in alfven_mode_options:
+    if 'alfven' in mode:
         W = sf.vA
     else:
         W = np.real(W)
@@ -277,9 +224,10 @@ for mode_ind in [0,1]:#range(8,14): # for all others. REMEMBER SBB pparameters
         plt.xlim([0,23])
         plt.show()
 
-    #################################################################################
-    
-    # Plot dispersion diagram
+# ================================
+# Dispersion diagram
+# ================================
+
     if show_dispersion == True:
         if 'alfven' in mode:
             raise NameError('Disperion plot requested for an alfven mode. Cant do it')
@@ -291,7 +239,9 @@ for mode_ind in [0,1]:#range(8,14): # for all others. REMEMBER SBB pparameters
                     + 'R1_' + str(R1) + '_' + mode + '.png')   
         plt.close()
     
-    ##############################################################################
+# ================================
+# Animation
+# ================================
     
     if show_animation == True:
         print('Starting ' + mode)
