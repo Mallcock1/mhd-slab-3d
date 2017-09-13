@@ -190,17 +190,17 @@ for mode_ind in [0,1]:#range(8,14): # for all others. REMEMBER SBB pparameters
     mode = mode_options[mode_ind]    
     
     # Specify oscillation parameters
-    if mode in slow_surf_mode_options + alfven_mode_options:
+    if 'slow' in mode and 'surf' in mode or 'alfven' in mode:
         K = 2.
-    elif mode in slow_body_mode_options:
+    elif 'slow' in mode and 'body' in mode:
         K = 8.
-    elif mode in fast_body_1_mode_options:
+    elif 'fast' in mode and 'body-1' in mode:
         K = 8.
-    elif mode in fast_body_2_mode_options:
+    elif 'fast' in mode and 'body-2' in mode:
         K = 15.
-    elif mode in fast_body_3_mode_options:
+    elif 'fast' in mode and 'body-3' in mode:
         K = 22.
-    elif mode in fast_surf_mode_options:
+    elif 'fast' in mode and 'surf' in mode:
         K = 8.
     else:
         raise NameError('Mode not found')
@@ -256,13 +256,13 @@ for mode_ind in [0,1]:#range(8,14): # for all others. REMEMBER SBB pparameters
     Woptions = np.concatenate((Woptions_slow_surf, Woptions_slow_body, Woptions_fast))
     
     # set W to be the eigenfrequency for the requested mode
-    if mode in ['fast-saus-body-1', 'fast-saus-body-2', 'fast-saus-body-3', 'fast-kink-surf']:
+    if 'fast-saus-body' in mode or 'fast-kink-surf' in mode:
         W = Woptions_fast[-2]
-    elif mode in ['fast-kink-body-1', 'fast-kink-body-2', 'fast-kink-body-3', 'fast-saus-surf']:
+    elif 'fast-kink-body' in mode or 'fast-saus-surf' in mode:
         W = Woptions_fast[-1]
-    elif mode in slow_surf_mode_options:
+    elif 'slow' in mode and 'surf' in mode:
         W = Woptions_slow_surf[mode_ind]
-    elif mode in slow_body_mode_options:
+    elif 'slow' in mode and 'body' in mode:
         W = Woptions_slow_body[mode_ind-2]
     
     if mode in alfven_mode_options:
@@ -281,7 +281,7 @@ for mode_ind in [0,1]:#range(8,14): # for all others. REMEMBER SBB pparameters
     
     # Plot dispersion diagram
     if show_dispersion == True:
-        if mode in alfven_mode_options:
+        if 'alfven' in mode:
             raise NameError('Disperion plot requested for an alfven mode. Cant do it')
         
         dispersion_diagram.dispersion_diagram(mode_options, mode, 
@@ -645,7 +645,7 @@ for mode_ind in [0,1]:#range(8,14): # for all others. REMEMBER SBB pparameters
                         z = 1. + (t_start + t_ind*(t_end - t_start)/nt)/zmax * nz
                         seeds.append((x,z,y))
                 
-                if mode in alfven_mode_options:
+                if 'alfven' in mode:
                     for i in range(nx_seed):
                         del seeds[0]
                         del seeds[-1]
