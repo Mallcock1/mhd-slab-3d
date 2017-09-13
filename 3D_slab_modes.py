@@ -320,7 +320,7 @@ for mode_ind in [0]:#range(8,14): # for all others. REMEMBER SBB pparameters
             xiyvals_t = xiyvals
             xizvals_t = xizvals
             
-        if np.array([show_vel_top, show_vel_top_pert, show_vel_front, show_vel_front_pert]).any():
+        if show_vel_top or show_vel_top_pert or show_vel_front or show_vel_front_pert:
             vxvals_t = vxvals
             vyvals_t = vyvals
             vzvals_t = vzvals 
@@ -332,25 +332,12 @@ for mode_ind in [0]:#range(8,14): # for all others. REMEMBER SBB pparameters
         if show_density or show_density_pert:
             rho_vals_t = rho_vals
             
-            
-            
-            
-            
-            
-            
+# ================================
+# Starting figure and visualisation modules
+# ================================
             
         zgrid_zy, ygrid_zy = np.mgrid[0:nz:(nz)*1j,
                           0:ny:(ny)*1j]
-        
-        #
-        ##
-        ###
-        ####
-        #####
-        ####
-        ###
-        ##
-        #
         
         fig = mlab.figure(size=res) # (1920, 1080) for 1080p , tuple(101 * np.array((16,9))) #16:9 aspect ratio for video upload
 
@@ -402,15 +389,7 @@ for mode_ind in [0]:#range(8,14): # for all others. REMEMBER SBB pparameters
             mpf.uniform_lighting(fig)
         
         #Black background
-        mpf.background_colour(fig, (0., 0., 0.))        
-        
-            #contours = mlab.pipeline.iso_surface(magnitude,
-            #                                        contours=range(2, 14, 3),
-            #                                        transparent=True,
-            #                                        opacity=0.4,
-            #                                        colormap='YlGnBu',
-            #                                        vmin=0, vmax=14)
-        
+        mpf.background_colour(fig, (0., 0., 0.))                
         
         scalefactor = 8. * nx / 100. # scale factor for direction field vectors
         
@@ -467,7 +446,7 @@ for mode_ind in [0]:#range(8,14): # for all others. REMEMBER SBB pparameters
                     xiyvals_t = xiyvals
                     xizvals_t = xizvals
                     
-                if np.array([show_vel_top, show_vel_top_pert, show_vel_front, show_vel_front_pert]).any():
+                if show_vel_top or show_vel_top_pert or show_vel_front or show_vel_front_pert:
                     vxvals_t = vxvals
                     vyvals_t = vyvals
                     vzvals_t = vzvals
@@ -521,7 +500,7 @@ for mode_ind in [0]:#range(8,14): # for all others. REMEMBER SBB pparameters
                         xidirfield_front.mlab_source.set(u=xixvals_mask_front_t, v=xizvals_mask_front_t, w=xiyvals_mask_front_t)
                 
                 # Update velocity field data
-                if np.array([show_vel_top, show_vel_top_pert, show_vel_front, show_vel_front_pert]).any():            
+                if show_vel_top or show_vel_top_pert or show_vel_front or show_vel_front_pert:            
                     vxvals_split = np.split(vxvals, [nz - (nz / nt) * t_ind], axis=1)
                     vyvals_split = np.split(vyvals, [nz - (nz / nt) * t_ind], axis=1)
                     vzvals_split = np.split(vzvals, [nz - (nz / nt) * t_ind], axis=1)
@@ -723,4 +702,3 @@ for mode_ind in [0]:#range(8,14): # for all others. REMEMBER SBB pparameters
         if make_video:
             mlab.close(fig)
         print('Finished ' + mode)
-                            
