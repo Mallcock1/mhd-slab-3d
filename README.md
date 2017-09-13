@@ -1,11 +1,11 @@
 # 3D visualisations of MHD waves in asymmetric an asymmetric slab
 
-##Prerequisites:
+## Prerequisites:
 [Python 2](https://www.python.org/download/releases/2.7.2/),
 [Mayavi](http://mayavi.sourceforge.net/),
 [ffmpeg](https://ffmpeg.org/).
 
-##3D_slab_modes.py:
+## 3D_slab_modes.py:
 Builds an animation of the magnetoacoustic eigenmodes of an isolated asymmetric magnetic slab with possible visualisations of:
 * magnetic field lines,
 * magentic field strength,
@@ -15,7 +15,7 @@ Builds an animation of the magnetoacoustic eigenmodes of an isolated asymmetric 
 * density (eularian and lagrangian),
 * perturbed slab boundary.
 
-##dispersion_diagram.py:
+## dispersion_diagram.py:
 Functions that plot dispersion diagrams (omega/k against kx_0).
 
 ## img2vid.py:
