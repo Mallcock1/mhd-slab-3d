@@ -1,12 +1,14 @@
 
 import os
-
+#======================================
 # Using ffmpeg, we can take the images created for the visualisation and create 
 # a video with the research logos overlayed.
 #
 # The procedure is:
 # - define strings which are the ffmpeg command line commands,
-# - Use pythons os package to run those commands in the command line.
+# - Use python's os package to run those commands in the command line.
+#======================================
+
 def image2video(filepath=None, prefix='', in_extension='png',
             out_extension='avi', output_name=None, fps=10, n_loops=1, 
             delete_images=False, delete_old_videos=False, res=1080,

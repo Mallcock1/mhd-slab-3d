@@ -106,11 +106,17 @@ number_of_frames = 1
 # Frames per second of output video
 fps = 20
 
-save_images = False
-#save_images = True
+#save_images = False
+save_images = True
 
 make_video = False
 #make_video = True
+
+# Where should I save the animation images/videos?
+save_directory = 'D:\\my_work\\projects\\Asymmetric_slab\\Python\\visualisations\\3D_vis_animations\\'
+
+# Where should I save the dispersion diagrams?
+save_dispersion_diagram_directory = 'D:\\my_work\\projects\\Asymmetric_slab\\Python\\visualisations\\3D_vis_dispersion_diagrams\\'
 
 # ================================
 # Visualisation set-up
@@ -230,13 +236,12 @@ for mode_ind in [0]:#range(8,14): # for all others. REMEMBER SBB pparameters
 
     if show_dispersion:
         if 'alfven' in mode:
-            raise NameError('Disperion plot requested for an alfven mode. Cant do it')
+            raise NameError('Disperion plot requested for an alfven mode. Cant do that.')
         
         dispersion_diagram.dispersion_diagram(mode_options, mode, 
                                               disp_rel_partial, K, W, R1)
 #        plt.tight_layout() # seems to make it chop the sides off with this
-        plt.savefig('D:\\my_work\\projects\\Asymmetric_slab\\Python\\visualisations\\3D_vis_dispersion_diagrams\\'
-                    + 'R1_' + str(R1) + '_' + mode + '.png')   
+        plt.savefig(save_dispersion_diagram_directory + 'R1_' + str(R1) + '_' + mode + '.png')   
         plt.close()
     
 # ================================
@@ -611,7 +616,7 @@ for mode_ind in [0]:#range(8,14): # for all others. REMEMBER SBB pparameters
 
             
             # Which views do you want to show? Options are defined at the start
-            views_selected = [2,3]#[0,1,4,5,6] #range(7) #[2,3]
+            views_selected = [0]#[0,1,4,5,6] #range(7) #[2,3]
             for view_ind, view_selected in enumerate(views_selected):
                 view = view_options[view_selected]
                 
@@ -683,15 +688,15 @@ for mode_ind in [0]:#range(8,14): # for all others. REMEMBER SBB pparameters
                 
                 if save_images:
                     prefix = 'R1_'+str(R1) + '_' + mode + '_' + vis_mod_string + view + '_'# + '_norho_'
-                    mlab.savefig('D:\\my_work\\projects\\Asymmetric_slab\\Python\\visualisations\\3D_vis_animations\\'
-                                 + prefix + str(t_ind+1) + '.png')
+                    mlab.savefig(save_directory + prefix + str(t_ind+1) + '.png')
                 if t_ind == nt - 1:
                     if make_video:
-                        i2v.image2video(prefix=prefix, output_name=prefix+'video', 
-                                        out_extension='mp4', fps=fps, n_loops=4, 
-                                        delete_images=True, delete_old_videos=True, res=res[1])
+                        i2v.image2video(filepath=save_directory, prefix=prefix, 
+                                        output_name=prefix+'video', out_extension='mp4', 
+                                        fps=fps, n_loops=4, delete_images=True, 
+                                        delete_old_videos=True, res=res[1])
             
-            # Keep us updated with progress
+            # Log: to keep us updated with progress
             if t_ind % 5 == 4:
                 print('Finished frame number ' + str(t_ind + 1) + ' out of ' + str(number_of_frames))
 
