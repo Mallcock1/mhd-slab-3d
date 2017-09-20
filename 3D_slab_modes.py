@@ -175,21 +175,24 @@ for mode_ind in [0]:#range(8,14): # for all others. REMEMBER SBB pparameters
     tol = 1e-2
     indices_to_rm = []
     for i, w in enumerate(Woptions_slow_surf):
-        if min(abs(np.array([w, w - sf.c0, w - sf.c1(R1), w - sf.c2, w - sf.vA]))) < tol or w < 0 or w > sf.cT:
+        spurious_roots_diff = abs(np.array([w, w - sf.c0, w - sf.c1(R1), w - sf.c2, w - sf.vA]))
+        if min(spurious_roots_diff) < tol or w < 0 or w > sf.cT:
             indices_to_rm.append(i)
     Woptions_slow_surf = np.delete(Woptions_slow_surf, indices_to_rm)
     Woptions_slow_surf.sort()
     
     indices_to_rm = []
     for i, w in enumerate(Woptions_slow_body):
-        if min(abs(np.array([w, w - sf.c0, w - sf.c1(R1), w - sf.c2, w - sf.vA]))) < tol or w < sf.cT or w > sf.c0:
+        spurious_roots_diff = abs(np.array([w, w - sf.c0, w - sf.c1(R1), w - sf.c2, w - sf.vA]))
+        if min(spurious_roots_diff) < tol or w < sf.cT or w > sf.c0:
             indices_to_rm.append(i)
     Woptions_slow_body = np.delete(Woptions_slow_body, indices_to_rm)
     Woptions_slow_body.sort()
     
     indices_to_rm = []
     for i, w in enumerate(Woptions_fast):
-        if min(abs(np.array([w, w - sf.c0, w - sf.c1(R1), w - sf.c2, w - sf.vA]))) < tol or w < sf.c0 or w > min(sf.c1, sf.c2):
+        spurious_roots_diff = abs(np.array([w, w - sf.c0, w - sf.c1(R1), w - sf.c2, w - sf.vA]))
+        if min(spurious_roots_diff) < tol or w < sf.c0 or w > min(sf.c1, sf.c2):
             indices_to_rm.append(i)
     Woptions_fast = np.delete(Woptions_fast, indices_to_rm)
     Woptions_fast.sort()
