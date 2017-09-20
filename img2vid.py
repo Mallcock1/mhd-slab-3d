@@ -13,32 +13,33 @@ def image2video(filepath=None, prefix='', in_extension='png',
             out_extension='avi', output_name=None, fps=10, n_loops=1, 
             delete_images=False, delete_old_videos=False, res=1080,
             overlay=True, cover_page=False):
-    if filepath == None:
-        filepath = 'D:\\my_work\\projects\\Asymmetric_slab\\Python\\visualisations\\3D_vis_animations\\'
-#        filepath = u'/media/matthew/W7_DATA/my_work/projects/Asymmetric_slab/Python/visualisations/ffmpeg/'
+                
     if output_name == None:
         output_name = prefix
+        
     in_fps = fps
     out_fps = fps
     start_frame = 1
-
+    
+# Take input images and uses ffmpeg to make video
     image_2_video = 'ffmpeg -y -framerate '+str(in_fps)+' -start_number '+str(start_frame)+' -i \
     '+filepath+prefix+'%d.'+in_extension+' \
     -c:v libx264 -r '+str(out_fps)+' -pix_fmt yuv420p \
     '+filepath+output_name+'.'+out_extension
 
+# Delete previous images
     delete_images_cmd = 'DEL "'+filepath+prefix+'*.'+in_extension+'"'
-    
     if n_loops == 1:
         delete_old_videos_cmd = 'DEL "'+filepath+output_name+'.'+out_extension+'" \
         "'+filepath+output_name+'_overlay.'+out_extension+'"'
     else:
         delete_old_videos_cmd = 'DEL "'+filepath+output_name+'_overlay.'+out_extension+'" "'+filepath+output_name+'_overlay2.'+out_extension+'"'
 
-
+# Logo dimensions
     logo_height = str(int(150. * res / 1080.))
     logo_width = str(int(450. * res / 1080.))
     
+# Overlay logos
     overlay_image_sp2rc = 'ffmpeg -y -i '+filepath+output_name+'.'+out_extension+' -i \
     sp2rc_logo2.png -filter_complex "[1:0] scale=-1:'+logo_height+' [logo]; \
     [0:0][logo] overlay=main_w-'+logo_width+':main_h-'+logo_height+'" -c:a copy \
@@ -49,11 +50,9 @@ def image2video(filepath=None, prefix='', in_extension='png',
     [0:0][logo] overlay=main_w-overlay_w:main_h-'+logo_height+'" -c:a copy \
     '+filepath+output_name+'_overlay2.'+out_extension
 
-
+# Coverpage
     cover_page_filename = 'template'
-    
     cover_page_rescale = 'ffmpeg -y -i '+filepath+cover_page_filename+'.'+in_extension+' -vf scale=1616:866 '+filepath+cover_page_filename+'_coverpage.'+in_extension    
-    
     cover_page_video = 'ffmpeg -y -framerate '+str(in_fps)+' -i \
     '+filepath+cover_page_filename+'_coverpage.'+in_extension+' \
     -c:v libx264 -r '+str(out_fps)+' -pix_fmt yuv420p \
