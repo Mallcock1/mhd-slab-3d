@@ -12,6 +12,7 @@ import mayavi_plotting_functions as mpf
 import dispersion_diagram
 import img2vid as i2v
 from functools import partial
+import os
 
 # ================================
 # Preamble: set mode options and view parameters
@@ -113,10 +114,12 @@ make_video = False
 #make_video = True
 
 # Where should I save the animation images/videos?
-save_directory = 'D:\\my_work\\projects\\Asymmetric_slab\\Python\\visualisations\\3D_vis_animations\\'
+os.path.abspath(os.curdir)
+os.chdir('..')
+save_directory = os.path.join(os.path.abspath(os.curdir), '3D_vis_animations')
 
 # Where should I save the dispersion diagrams?
-save_dispersion_diagram_directory = 'D:\\my_work\\projects\\Asymmetric_slab\\Python\\visualisations\\3D_vis_dispersion_diagrams\\'
+save_dispersion_diagram_directory = os.path.join(os.path.abspath(os.curdir), '3D_vis_dispersion_diagrams')
 
 # ================================
 # Visualisation set-up
@@ -241,7 +244,7 @@ for mode_ind in [0]:#range(8,14): # for all others. REMEMBER SBB pparameters
         dispersion_diagram.dispersion_diagram(mode_options, mode, 
                                               disp_rel_partial, K, W, R1)
 #        plt.tight_layout() # seems to make it chop the sides off with this
-        plt.savefig(save_dispersion_diagram_directory + 'R1_' + str(R1) + '_' + mode + '.png')   
+        plt.savefig(os.path.join(save_dispersion_diagram_directory, 'R1_' + str(R1) + '_' + mode + '.png') )  
         plt.close()
     
 # ================================
@@ -688,7 +691,7 @@ for mode_ind in [0]:#range(8,14): # for all others. REMEMBER SBB pparameters
                 
                 if save_images:
                     prefix = 'R1_'+str(R1) + '_' + mode + '_' + vis_mod_string + view + '_'# + '_norho_'
-                    mlab.savefig(save_directory + prefix + str(t_ind+1) + '.png')
+                    mlab.savefig(os.path.join(save_directory, prefix + str(t_ind+1) + '.png'))
                 if t_ind == nt - 1:
                     if make_video:
                         i2v.image2video(filepath=save_directory, prefix=prefix, 
