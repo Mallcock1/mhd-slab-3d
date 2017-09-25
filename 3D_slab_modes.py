@@ -58,7 +58,7 @@ show_boundary = False
 #show_density_pert = True
 show_mag = True
 #show_mag_scale = True #must also have show_mag = True
-#show_mag_fade = True
+show_mag_fade = True
 #show_mag_vec = True
 #show_vel_front = True
 #show_vel_front_pert = True
@@ -107,8 +107,8 @@ number_of_frames = 1
 # Frames per second of output video
 fps = 20
 
-#save_images = False
-save_images = True
+save_images = False
+#save_images = True
 
 make_video = False
 #make_video = True
@@ -351,7 +351,11 @@ for mode_ind in [0]:#range(8,14): # for all others. REMEMBER SBB pparameters
                           0:ny:(ny)*1j]
         
         fig = mlab.figure(size=res) # (1920, 1080) for 1080p , tuple(101 * np.array((16,9))) #16:9 aspect ratio for video upload
-
+        
+        # Solution to transparency issue when using faded field-lines. More details here: https://github.com/enthought/mayavi/issues/491
+        scene = mlab.gcf().scene
+        scene.renderer.set(use_depth_peeling=True)
+        
         # Spacing of grid so that we can display a visualisation cube without having the same number of grid points in each dimension
         spacing =  np.array([x_spacing, z_spacing, y_spacing])                     
                                              
@@ -615,11 +619,11 @@ for mode_ind in [0]:#range(8,14): # for all others. REMEMBER SBB pparameters
                     mag_lut[:,2] = [20]*256
                     module_manager.scalar_lut_manager.lut.table = mag_lut
                 if show_mag_fade:
-                    mpf.colormap_fade(module_manager, fade_value=20)
+                    mpf.colormap_fade(module_manager, fade_value=20. * nz / 100.)
 
             
             # Which views do you want to show? Options are defined at the start
-            views_selected = [0]#[0,1,4,5,6] #range(7) #[2,3]
+            views_selected = [5]#[0,1,4,5,6] #range(7) #[2,3]
             for view_ind, view_selected in enumerate(views_selected):
                 view = view_options[view_selected]
                 
