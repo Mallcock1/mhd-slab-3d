@@ -201,65 +201,48 @@ def volume_red_blue(scalar_field, scalar_data):
     maxr = scalar_data.max()
     
     #Volume for high pressure
-    rvmin1 = minr + 0.5 * (maxr - minr)
-    rvmax1 = minr + 1. * (maxr - minr)
-    rvol1 = mlab.pipeline.volume(scalar_field, vmin=rvmin1, vmax=rvmax1)
+    # max and mins for 
+    rvmin_pos = minr + 0.5 * (maxr - minr)
+    rvmax_pos = minr + 1. * (maxr - minr)
+    rvmin_neg = minr + 0. * (maxr - minr)
+    rvmax_neg = minr + 0.5 * (maxr - minr)
+    rvol = mlab.pipeline.volume(scalar_field, vmin=rvmin_neg, vmax=rvmax_pos)
     
     # Changing the ctf:
     from tvtk.util.ctf import ColorTransferFunction
-    ctf1 = ColorTransferFunction()
-    ctf1.add_rgb_point(rvmin1, 1., 1., 0.5)
-    ctf1.add_rgb_point(rvmin1 + 0.4 * (rvmax1 - rvmin1), 1, 0.3, 0.1)
-    ctf1.add_rgb_point(rvmax1, 1., 0., 0.)
+    ctf = ColorTransferFunction()
+    ctf.add_rgb_point(rvmin_pos, 1., 1., 0.5)
+    ctf.add_rgb_point(rvmin_pos + 0.4 * (rvmax_pos - rvmin_pos), 1, 0.3, 0.1)
+    ctf.add_rgb_point(rvmax_pos, 1., 0., 0.)
+
+    ctf.add_rgb_point(rvmin_neg, 0., 0.5, 1.)
+    ctf.add_rgb_point(rvmin_neg + 0.6 * (rvmax_neg - rvmin_neg), 0.1, 0.7, 1.)
+    ctf.add_rgb_point(rvmax_neg, 0.5, 1., 1.)    
     # ...
-    rvol1._volume_property.set_color(ctf1)
-    rvol1._ctf = ctf1
-    rvol1.update_ctf = True
+    rvol._volume_property.set_color(ctf)
+    rvol._ctf = ctf
+    rvol.update_ctf = True
     
-    #Changing the opacity of the volume vol1
+    #Changing the opacity of the volume vol
     ## Changing the otf:
     from tvtk.util.ctf import PiecewiseFunction
     otf = PiecewiseFunction()
-    otf.add_point(rvmin1, 0)
-    otf.add_point(rvmin1 + (rvmax1-rvmin1)*0.2, 0.012)
-    otf.add_point(rvmin1 + (rvmax1-rvmin1)*0.5, 0.05)
-    otf.add_point(rvmax1, 0.15)
-    ##vol1._otf = otf
-    rvol1._volume_property.set_scalar_opacity(otf)
-    
-    # exempt volume from shading and improve overall look by increasing opacity
-    rvol1.volume_property.shade = False
-    rvol1.volume_property.scalar_opacity_unit_distance = 2.0
-    
-    
-    #Volume for low pressure
-    rvmin2 = minr + 0. * (maxr - minr)
-    rvmax2 = minr + 0.5 * (maxr - minr)
-    rvol2 = mlab.pipeline.volume(scalar_field, vmin=rvmin2, vmax=rvmax2)
-    
-    # Changing the ctf:
-    ctf2 = ColorTransferFunction()
-    ctf2.add_rgb_point(rvmin2, 0., 0.5, 1.)
-    ctf2.add_rgb_point(rvmin2 + 0.6 * (rvmax2 - rvmin2), 0.1, 0.7, 1.)
-    ctf2.add_rgb_point(rvmax2, 0.5, 1., 1.)
-    # ...
-    rvol2._volume_property.set_color(ctf2)
-    rvol2._ctf = ctf2
-    rvol2.update_ctf = True
+    otf.add_point(rvmin_pos, 0)
+    otf.add_point(rvmin_pos + (rvmax_pos-rvmin_pos)*0.2, 0.012)
+    otf.add_point(rvmin_pos + (rvmax_pos-rvmin_pos)*0.5, 0.05)
+    otf.add_point(rvmax_pos, 0.15)
 
-    #Changing the opacity of the volume vol2
-    ## Changing the otf:
-    otf = PiecewiseFunction()
-    otf.add_point(rvmax2, 0)
-    otf.add_point(rvmax2 - (rvmax2-rvmin2)*0.2, 0.012)
-    otf.add_point(rvmax2 - (rvmax2-rvmin2)*0.5, 0.05)
-    otf.add_point(rvmin2, 0.15)
+    otf.add_point(rvmax_neg, 0)
+    otf.add_point(rvmax_neg - (rvmax_neg-rvmin_neg)*0.2, 0.012)
+    otf.add_point(rvmax_neg - (rvmax_neg-rvmin_neg)*0.5, 0.05)
+    otf.add_point(rvmin_neg, 0.15)    
     ##vol1._otf = otf
-    rvol2._volume_property.set_scalar_opacity(otf)
+    rvol._volume_property.set_scalar_opacity(otf)
     
     # exempt volume from shading and improve overall look by increasing opacity
-    rvol2.volume_property.shade = False
-    rvol2.volume_property.scalar_opacity_unit_distance = 2.0
+    rvol.volume_property.shade = False
+    rvol.volume_property.scalar_opacity_unit_distance = 2.0
+
     
 def colormap_fade(module_manager, fade_value=20):
     lut = module_manager.scalar_lut_manager.lut.table.to_array()

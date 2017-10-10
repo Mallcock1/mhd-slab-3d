@@ -263,9 +263,10 @@ for mode_ind in [0]:#range(8,14): # for all others. REMEMBER SBB pparameters
         zmax = 2*np.pi
         
         # You can change ny but be careful changing nx, nz.
-        nx = 300#100 #100 #300 gives us reduced bouncing of field lines for the same video size, but there is significant computational cost.
-        ny = 300#100 #100 #100#20 #100
-        nz = 300#100 #100
+        n = 50 #300 gives us reduced bouncing of field lines for the same video size, but there is significant computational cost.
+        nx = n 
+        ny = n
+        nz = n
         nt = number_of_frames
         
         if nz % nt != 0:
