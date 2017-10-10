@@ -54,7 +54,7 @@ show_boundary = False
 # Uncomment the parametrer you would like to see
 # No density perturbations or vel/disp pert for alfven modes.
 
-#show_density = True
+show_density = True
 #show_density_pert = True
 show_mag = True
 #show_mag_scale = True #must also have show_mag = True
@@ -352,9 +352,9 @@ for mode_ind in [0]:#range(8,14): # for all others. REMEMBER SBB pparameters
         
         fig = mlab.figure(size=res) # (1920, 1080) for 1080p , tuple(101 * np.array((16,9))) #16:9 aspect ratio for video upload
         
-        # Solution to transparency issue when using faded field-lines. More details here: https://github.com/enthought/mayavi/issues/491
-        scene = mlab.gcf().scene
-        scene.renderer.set(use_depth_peeling=True)
+#        # Solution to transparency issue when using faded field-lines. More details here: https://github.com/enthought/mayavi/issues/491
+#        scene = mlab.gcf().scene
+#        scene.renderer.set(use_depth_peeling=True)
         
         # Spacing of grid so that we can display a visualisation cube without having the same number of grid points in each dimension
         spacing =  np.array([x_spacing, z_spacing, y_spacing])                     
