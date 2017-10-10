@@ -60,7 +60,7 @@ show_mag = True
 #show_mag_scale = True #must also have show_mag = True
 show_mag_fade = True
 #show_mag_vec = True
-#show_vel_front = True
+show_vel_front = True
 #show_vel_front_pert = True
 #show_vel_top = True
 #show_vel_top_pert = True
@@ -102,16 +102,16 @@ res = tuple(101 * np.array((16,9)))
 #res = tuple(51 * np.array((16,9)))
 #res = tuple(21 * np.array((16,9)))
 
-number_of_frames = 1
+number_of_frames = 50
 
 # Frames per second of output video
 fps = 20
 
-save_images = False
-#save_images = True
+#save_images = False
+save_images = True
 
-make_video = False
-#make_video = True
+#make_video = False
+make_video = True
 
 # Where should I save the animation images/videos?
 os.path.abspath(os.curdir)
@@ -134,7 +134,7 @@ save_dispersion_diagram_directory = os.path.join(os.path.abspath(os.curdir), '3D
 # t = omega*t
 
 # Loop through selected modes
-for mode_ind in [0]:#range(8,14): # for all others. REMEMBER SBB pparameters
+for mode_ind in range(14): # for all others. REMEMBER SBB pparameters
 #for mode_ind in [14,15]: #for fast body surf. REMEMBER SBS parameters
 #for mode_ind in [16, 17]:
 #for mode_ind in [13]: #for an individual mode
@@ -263,7 +263,7 @@ for mode_ind in [0]:#range(8,14): # for all others. REMEMBER SBB pparameters
         zmax = 2*np.pi
         
         # You can change ny but be careful changing nx, nz.
-        n = 50 #300 gives us reduced bouncing of field lines for the same video size, but there is significant computational cost.
+        n = 100 #300 gives us reduced bouncing of field lines for the same video size, but there is significant computational cost.
         nx = n 
         ny = n
         nz = n
@@ -602,7 +602,7 @@ for mode_ind in [0]:#range(8,14): # for all others. REMEMBER SBB pparameters
                 field_lines.streamline_type = 'tube'
                 field_lines.stream_tracer.maximum_propagation = nz * 2
                 field_lines.tube_filter.number_of_sides = 20
-                field_lines.tube_filter.radius = 0.7 * max(nx, ny, nz) / 100.
+
                 field_lines.tube_filter.capping = True
                 field_lines.actor.property.opacity = 1.0                
                 
@@ -620,11 +620,12 @@ for mode_ind in [0]:#range(8,14): # for all others. REMEMBER SBB pparameters
                     mag_lut[:,2] = [20]*256
                     module_manager.scalar_lut_manager.lut.table = mag_lut
                 if show_mag_fade:
-                    mpf.colormap_fade(module_manager, fade_value=20. * nz / 100.)
-
-            
+                    mpf.colormap_fade(module_manager, fade_value=20.)# * nz / 100.)
+                    
+                field_lines.tube_filter.radius = 0.7 #* max(nx, ny, nz) / 100. # must go after colors for some reason
+                
             # Which views do you want to show? Options are defined at the start
-            views_selected = [5]#[0,1,4,5,6] #range(7) #[2,3]
+            views_selected = [0, 1, 5, 6]#[0,1,4,5,6] #range(7) #[2,3]
             for view_ind, view_selected in enumerate(views_selected):
                 view = view_options[view_selected]
                 
