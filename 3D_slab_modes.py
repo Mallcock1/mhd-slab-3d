@@ -96,22 +96,31 @@ show_animation = True
 show_quick_plot = False
 #show_quick_plot = True
 
+#range(14): # for all others. REMEMBER SBB pparameters
+#for mode_ind in [14,15]: #for fast body surf. REMEMBER SBS parameters
+#for mode_ind in [16, 17]:
+#for mode_ind in [13]: #for an individual mode
+#for mode_ind in range(2,14): 
+
+modes_selected = [0]
+views_selected = [6]
+
 # Video resolution
 #res = (1920,1080) # There is a problem with this resolution- height must be odd number - Mayavi bug apparently
 res = tuple(101 * np.array((16,9)))
 #res = tuple(51 * np.array((16,9)))
 #res = tuple(21 * np.array((16,9)))
 
-number_of_frames = 50
+number_of_frames = 1#50
 
 # Frames per second of output video
 fps = 20
 
-#save_images = False
-save_images = True
+save_images = False
+#save_images = True
 
-#make_video = False
-make_video = True
+make_video = False
+#make_video = True
 
 # Where should I save the animation images/videos?
 os.path.abspath(os.curdir)
@@ -134,11 +143,7 @@ save_dispersion_diagram_directory = os.path.join(os.path.abspath(os.curdir), '3D
 # t = omega*t
 
 # Loop through selected modes
-for mode_ind in range(14): # for all others. REMEMBER SBB pparameters
-#for mode_ind in [14,15]: #for fast body surf. REMEMBER SBS parameters
-#for mode_ind in [16, 17]:
-#for mode_ind in [13]: #for an individual mode
-#for mode_ind in range(2,14): 
+for mode_ind in modes_selected:
     if mode_ind not in range(len(mode_options)):
         raise NameError('Mode not in mode_options')
         
@@ -625,7 +630,6 @@ for mode_ind in range(14): # for all others. REMEMBER SBB pparameters
                 field_lines.tube_filter.radius = 0.7 #* max(nx, ny, nz) / 100. # must go after colors for some reason
                 
             # Which views do you want to show? Options are defined at the start
-            views_selected = [0, 1, 5, 6]#[0,1,4,5,6] #range(7) #[2,3]
             for view_ind, view_selected in enumerate(views_selected):
                 view = view_options[view_selected]
                 
