@@ -91,12 +91,9 @@ def view_position(scene, view, nx, ny, nz):
     if view == 'front-parallel':
         scene.scene.z_plus_view()
         scene.scene.parallel_projection = True
+        scene.scene.camera.focal_point = [50.5 * nx / 100., 50.5 * nz / 100., 50.0 * ny / 100.]
         scene.scene.camera.zoom(1.65) # Parallel projection zoom is done in this way, different to perspective projection
     if view == 'front':
-#        scene.scene.z_plus_view()
-#        scene.scene.parallel_projection = True
-#        scene.scene.camera.zoom(1.65)
-##        scene.scene.camera.view_angle = 21.
         scene.scene.parallel_projection = False
         scene.scene.camera.position = [50.5 * nx / 100., 50.5 * nz / 100., 382.37955413300307  * ny / 100.]
         scene.scene.camera.focal_point = [50.5 * nx / 100., 50.5 * nz / 100., 50.0 * ny / 100.]
@@ -172,6 +169,11 @@ def mask_points(var_x, var_y, var_z, front_or_top, mod, mod_y):
     else:
         raise ValueError("front_or_top can be only 'front' or 'top'")
     return [var_x_mask, var_y_mask, var_z_mask]
+    
+def rm_top_bottom(var, mod):
+    var[:,:mod,:] = 0
+    var[:,-mod:,:] = 0
+    return var
 
 def vector_cut_plane(vec_field, front_or_top, nx, ny, nz, y_spacing, scale_factor):
 #    scale_factor = 4. # scale factor for direction field vectors

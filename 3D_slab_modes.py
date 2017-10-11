@@ -39,7 +39,7 @@ show_density_pert = False
 show_mag = False
 show_mag_scale = False
 show_mag_fade = False
-show_mag_vec = False
+show_mag_front = False
 show_vel_front = False
 show_vel_front_pert = False
 show_vel_top = False
@@ -54,12 +54,12 @@ show_boundary = False
 # Uncomment the parametrer you would like to see
 # No density perturbations or vel/disp pert for alfven modes.
 
-show_density = True
+#show_density = True
 #show_density_pert = True
 show_mag = True
 #show_mag_scale = True #must also have show_mag = True
 show_mag_fade = True
-#show_mag_vec = True
+#show_mag_front = True
 show_vel_front = True
 #show_vel_front_pert = True
 #show_vel_top = True
@@ -73,10 +73,10 @@ show_boundary = True
 
 # Visualisation modules in string form for file-names
 vis_modules = [show_density, show_density_pert, show_mag, show_mag_scale, 
-               show_mag_fade, show_mag_vec, show_vel_front, show_vel_front_pert,
+               show_mag_fade, show_mag_front, show_vel_front, show_vel_front_pert,
                show_vel_top, show_vel_top_pert, show_disp_top, show_disp_front]
 vis_modules_strings = ['show_density', 'show_density_pert', 'show_mag', 'show_mag_scale', 
-                       'show_mag_fade', 'show_mag_vec', 'show_vel_front', 'show_vel_front_pert',
+                       'show_mag_fade', 'show_mag_front', 'show_vel_front', 'show_vel_front_pert',
                        'show_vel_top', 'show_vel_top_pert', 'show_disp_top', 'show_disp_front']
 vis_mod_string = ''
 for i, j in enumerate(vis_modules):
@@ -102,8 +102,9 @@ show_quick_plot = False
 #for mode_ind in [13]: #for an individual mode
 #for mode_ind in range(2,14): 
 
+# Choose your modes and views - Make parallel views the last in the list views_selected
 modes_selected = [0]
-views_selected = [6]
+views_selected = [1]
 
 # Video resolution
 #res = (1920,1080) # There is a problem with this resolution- height must be odd number - Mayavi bug apparently
@@ -111,16 +112,16 @@ res = tuple(101 * np.array((16,9)))
 #res = tuple(51 * np.array((16,9)))
 #res = tuple(21 * np.array((16,9)))
 
-number_of_frames = 1#50
+number_of_frames = 50
 
 # Frames per second of output video
 fps = 20
 
-save_images = False
-#save_images = True
+#save_images = False
+save_images = True
 
-make_video = False
-#make_video = True
+#make_video = False
+make_video = True
 
 # Where should I save the animation images/videos?
 os.path.abspath(os.curdir)
@@ -358,9 +359,7 @@ for mode_ind in modes_selected:
         
         fig = mlab.figure(size=res) # (1920, 1080) for 1080p , tuple(101 * np.array((16,9))) #16:9 aspect ratio for video upload
         
-#        # Solution to transparency issue when using faded field-lines. More details here: https://github.com/enthought/mayavi/issues/491
-#        scene = mlab.gcf().scene
-#        scene.renderer.set(use_depth_peeling=True)
+
         
         # Spacing of grid so that we can display a visualisation cube without having the same number of grid points in each dimension
         spacing =  np.array([x_spacing, z_spacing, y_spacing])                     
@@ -372,7 +371,7 @@ for mode_ind in modes_selected:
             mpf.volume_red_blue(rho, rho_vals_t)
         
         #Masking points
-        if show_mag_vec:
+        if show_mag_front:
             bxvals_mask_front_t, byvals_mask_front_t, bzvals_mask_front_t = mpf.mask_points(bxvals_t, byvals_t, bzvals_t, 
                                                                                             'front', mod, mod_y)
         if show_disp_top:    
@@ -415,7 +414,7 @@ for mode_ind in modes_selected:
         scalefactor = 8. * nx / 100. # scale factor for direction field vectors
         
         # Set up visualisation modules
-        if show_mag_vec:
+        if show_mag_front:
             bdirfield_front = mlab.pipeline.vector_field(bxvals_mask_front_t, bzvals_mask_front_t,
                                                          byvals_mask_front_t, name="B field front",
                                                          figure=fig)
@@ -495,7 +494,7 @@ for mode_ind in modes_selected:
                 field.mlab_source.set(u=bxvals_t, v=bzvals_t, w=byvals_t)
                 
                 # Update mag field visualisation module
-                if show_mag_vec:
+                if show_mag_front:
                     bxvals_mask_front_t, byvals_mask_front_t, bzvals_mask_front_t = mpf.mask_points(bxvals_t, byvals_t, bzvals_t, 
                                                                                                     'front', mod, mod_y)
                     bdirfield_front.mlab_source.set(u=bxvals_mask_front_t, v=bzvals_mask_front_t, w=byvals_mask_front_t)                                                                                        
@@ -625,14 +624,32 @@ for mode_ind in modes_selected:
                     mag_lut[:,2] = [20]*256
                     module_manager.scalar_lut_manager.lut.table = mag_lut
                 if show_mag_fade:
-                    mpf.colormap_fade(module_manager, fade_value=20.)# * nz / 100.)
+                    mpf.colormap_fade(module_manager, fade_value=20.)
                     
-                field_lines.tube_filter.radius = 0.7 #* max(nx, ny, nz) / 100. # must go after colors for some reason
+                field_lines.tube_filter.radius = 0.5 * max(nx, ny, nz) / 100. # must go after colors for some reason
                 
             # Which views do you want to show? Options are defined at the start
             for view_ind, view_selected in enumerate(views_selected):
                 view = view_options[view_selected]
-                
+                # Remove top and bottom vectors
+                if 'parallel' in view:
+                    if show_vel_front:
+                        vdirfield_front.mlab_source.set(u=mpf.rm_top_bottom(vxvals_mask_front_t, mod), 
+                                                        v=mpf.rm_top_bottom(vzvals_mask_front_t, mod), 
+                                                        w=mpf.rm_top_bottom(vyvals_mask_front_t, mod))
+                    if show_disp_front:
+                        xidirfield_front.mlab_source.set(u=mpf.rm_top_bottom(xixvals_mask_front_t, mod), 
+                                                         v=mpf.rm_top_bottom(xizvals_mask_front_t, mod), 
+                                                         w=mpf.rm_top_bottom(xiyvals_mask_front_t, mod))
+                    if show_mag_front:
+                        bdirfield_front.mlab_source.set(u=mpf.rm_top_bottom(bxvals_mask_front_t, mod), 
+                                                        v=mpf.rm_top_bottom(bzvals_mask_front_t, mod), 
+                                                        w=mpf.rm_top_bottom(byvals_mask_front_t, mod))
+                # deeper fade for front parallel view.
+                if view == 'front-parallel':
+                    if show_mag_fade:
+                        mpf.colormap_fade(module_manager, fade_value=125.)
+
                 # Display boundary - cannot be updated each time
                 if show_boundary:
                     # Boundaries should look different depending on view
@@ -698,9 +715,13 @@ for mode_ind in modes_selected:
                 # Set viewing angle - For some unknown reason we must redefine the camera position each time.
                 # This is something to do with the boundaries being replaced each time.
                 mpf.view_position(fig, view, nx, ny, nz)
+
+#                # Solution to transparency issue when using faded field-lines. More details here: https://github.com/enthought/mayavi/issues/491
+#                scene = mlab.gcf().scene
+#                scene.renderer.set(use_depth_peeling=True)
                 
                 if save_images:
-                    prefix = 'R1_'+str(R1) + '_' + mode + '_' + vis_mod_string + view + '_'# + '_norho_'
+                    prefix = 'test_R1_'+str(R1) + '_' + mode + '_' + vis_mod_string + view + '_'# + '_norho_'
                     mlab.savefig(os.path.join(save_directory, prefix + str(t_ind+1) + '.png'))
                 if t_ind == nt - 1:
                     if make_video:
