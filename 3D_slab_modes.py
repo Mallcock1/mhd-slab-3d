@@ -51,7 +51,7 @@ show_boundary = False
 # Uncomment the parametrer you would like to see
 # No density perturbations or vel/disp pert for alfven modes.
 
-show_density = True
+#show_density = True
 show_mag = True
 #show_mag_scale = True #must also have show_mag = True
 show_mag_fade = True
@@ -97,8 +97,8 @@ show_quick_plot = False
 #for mode_ind in range(2,14): 
 
 # Choose your modes and views - Make parallel views the last in the list views_selected
-modes_selected = [0]
-views_selected = [1]
+modes_selected = range(16)
+views_selected = [0,5,6,1]
 
 # Video resolution
 #res = (1920,1080) # There is a problem with this resolution- height must be odd number - Mayavi bug apparently
@@ -106,16 +106,16 @@ res = tuple(101 * np.array((16,9)))
 #res = tuple(51 * np.array((16,9)))
 #res = tuple(21 * np.array((16,9)))
 
-number_of_frames = 1#50
+number_of_frames = 50
 
 # Frames per second of output video
 fps = 20
 
-save_images = False
-#save_images = True
+#save_images = False
+save_images = True
 
-make_video = False
-#make_video = True
+#make_video = False
+make_video = True
 
 # Where should I save the animation images/videos?
 os.path.abspath(os.curdir)
@@ -145,6 +145,18 @@ for mode_ind in modes_selected:
     # (note that fast surface modes, i.e. 14 and 15, can only be 
     # found with SBS parameters in slab_functions...)
     mode = mode_options[mode_ind]
+    
+    #Different modes can be found with different characteristic speed orderings
+    if 'fast' and 'surf' in mode:
+        c2 = 1.2
+        c0 = 1.
+        vA = 1.3
+    elif 'alfven' in mode:
+        vA = 1. #Not sure about this!!!
+    else:
+        c2 = 1.2
+        c0 = 1.
+        vA = 0.9
     
     show_vel_front_pert = False
     show_vel_top_pert = False
@@ -183,12 +195,12 @@ for mode_ind in modes_selected:
     R1 = 2. # Symmetric slab
     
     # Reduce number of variables in dispersion relation
-    disp_rel_partial = partial(sf.disp_rel_asym, R1=R1)
+    disp_rel_partial = partial(sf.disp_rel_asym, R1=R1, c2=c2, c0=c0, vA=vA)
     
     # find eigenfrequencies W (= omega/k) within the range Wrange for the given parameters.
-    Wrange1 = np.linspace(0., sf.cT, 11)
-    Wrange2 = np.linspace(sf.cT, sf.c0, 401)
-    Wrange3 = np.linspace(sf.c0, sf.c2, 11)
+    Wrange1 = np.linspace(0., sf.cT(c0, vA), 11)
+    Wrange2 = np.linspace(sf.cT(c0, vA), c0, 401)
+    Wrange3 = np.linspace(c0, c2, 11)
     
     Woptions_slow_surf = np.real(tool.point_find(disp_rel_partial, np.array(K), Wrange1, args=None).transpose())
     Woptions_slow_body = np.real(tool.point_find(disp_rel_partial, np.array(K), Wrange2, args=None).transpose())
@@ -198,24 +210,24 @@ for mode_ind in modes_selected:
     tol = 1e-2
     indices_to_rm = []
     for i, w in enumerate(Woptions_slow_surf):
-        spurious_roots_diff = abs(np.array([w, w - sf.c0, w - sf.c1(R1), w - sf.c2, w - sf.vA]))
-        if min(spurious_roots_diff) < tol or w < 0 or w > sf.cT:
+        spurious_roots_diff = abs(np.array([w, w - c0, w - sf.c1(R1, c2), w - c2, w - vA]))
+        if min(spurious_roots_diff) < tol or w < 0 or w > sf.cT(c0, vA):
             indices_to_rm.append(i)
     Woptions_slow_surf = np.delete(Woptions_slow_surf, indices_to_rm)
     Woptions_slow_surf.sort()
     
     indices_to_rm = []
     for i, w in enumerate(Woptions_slow_body):
-        spurious_roots_diff = abs(np.array([w, w - sf.c0, w - sf.c1(R1), w - sf.c2, w - sf.vA]))
-        if min(spurious_roots_diff) < tol or w < sf.cT or w > sf.c0:
+        spurious_roots_diff = abs(np.array([w, w - c0, w - sf.c1(R1, c2), w - c2, w - vA]))
+        if min(spurious_roots_diff) < tol or w < sf.cT(c0, vA) or w > c0:
             indices_to_rm.append(i)
     Woptions_slow_body = np.delete(Woptions_slow_body, indices_to_rm)
     Woptions_slow_body.sort()
     
     indices_to_rm = []
     for i, w in enumerate(Woptions_fast):
-        spurious_roots_diff = abs(np.array([w, w - sf.c0, w - sf.c1(R1), w - sf.c2, w - sf.vA]))
-        if min(spurious_roots_diff) < tol or w < sf.c0 or w > min(sf.c1, sf.c2):
+        spurious_roots_diff = abs(np.array([w, w - c0, w - sf.c1(R1, c2), w - c2, w - vA]))
+        if min(spurious_roots_diff) < tol or w < c0 or w > min(sf.c1, c2):
             indices_to_rm.append(i)
     Woptions_fast = np.delete(Woptions_fast, indices_to_rm)
     Woptions_fast.sort()
@@ -236,7 +248,7 @@ for mode_ind in modes_selected:
         W = Woptions_slow_body[mode_ind-2]
     
     if 'alfven' in mode:
-        W = sf.vA
+        W = vA
     else:
         W = np.real(W)
         
@@ -277,7 +289,7 @@ for mode_ind in modes_selected:
         zmax = 2*np.pi
         
         # You can change ny but be careful changing nx, nz.
-        n = 50 #300 gives us reduced bouncing of field lines for the same video size, but there is significant computational cost.
+        n = 100 #300 gives us reduced bouncing of field lines for the same video size, but there is significant computational cost.
         nx = n 
         ny = n
         nz = n
@@ -305,37 +317,37 @@ for mode_ind in modes_selected:
         
         # Get the data xi=displacement, v=velocity, b=mag field
         if show_disp_top or show_disp_front:
-            xixvals = np.real(np.repeat(sf.xix(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
-            xizvals = np.real(np.repeat(sf.xiz(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
+            xixvals = np.real(np.repeat(sf.xix(mode, xvals, zvals, t, W, K, R1, c2, c0, vA)[:, :, np.newaxis], ny, axis=2))
+            xizvals = np.real(np.repeat(sf.xiz(mode, xvals, zvals, t, W, K, R1, c2, c0, vA)[:, :, np.newaxis], ny, axis=2))
             xiyvals = np.real(np.repeat(sf.xiy(mode, xvals, zvals, t, W, K)[:, :, np.newaxis], ny, axis=2))
         
         if show_vel_front or show_vel_top:
-            vxvals = np.real(np.repeat(sf.vx(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
-            vzvals = np.real(np.repeat(sf.vz(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
+            vxvals = np.real(np.repeat(sf.vx(mode, xvals, zvals, t, W, K, R1, c2, c0, vA)[:, :, np.newaxis], ny, axis=2))
+            vzvals = np.real(np.repeat(sf.vz(mode, xvals, zvals, t, W, K, R1, c2, c0, vA)[:, :, np.newaxis], ny, axis=2))
             vyvals = np.real(np.repeat(sf.vy(mode, xvals, zvals, t, K)[:, :, np.newaxis], ny, axis=2))
         
         if show_vel_front_pert or show_vel_top_pert:
-            vxvals = np.real(np.repeat(sf.vx_pert(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
-            vzvals = np.real(np.repeat(sf.vz_pert(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
+            vxvals = np.real(np.repeat(sf.vx_pert(mode, xvals, zvals, t, W, K, R1, c2, c0, vA)[:, :, np.newaxis], ny, axis=2))
+            vzvals = np.real(np.repeat(sf.vz_pert(mode, xvals, zvals, t, W, K, R1, c2, c0, vA)[:, :, np.newaxis], ny, axis=2))
             vyvals = np.zeros_like(vxvals)
         
         # Axis is defined on the mag field so we have to set up this data
-        bxvals = np.real(np.repeat(sf.bx(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
-        byvals = np.real(np.repeat(sf.by(mode, xvals, zvals, t, K)[:, :, np.newaxis], ny, axis=2))
-        bz_eq3d = np.repeat(sf.bz_eq(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2)
-        bzvals = np.real(np.repeat(-sf.bz(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2) +
+        bxvals = np.real(np.repeat(sf.bx(mode, xvals, zvals, t, W, K, R1, c2, c0, vA)[:, :, np.newaxis], ny, axis=2))
+        byvals = np.real(np.repeat(sf.by(mode, xvals, zvals, t, K, vA)[:, :, np.newaxis], ny, axis=2))
+        bz_eq3d = np.repeat(sf.bz_eq(mode, xvals, zvals, t, W, K, R1, c2, c0, vA)[:, :, np.newaxis], ny, axis=2)
+        bzvals = np.real(np.repeat(-sf.bz(mode, xvals, zvals, t, W, K, R1, c2, c0, vA)[:, :, np.newaxis], ny, axis=2) +
                          bz_eq3d)
         
         # displacement at the right and left boundaries
         if show_boundary:
-            xix_boundary_r_vals = np.real(np.repeat(K + sf.xix_boundary(mode, zvals, t, W, K, R1, boundary='r')[:, np.newaxis], ny, axis=1))
-            xix_boundary_l_vals = np.real(np.repeat(-K + sf.xix_boundary(mode, zvals, t, W, K, R1, boundary='l')[:, np.newaxis], ny, axis=1))
+            xix_boundary_r_vals = np.real(np.repeat(K + sf.xix_boundary(mode, zvals, t, W, K, R1, c2, c0, vA, boundary='r')[:, np.newaxis], ny, axis=1))
+            xix_boundary_l_vals = np.real(np.repeat(-K + sf.xix_boundary(mode, zvals, t, W, K, R1, c2, c0, vA, boundary='l')[:, np.newaxis], ny, axis=1))
         
         if show_density:
-            rho_vals = np.real(np.repeat(sf.rho(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
+            rho_vals = np.real(np.repeat(sf.rho(mode, xvals, zvals, t, W, K, R1, c2, c0, vA)[:, :, np.newaxis], ny, axis=2))
         
         if show_density_pert:
-            rho_vals = np.real(np.repeat(sf.rho_pert(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
+            rho_vals = np.real(np.repeat(sf.rho_pert(mode, xvals, zvals, t, W, K, R1, c2, c0, vA)[:, :, np.newaxis], ny, axis=2))
         
         bxvals_t = bxvals
         byvals_t = byvals
@@ -488,10 +500,10 @@ for mode_ind in modes_selected:
                      
             else:
                 
-                bxvals = np.real(np.repeat(sf.bx(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2))
-                byvals = np.real(np.repeat(sf.by(mode, xvals, zvals, t, K)[:, :, np.newaxis], ny, axis=2))
-                bz_eq3d = np.repeat(sf.bz_eq(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2)
-                bzvals = np.real(np.repeat(-sf.bz(mode, xvals, zvals, t, W, K, R1)[:, :, np.newaxis], ny, axis=2) +
+                bxvals = np.real(np.repeat(sf.bx(mode, xvals, zvals, t, W, K, R1, c2, c0, vA)[:, :, np.newaxis], ny, axis=2))
+                byvals = np.real(np.repeat(sf.by(mode, xvals, zvals, t, K, vA)[:, :, np.newaxis], ny, axis=2))
+                bz_eq3d = np.repeat(sf.bz_eq(mode, xvals, zvals, t, W, K, R1, c2, c0, vA)[:, :, np.newaxis], ny, axis=2)
+                bzvals = np.real(np.repeat(-sf.bz(mode, xvals, zvals, t, W, K, R1, c2, c0, vA)[:, :, np.newaxis], ny, axis=2) +
                                  bz_eq3d)
                                  
                 bxvals_t = bxvals
@@ -621,8 +633,8 @@ for mode_ind in modes_selected:
                 
                 # Colormap of magnetic field strength plotted on the field lines
                 if show_mag_scale:
-                    module_manager.scalar_lut_manager.lut_mode = 'coolwarm'
-                    module_manager.scalar_lut_manager.data_range=[7,18]
+                    module_manager.scalar_lut_manager.lut_mode = 'Reds'
+#                    module_manager.scalar_lut_manager.data_range=[7,18]
                 else:
                     mag_lut = module_manager.scalar_lut_manager.lut.table.to_array()
                     mag_lut[:,0] = [220]*256
