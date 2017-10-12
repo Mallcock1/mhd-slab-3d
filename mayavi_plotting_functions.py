@@ -91,7 +91,7 @@ def view_position(scene, view, nx, ny, nz):
     if view == 'front-parallel':
         scene.scene.z_plus_view()
         scene.scene.parallel_projection = True
-        scene.scene.camera.focal_point = [50.5 * nx / 100., 50.5 * nz / 100., 50.0 * ny / 100.]
+#        scene.scene.camera.focal_point = [50.5 * nx / 100., 50.5 * nz / 100., 50.0 * ny / 100.]
         scene.scene.camera.zoom(1.65) # Parallel projection zoom is done in this way, different to perspective projection
     if view == 'front':
         scene.scene.parallel_projection = False

@@ -35,15 +35,12 @@ view_options = ['front', 'front-parallel', 'top', 'top-parallel', 'front-top',
 uniform_light = False
 
 show_density = False
-show_density_pert = False
 show_mag = False
 show_mag_scale = False
 show_mag_fade = False
 show_mag_front = False
 show_vel_front = False
-show_vel_front_pert = False
 show_vel_top = False
-show_vel_top_pert = False
 show_disp_top = False
 show_disp_front = False
 show_axes = False
@@ -54,16 +51,13 @@ show_boundary = False
 # Uncomment the parametrer you would like to see
 # No density perturbations or vel/disp pert for alfven modes.
 
-#show_density = True
-#show_density_pert = True
+show_density = True
 show_mag = True
 #show_mag_scale = True #must also have show_mag = True
 show_mag_fade = True
 #show_mag_front = True
 show_vel_front = True
-#show_vel_front_pert = True
 #show_vel_top = True
-#show_vel_top_pert = True
 #show_disp_top = True
 #show_disp_front = True
 show_axes = True
@@ -72,9 +66,9 @@ show_mini_axis = True
 show_boundary = True
 
 # Visualisation modules in string form for file-names
-vis_modules = [show_density, show_density_pert, show_mag, show_mag_scale, 
-               show_mag_fade, show_mag_front, show_vel_front, show_vel_front_pert,
-               show_vel_top, show_vel_top_pert, show_disp_top, show_disp_front]
+vis_modules = [show_density, show_mag, show_mag_scale, 
+               show_mag_fade, show_mag_front, show_vel_front,
+               show_vel_top, show_disp_top, show_disp_front]
 vis_modules_strings = ['show_density', 'show_density_pert', 'show_mag', 'show_mag_scale', 
                        'show_mag_fade', 'show_mag_front', 'show_vel_front', 'show_vel_front_pert',
                        'show_vel_top', 'show_vel_top_pert', 'show_disp_top', 'show_disp_front']
@@ -112,16 +106,16 @@ res = tuple(101 * np.array((16,9)))
 #res = tuple(51 * np.array((16,9)))
 #res = tuple(21 * np.array((16,9)))
 
-number_of_frames = 50
+number_of_frames = 1#50
 
 # Frames per second of output video
 fps = 20
 
-#save_images = False
-save_images = True
+save_images = False
+#save_images = True
 
-#make_video = False
-make_video = True
+make_video = False
+#make_video = True
 
 # Where should I save the animation images/videos?
 os.path.abspath(os.curdir)
@@ -150,7 +144,21 @@ for mode_ind in modes_selected:
         
     # (note that fast surface modes, i.e. 14 and 15, can only be 
     # found with SBS parameters in slab_functions...)
-    mode = mode_options[mode_ind]    
+    mode = mode_options[mode_ind]
+    
+    show_vel_front_pert = False
+    show_vel_top_pert = False
+    show_density_pert = False
+    if mode in ['slow-kink-surf', 'slow-saus-surf']:
+        if show_vel_front:
+            show_vel_front_pert = True
+            show_vel_front = False
+        if show_vel_top:
+            show_vel_top_pert = True
+            show_vel_top= False
+        if show_density:
+            show_density_pert = True
+            show_density = False
     
     # Specify oscillation parameters
     if 'slow' in mode and 'surf' in mode or 'alfven' in mode:
@@ -269,7 +277,7 @@ for mode_ind in modes_selected:
         zmax = 2*np.pi
         
         # You can change ny but be careful changing nx, nz.
-        n = 100 #300 gives us reduced bouncing of field lines for the same video size, but there is significant computational cost.
+        n = 50 #300 gives us reduced bouncing of field lines for the same video size, but there is significant computational cost.
         nx = n 
         ny = n
         nz = n
@@ -606,10 +614,8 @@ for mode_ind in modes_selected:
                 field_lines.streamline_type = 'tube'
                 field_lines.stream_tracer.maximum_propagation = nz * 2
                 field_lines.tube_filter.number_of_sides = 20
-
                 field_lines.tube_filter.capping = True
                 field_lines.actor.property.opacity = 1.0                
-                
                 field.add_child(field_lines)
                 module_manager = field_lines.parent
                 
@@ -633,7 +639,7 @@ for mode_ind in modes_selected:
                 view = view_options[view_selected]
                 # Remove top and bottom vectors
                 if 'parallel' in view:
-                    if show_vel_front:
+                    if show_vel_front or show_vel_front_pert:
                         vdirfield_front.mlab_source.set(u=mpf.rm_top_bottom(vxvals_mask_front_t, mod), 
                                                         v=mpf.rm_top_bottom(vzvals_mask_front_t, mod), 
                                                         w=mpf.rm_top_bottom(vyvals_mask_front_t, mod))
@@ -716,12 +722,12 @@ for mode_ind in modes_selected:
                 # This is something to do with the boundaries being replaced each time.
                 mpf.view_position(fig, view, nx, ny, nz)
 
-#                # Solution to transparency issue when using faded field-lines. More details here: https://github.com/enthought/mayavi/issues/491
+                # Solution to transparency issue when using faded field-lines. More details here: https://github.com/enthought/mayavi/issues/491
 #                scene = mlab.gcf().scene
 #                scene.renderer.set(use_depth_peeling=True)
                 
                 if save_images:
-                    prefix = 'test_R1_'+str(R1) + '_' + mode + '_' + vis_mod_string + view + '_'# + '_norho_'
+                    prefix = 'test2_R1_'+str(R1) + '_' + mode + '_' + vis_mod_string + view + '_'# + '_norho_'
                     mlab.savefig(os.path.join(save_directory, prefix + str(t_ind+1) + '.png'))
                 if t_ind == nt - 1:
                     if make_video:
@@ -744,3 +750,4 @@ for mode_ind in modes_selected:
         if make_video:
             mlab.close(fig)
         print('Finished ' + mode)
+        
