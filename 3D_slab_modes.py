@@ -1,5 +1,4 @@
 
-#import pdb # pause code for debugging at pdb.set_trace()
 import numpy as np
 import toolbox as tool
 import slab_functions as sf
@@ -30,7 +29,7 @@ mode_options = ['slow-kink-surf', 'slow-saus-surf', 'slow-saus-body-3',
 view_options = ['front', 'front-parallel', 'top', 'top-parallel', 'front-top',
                 'front-side', 'front-top-side']
 
-# Uniform lighting?
+# Use uniform lighting, i.e. no shadows?
 #uniform_light = True
 uniform_light = False
 
@@ -69,9 +68,9 @@ show_boundary = True
 vis_modules = [show_density, show_mag, show_mag_scale, 
                show_mag_fade, show_mag_front, show_vel_front,
                show_vel_top, show_disp_top, show_disp_front]
-vis_modules_strings = ['show_density', 'show_density_pert', 'show_mag', 'show_mag_scale', 
-                       'show_mag_fade', 'show_mag_front', 'show_vel_front', 'show_vel_front_pert',
-                       'show_vel_top', 'show_vel_top_pert', 'show_disp_top', 'show_disp_front']
+vis_modules_strings = ['show_density', 'show_mag', 'show_mag_scale', 
+                       'show_mag_fade', 'show_mag_front', 'show_vel_front',
+                       'show_vel_top', 'show_disp_top', 'show_disp_front']
 vis_mod_string = ''
 for i, j in enumerate(vis_modules):
     if vis_modules[i]:
@@ -97,8 +96,8 @@ show_quick_plot = False
 #for mode_ind in range(2,14): 
 
 # Choose your modes and views - Make parallel views the last in the list views_selected
-modes_selected = [2]#range(16)
-views_selected = [0,5,6,1]
+modes_selected = range(16)
+views_selected = [1]
 
 # Video resolution
 #res = (1920,1080) # There is a problem with this resolution- height must be odd number - Mayavi bug apparently
@@ -642,7 +641,7 @@ for mode_ind in modes_selected:
                     mag_lut[:,2] = [20]*256
                     module_manager.scalar_lut_manager.lut.table = mag_lut
                 if show_mag_fade:
-                    mpf.colormap_fade(module_manager, fade_value=20.)
+                    mpf.colormap_fade(module_manager, fade_value=125.)
                     
                 field_lines.tube_filter.radius = 0.5 * max(nx, ny, nz) / 100. # must go after colors for some reason
                 
