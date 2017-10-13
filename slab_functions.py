@@ -284,8 +284,8 @@ def vz_pert(mode, x, z, t, W, K, R1, c2, c0, vA):
     for i in range(len(x)):
         for j in range(len(z)):
             def func(r):
-                return [r[0] - x[i] + xix(mode, r[0], r[1], t, W, K, R1), 
-                        r[1] - z[j] + xiz(mode, r[0], r[1], t, W, K, R1)]
+                return [r[0] - x[i] + xix(mode, r[0], r[1], t, W, K, R1, c2, c0, vA), 
+                        r[1] - z[j] + xiz(mode, r[0], r[1], t, W, K, R1, c2, c0, vA)]
             sol = np.real(fsolve(func, [x[i],z[j]], xtol=1e-03))
             if abs(sol[0]) <= K:
                 vz_hat_vals[i,j] = (1j * c0**2 / (c0**2 - W**2)) * m0(W, c0, vA)*(constB(mode, W, K, R1, c2, c0, vA)*sc.sinh(m0(W, c0, vA)*sol[0]) +
@@ -431,8 +431,8 @@ def rho_pert(mode, x, z, t, W, K, R1, c2, c0, vA):
     for i in range(len(x)):
         for j in range(len(z)):
             def func(r):
-                return [r[0] - x[i] + xix(mode, r[0], r[1], t, W, K, R1), 
-                        r[1] - z[j] + xiz(mode, r[0], r[1], t, W, K, R1)]
+                return [r[0] - x[i] + xix(mode, r[0], r[1], t, W, K, R1, c2, c0, vA), 
+                        r[1] - z[j] + xiz(mode, r[0], r[1], t, W, K, R1, c2, c0, vA)]
             sol = np.real(fsolve(func, [x[i],z[j]], xtol=1e-03))
             if abs(sol[0]) <= K:
                 rho_hat_vals[i,j] = m0(W, c0, vA)*(constB(mode, W, K, R1, c2, c0, vA)*sc.sinh(m0(W, c0, vA)*sol[0]) +

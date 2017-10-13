@@ -97,7 +97,7 @@ show_quick_plot = False
 #for mode_ind in range(2,14): 
 
 # Choose your modes and views - Make parallel views the last in the list views_selected
-modes_selected = range(16)
+modes_selected = [2]#range(16)
 views_selected = [0,5,6,1]
 
 # Video resolution
@@ -663,10 +663,6 @@ for mode_ind in modes_selected:
                         bdirfield_front.mlab_source.set(u=mpf.rm_top_bottom(bxvals_mask_front_t, mod), 
                                                         v=mpf.rm_top_bottom(bzvals_mask_front_t, mod), 
                                                         w=mpf.rm_top_bottom(byvals_mask_front_t, mod))
-                # deeper fade for front parallel view.
-                if view == 'front-parallel':
-                    if show_mag_fade:
-                        mpf.colormap_fade(module_manager, fade_value=125.)
 
                 # Display boundary - cannot be updated each time
                 if show_boundary:
@@ -739,7 +735,7 @@ for mode_ind in modes_selected:
 #                scene.renderer.set(use_depth_peeling=True)
                 
                 if save_images:
-                    prefix = 'test2_R1_'+str(R1) + '_' + mode + '_' + vis_mod_string + view + '_'# + '_norho_'
+                    prefix = 'R1_'+str(R1) + '_' + mode + '_' + vis_mod_string + view + '_'# + '_norho_'
                     mlab.savefig(os.path.join(save_directory, prefix + str(t_ind+1) + '.png'))
                 if t_ind == nt - 1:
                     if make_video:

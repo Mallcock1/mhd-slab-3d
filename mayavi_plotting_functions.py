@@ -201,9 +201,8 @@ def vector_cut_plane(vec_field, front_or_top, nx, ny, nz, y_spacing, scale_facto
 def volume_red_blue(scalar_field, scalar_data):
     minr = scalar_data.min()
     maxr = scalar_data.max()
-    
-    #Volume for high pressure
-    # max and mins for 
+
+    # max and mins
     rvmin_pos = minr + 0.5 * (maxr - minr)
     rvmax_pos = minr + 1. * (maxr - minr)
     rvmin_neg = minr + 0. * (maxr - minr)
@@ -220,7 +219,7 @@ def volume_red_blue(scalar_field, scalar_data):
     ctf.add_rgb_point(rvmin_neg, 0., 0.5, 1.)
     ctf.add_rgb_point(rvmin_neg + 0.6 * (rvmax_neg - rvmin_neg), 0.1, 0.7, 1.)
     ctf.add_rgb_point(rvmax_neg, 0.5, 1., 1.)    
-    # ...
+    
     rvol._volume_property.set_color(ctf)
     rvol._ctf = ctf
     rvol.update_ctf = True
