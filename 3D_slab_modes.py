@@ -48,14 +48,14 @@ show_mini_axis = False
 show_boundary = False
 
 # Uncomment the parametrer you would like to see
-# No density perturbations or vel/disp pert for alfven modes.
+# No density perturbation for alfven modes.
 
 #show_density = True
 show_mag = True
 #show_mag_scale = True #must also have show_mag = True
 show_mag_fade = True
 #show_mag_front = True
-show_vel_front = True
+#show_vel_front = True
 #show_vel_top = True
 #show_disp_top = True
 #show_disp_front = True
@@ -96,7 +96,7 @@ show_quick_plot = False
 #for mode_ind in range(2,14): 
 
 # Choose your modes and views - Make parallel views the last in the list views_selected
-modes_selected = range(16)
+modes_selected = [0]#range(16)
 views_selected = [1]
 
 # Video resolution
@@ -105,7 +105,7 @@ res = tuple(101 * np.array((16,9)))
 #res = tuple(51 * np.array((16,9)))
 #res = tuple(21 * np.array((16,9)))
 
-number_of_frames = 50
+number_of_frames = 1#50
 
 # Frames per second of output video
 fps = 20
@@ -113,8 +113,8 @@ fps = 20
 #save_images = False
 save_images = True
 
-#make_video = False
-make_video = True
+make_video = False
+#make_video = True
 
 # Where should I save the animation images/videos?
 os.path.abspath(os.curdir)
@@ -163,13 +163,10 @@ for mode_ind in modes_selected:
     if mode in ['slow-kink-surf', 'slow-saus-surf']:
         if show_vel_front:
             show_vel_front_pert = True
-            show_vel_front = False
         if show_vel_top:
             show_vel_top_pert = True
-            show_vel_top= False
         if show_density:
             show_density_pert = True
-            show_density = False
     
     # Specify oscillation parameters
     if 'slow' in mode and 'surf' in mode or 'alfven' in mode:
@@ -734,7 +731,7 @@ for mode_ind in modes_selected:
 #                scene.renderer.set(use_depth_peeling=True)
                 
                 if save_images:
-                    prefix = 'R1_'+str(R1) + '_' + mode + '_' + vis_mod_string + view + '_'# + '_norho_'
+                    prefix = 'R1_'+str(R1) + '_' + mode + '_' + vis_mod_string + view + '_'
                     mlab.savefig(os.path.join(save_directory, prefix + str(t_ind+1) + '.png'))
                 if t_ind == nt - 1:
                     if make_video:
