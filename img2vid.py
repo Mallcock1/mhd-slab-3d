@@ -41,12 +41,12 @@ def image2video(filepath=None, prefix='', in_extension='png',
     
 # Overlay logos
     overlay_image_sp2rc = 'ffmpeg -y -i '+os.path.join(filepath, output_name+'.'+out_extension)+' -i \
-    sp2rc_logo2.png -filter_complex "[1:0] scale=-1:'+logo_height+' [logo]; \
+    D:\\my_work\\projects\\Asymmetric_slab\\Python\\visualisations\\3d_vis\\sp2rc_logo2.png -filter_complex "[1:0] scale=-1:'+logo_height+' [logo]; \
     [0:0][logo] overlay=main_w-'+logo_width+':main_h-'+logo_height+'" -c:a copy \
     '+os.path.join(filepath, output_name+'_overlay.'+out_extension)
 
     overlay_image_swat = 'ffmpeg -y -i '+os.path.join(filepath, output_name+'_overlay.'+out_extension)+' -i \
-    swat_logo2.png -filter_complex "[1:0] scale=-1:'+logo_height+' [logo]; \
+    D:\\my_work\\projects\\Asymmetric_slab\\Python\\visualisations\\3d_vis\\swat_logo2.png -filter_complex "[1:0] scale=-1:'+logo_height+' [logo]; \
     [0:0][logo] overlay=main_w-overlay_w:main_h-'+logo_height+'" -c:a copy \
     '+os.path.join(filepath, output_name+'_overlay2.'+out_extension)
 

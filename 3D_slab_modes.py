@@ -101,11 +101,11 @@ views_selected = [1]
 
 # Video resolution
 #res = (1920,1080) # There is a problem with this resolution- height must be odd number - Mayavi bug apparently
-res = tuple(101 * np.array((16,9)))
+#res = tuple(101 * np.array((16,9)))
 #res = tuple(51 * np.array((16,9)))
-#res = tuple(21 * np.array((16,9)))
+res = tuple(21 * np.array((16,9)))
 
-number_of_frames = 1#50
+number_of_frames = 50
 
 # Frames per second of output video
 fps = 20
@@ -113,8 +113,8 @@ fps = 20
 #save_images = False
 save_images = True
 
-make_video = False
-#make_video = True
+#make_video = False
+make_video = True
 
 # Where should I save the animation images/videos?
 os.path.abspath(os.curdir)
@@ -738,7 +738,7 @@ for mode_ind in modes_selected:
                         i2v.image2video(filepath=save_directory, prefix=prefix, 
                                         output_name=prefix+'video', out_extension='mp4', 
                                         fps=fps, n_loops=4, delete_images=True, 
-                                        delete_old_videos=True, res=res[1])
+                                        delete_old_videos=False, res=res[1])
             
             # Log: to keep us updated with progress
             if t_ind % 5 == 4:
@@ -754,4 +754,3 @@ for mode_ind in modes_selected:
         if make_video:
             mlab.close(fig)
         print('Finished ' + mode)
-        
