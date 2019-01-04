@@ -1,5 +1,7 @@
 # 3D visualisations of MHD waves in asymmetric an asymmetric slab
 
+Code used to create [these animations](http://swat.group.shef.ac.uk/slab.html)
+
 ## Prerequisites:
 [Python 2](https://www.python.org/download/releases/2.7.2/),
 [Mayavi](http://mayavi.sourceforge.net/),

@@ -10,9 +10,9 @@ import os
 # ======================================
 
 def image2video(filepath=None, prefix='', in_extension='png',
-            out_extension='avi', output_name=None, fps=10, n_loops=1, 
-            delete_images=False, delete_old_videos=False, res=1080,
-            overlay=True, cover_page=False):
+                out_extension='avi', output_name=None, fps=10, n_loops=1, 
+                delete_images=False, delete_old_videos=False, res=1080,
+                overlay=True, cover_page=False):
                 
     if output_name == None:
         output_name = prefix

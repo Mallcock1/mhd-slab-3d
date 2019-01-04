@@ -10,14 +10,24 @@ import slab_functions as sf
 import toolbox as tool
 import matplotlib.pyplot as plt
 import matplotlib
+import scipy as sc
 
 
-def density_diagram(disp_rel, K, W, R1, R1min, R1max,
+R2 = 2. # rho2/rho0
+
+# To maintain equilibrium pressure balance the sound speed on one side is:
+def c1(R1, c2):
+    return c2 * sc.sqrt(R2 / R1)
+    
+def cT(c0, vA):
+    return sc.sqrt(c0**2 * vA**2 / (c0**2 + vA**2))
+
+def density_diagram(disp_rel, K, W, R1, R1min, R1max, c2, c0, vA,
                     just_dots=False):
     # Plot omega/k against rho_1/rho_0 for eigenmodes
-                    
-    Wmin = sf.cT
-    Wmax = sf.vA
+    
+    Wmin = cT(c0, vA)
+    Wmax = vA
     
     R1_range = np.linspace(R1min, R1max, 51)
     W_range = np.linspace(Wmin, Wmax, 51)
@@ -38,7 +48,7 @@ def density_diagram(disp_rel, K, W, R1, R1min, R1max,
         ax.set_ylim(Wmin, Wmax)
 
 
-def dispersion_diagram(mode_options, chosen_mode, disp_rel, K, W, R1,
+def dispersion_diagram(mode_options, chosen_mode, disp_rel, K, W, R1, c2, c0, vA,
                        just_dots=False):
     
     # Dispersion diagram for eigenmodes given by mode_options.
@@ -92,7 +102,7 @@ def dispersion_diagram(mode_options, chosen_mode, disp_rel, K, W, R1,
     Kmax = 23.#10.
     
     Wmin = 0.
-    Wmax = sf.c2
+    Wmax = c2
     
     K_range = np.linspace(Kmin, Kmax, 51)
     W_range = np.linspace(Wmin, Wmax, 51)
@@ -177,9 +187,9 @@ def dispersion_diagram(mode_options, chosen_mode, disp_rel, K, W, R1,
                 K_end = [Kmax, Kmax, Kmax, Kmax, Kmax, Kmax, Kmax, 4.2, Kmax, 
                          Kmax]
                 K_fast_body_circles = [-10, 0.67]
-                W_fast_body_circles = [sf.c2] * len(K_fast_body_circles)
+                W_fast_body_circles = [c2] * len(K_fast_body_circles)
                 K_transition_circles = [4.2]
-                W_transition_circles = [sf.c0]
+                W_transition_circles = [c0]
             else:
                 K_guess = [1., 1., 8.74, 8.74, 5.98, 5.98, 3.68, 1.84, 1.84,
                            6.44, 9.2, 15.18, 19.78, 22.01]
@@ -193,7 +203,7 @@ def dispersion_diagram(mode_options, chosen_mode, disp_rel, K, W, R1,
                 K_end = [Kmax, Kmax, Kmax, Kmax, Kmax, Kmax, Kmax, Kmax, Kmax,
                          Kmax, Kmax, Kmax, Kmax, Kmax]
                 K_fast_body_circles = [0.47, 4.51, 8.55, 12.55, 16.5, 20.53]
-                W_fast_body_circles = [sf.c2] * len(K_fast_body_circles)
+                W_fast_body_circles = [c2] * len(K_fast_body_circles)
                 K_transition_circles = []
                 W_transition_circles = []
      
@@ -210,9 +220,9 @@ def dispersion_diagram(mode_options, chosen_mode, disp_rel, K, W, R1,
                 K_end = [Kmax, Kmax, Kmax, Kmax, Kmax, Kmax, Kmax, 4.752, Kmax, 
                          Kmax]
                 K_fast_body_circles = [-10, 0.365]
-                W_fast_body_circles = [sf.c2] * len(K_fast_body_circles)
+                W_fast_body_circles = [c2] * len(K_fast_body_circles)
                 K_transition_circles = [4.752]
-                W_transition_circles = [sf.c0]
+                W_transition_circles = [c0]
             else:
                 K_guess = [1., 1., 8.74, 8.74, 5.98, 5.98, 3.68, 1.84, 1.84,
                            6.44, 9.2, 15.18, 19.78, 22.01]
@@ -227,7 +237,7 @@ def dispersion_diagram(mode_options, chosen_mode, disp_rel, K, W, R1,
                          Kmax, Kmax, Kmax, Kmax, Kmax]
                 K_fast_body_circles = [0.336, 4.306, 8.346, 12.318, 16.309,
                                        20.342]
-                W_fast_body_circles = [sf.c2] * len(K_fast_body_circles)
+                W_fast_body_circles = [c2] * len(K_fast_body_circles)
                 K_transition_circles = []
                 W_transition_circles = []
     
@@ -245,7 +255,7 @@ def dispersion_diagram(mode_options, chosen_mode, disp_rel, K, W, R1,
                 K_fast_body_circles = []
                 W_fast_body_circles = []
                 K_transition_circles = [5.2]
-                W_transition_circles = [sf.c0]
+                W_transition_circles = [c0]
             else:
                 K_guess = [1., 1., 8.74, 8.74, 5.98, 5.98, 3.68, 1.84, 2., 6., 
                            9., 14.73, 19.8, 23.4]
@@ -259,7 +269,7 @@ def dispersion_diagram(mode_options, chosen_mode, disp_rel, K, W, R1,
                 K_end = [Kmax, Kmax, Kmax, Kmax, Kmax, Kmax, Kmax, Kmax, Kmax,
                          Kmax, Kmax, Kmax, Kmax, Kmax]
                 K_fast_body_circles = [-10, 4.1, 8.2, 12.2, 16.2, 20.2]
-                W_fast_body_circles = [sf.c2] * len(K_fast_body_circles)
+                W_fast_body_circles = [c2] * len(K_fast_body_circles)
                 K_transition_circles = []
                 W_transition_circles = []
         else:
@@ -291,49 +301,49 @@ def dispersion_diagram(mode_options, chosen_mode, disp_rel, K, W, R1,
         ax.set_ylim(0., 1.41)
         
         if chosen_mode in fast_surf_mode_options:
-            ax.fill_between((Kmin-0.1, Kmax+0.1), (sf.c2, sf.c2), (1.42, 1.42),
+            ax.fill_between((Kmin-0.1, Kmax+0.1), (c2, c2), (1.42, 1.42),
                 edgecolor='gray', linestyle='-.', color='None', hatch='/',
                 linewidth=2)
     
-            #ax.plot([K_range[0], K_range[-1]], [sf.vA, sf.vA], color = '0.5', linestyle='--', linewidth=2)
-            ax.annotate(r'$v_A$', xy=(K_range[-1] + 0.03, sf.vA - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-            ax.plot([K_range[0], K_range[-1]], [sf.vA, sf.vA], color = '0.5', linestyle='-.', linewidth=2)
-            ax.plot([K_range[0], K_range[-1]], [sf.cT, sf.cT], color = '0.5', linestyle='-.', linewidth=2)
-            ax.annotate(r'$c_T$', xy=(K_range[-1] + 0.03, sf.cT - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-            ax.plot([K_range[0], K_range[-1]], [sf.c0, sf.c0], color = '0.5', linestyle='-.', linewidth=2)
-            ax.annotate(r'$c_0$', xy=(K_range[-1] + 0.03, sf.c0 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-            #ax.plot([K_range[0], K_range[-1]], [sf.c2, sf.c2], color = '0.5', linestyle='--', linewidth=2)
-    #            ax.annotate(r'$c_2$', xy=(K_range[-1] + 0.03, sf.c2 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-            ax.plot([K_range[0], K_range[-1]], [sf.c1(R1), sf.c1(R1)], color = '0.5', linestyle='-.', linewidth=2)
+            #ax.plot([K_range[0], K_range[-1]], [vA, vA], color = '0.5', linestyle='--', linewidth=2)
+            ax.annotate(r'$v_A$', xy=(K_range[-1] + 0.03, vA - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+            ax.plot([K_range[0], K_range[-1]], [vA, vA], color = '0.5', linestyle='-.', linewidth=2)
+            ax.plot([K_range[0], K_range[-1]], [cT(c0, vA), cT(c0, vA)], color = '0.5', linestyle='-.', linewidth=2)
+            ax.annotate(r'$c_T$', xy=(K_range[-1] + 0.03, cT(c0, vA) - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+            ax.plot([K_range[0], K_range[-1]], [c0, c0], color = '0.5', linestyle='-.', linewidth=2)
+            ax.annotate(r'$c_0$', xy=(K_range[-1] + 0.03, c0 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+            #ax.plot([K_range[0], K_range[-1]], [c2, c2], color = '0.5', linestyle='--', linewidth=2)
+    #            ax.annotate(r'$c_2$', xy=(K_range[-1] + 0.03, c2 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+            ax.plot([K_range[0], K_range[-1]], [c1(R1, c2), c1(R1, c2)], color = '0.5', linestyle='-.', linewidth=2)
             if R1 == 2.:
-                ax.annotate(r'$c_1=c_2$', xy=(K_range[-1] + 0.03, sf.c1(R1) - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+                ax.annotate(r'$c_1=c_2$', xy=(K_range[-1] + 0.03, c1(R1, c2) - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
             else:
-                ax.annotate(r'$c_1$', xy=(K_range[-1] + 0.03, sf.c1(R1) - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-                ax.annotate(r'$c_2$', xy=(K_range[-1] + 0.03, sf.c2 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+                ax.annotate(r'$c_1$', xy=(K_range[-1] + 0.03, c1(R1, c2) - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+                ax.annotate(r'$c_2$', xy=(K_range[-1] + 0.03, c2 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
                 
         else:
             K_range_for_fill = np.append(K_range, K_range[-1]+0.1)
-            ax.fill_between((Kmin-0.1, Kmax+0.1), (sf.c0,sf.c0), (sf.vA,sf.vA),
+            ax.fill_between((Kmin-0.1, Kmax+0.1), (c0,c0), (vA,vA),
                             edgecolor='gray', linestyle='-.', color='None', hatch='/',
                             linewidth=2)
-            ax.fill_between((Kmin-0.1, Kmax+0.1), (sf.c2, sf.c2), (1.42, 1.42),
+            ax.fill_between((Kmin-0.1, Kmax+0.1), (c2, c2), (1.42, 1.42),
                             edgecolor='gray', linestyle='-.', color='None', hatch='/',
                             linewidth=2)
             
-            #ax.plot([K_range[0], K_range[-1]], [sf.vA, sf.vA], color = '0.5', linestyle='--', linewidth=2)
-            ax.annotate(r'$v_A$', xy=(K_range[-1] + 0.03, sf.vA - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-            ax.plot([K_range[0], K_range[-1]], [sf.cT, sf.cT], color = '0.5', linestyle='-.', linewidth=2)
-            ax.annotate(r'$c_T$', xy=(K_range[-1] + 0.03, sf.cT - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-            #ax.plot([K_range[0], K_range[-1]], [sf.c0, sf.c0], color = '0.5', linestyle='--', linewidth=2)
-            ax.annotate(r'$c_0$', xy=(K_range[-1] + 0.03, sf.c0 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-            #ax.plot([K_range[0], K_range[-1]], [sf.c2, sf.c2], color = '0.5', linestyle='--', linewidth=2)
-    #            ax.annotate(r'$c_2$', xy=(K_range[-1] + 0.03, sf.c2 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-            ax.plot([K_range[0], K_range[-1]], [sf.c1(R1), sf.c1(R1)], color = '0.5', linestyle='-.', linewidth=2)
+            #ax.plot([K_range[0], K_range[-1]], [vA, vA], color = '0.5', linestyle='--', linewidth=2)
+            ax.annotate(r'$v_A$', xy=(K_range[-1] + 0.03, vA - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+            ax.plot([K_range[0], K_range[-1]], [cT(c0, vA), cT(c0, vA)], color = '0.5', linestyle='-.', linewidth=2)
+            ax.annotate(r'$c_T$', xy=(K_range[-1] + 0.03, cT(c0, vA) - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+            #ax.plot([K_range[0], K_range[-1]], [c0, c0], color = '0.5', linestyle='--', linewidth=2)
+            ax.annotate(r'$c_0$', xy=(K_range[-1] + 0.03, c0 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+            #ax.plot([K_range[0], K_range[-1]], [c2, c2], color = '0.5', linestyle='--', linewidth=2)
+    #            ax.annotate(r'$c_2$', xy=(K_range[-1] + 0.03, c2 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+            ax.plot([K_range[0], K_range[-1]], [c1(R1, c2), c1(R1, c2)], color = '0.5', linestyle='-.', linewidth=2)
             if R1 == 2.:
-                ax.annotate(r'$c_1=c_2$', xy=(K_range[-1] + 0.03, sf.c1(R1) - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+                ax.annotate(r'$c_1=c_2$', xy=(K_range[-1] + 0.03, c1(R1, c2) - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
             else:
-                ax.annotate(r'$c_1$', xy=(K_range[-1] + 0.03, sf.c1(R1) - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
-                ax.annotate(r'$c_2$', xy=(K_range[-1] + 0.03, sf.c2 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+                ax.annotate(r'$c_1$', xy=(K_range[-1] + 0.03, c1(R1, c2) - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
+                ax.annotate(r'$c_2$', xy=(K_range[-1] + 0.03, c2 - 0.01), xycoords='data', annotation_clip=False, fontsize=20)
     
         # Plot a green circle where the chosen mode is
         ax.plot(K, W, 'go', markersize=10)

@@ -50,12 +50,12 @@ show_boundary = False
 # Uncomment the parametrer you would like to see
 # No density perturbation for alfven modes.
 
-#show_density = True
+show_density = True
 show_mag = True
 #show_mag_scale = True #must also have show_mag = True
-show_mag_fade = True
+#show_mag_fade = True
 #show_mag_front = True
-#show_vel_front = True
+show_vel_front = True
 #show_vel_top = True
 #show_disp_top = True
 #show_disp_front = True
@@ -78,12 +78,12 @@ for i, j in enumerate(vis_modules):
 
 
 # Set to True if you would like the dispersion diagram with chosen mode highlighted.
-show_dispersion = False
-#show_dispersion = True
+#show_dispersion = False
+show_dispersion = True
 
 # Wanna see the animation? Of course you do
-#show_animation = False
-show_animation = True
+show_animation = False
+#show_animation = True
 
 # Basic plot to see which eigensolutions have been found.
 show_quick_plot = False
@@ -96,14 +96,14 @@ show_quick_plot = False
 #for mode_ind in range(2,14): 
 
 # Choose your modes and views - Make parallel views the last in the list views_selected
-modes_selected = [0]#range(16)
-views_selected = [1]
+modes_selected = [0,1]#range(16)
+views_selected = [6]
 
 # Video resolution
 #res = (1920,1080) # There is a problem with this resolution- height must be odd number - Mayavi bug apparently
-#res = tuple(101 * np.array((16,9)))
+res = tuple(101 * np.array((16,9)))
 #res = tuple(51 * np.array((16,9)))
-res = tuple(21 * np.array((16,9)))
+#res = tuple(21 * np.array((16,9)))
 
 number_of_frames = 50
 
@@ -146,7 +146,7 @@ for mode_ind in modes_selected:
     mode = mode_options[mode_ind]
     
     #Different modes can be found with different characteristic speed orderings
-    if 'fast' and 'surf' in mode:
+    if 'fast' in mode and 'surf' in mode:
         c2 = 1.2
         c0 = 1.
         vA = 1.3
@@ -264,7 +264,7 @@ for mode_ind in modes_selected:
             raise NameError('Disperion plot requested for an alfven mode. Cant do that.')
         
         dispersion_diagram.dispersion_diagram(mode_options, mode, 
-                                              disp_rel_partial, K, W, R1)
+                                              disp_rel_partial, K, W, R1, c2, c0, vA)
 #        plt.tight_layout() # seems to make it chop the sides off with this
         plt.savefig(os.path.join(save_dispersion_diagram_directory, 'R1_' + str(R1) + '_' + mode + '.png') )  
         plt.close()
@@ -285,7 +285,7 @@ for mode_ind in modes_selected:
         zmax = 2*np.pi
         
         # You can change ny but be careful changing nx, nz.
-        n = 100 #300 gives us reduced bouncing of field lines for the same video size, but there is significant computational cost.
+        n = 300 #300 gives us reduced bouncing of field lines for the same video size, but there is significant computational cost.
         nx = n 
         ny = n
         nz = n
@@ -738,7 +738,7 @@ for mode_ind in modes_selected:
                         i2v.image2video(filepath=save_directory, prefix=prefix, 
                                         output_name=prefix+'video', out_extension='mp4', 
                                         fps=fps, n_loops=4, delete_images=True, 
-                                        delete_old_videos=False, res=res[1])
+                                        delete_old_videos=True, res=res[1])
             
             # Log: to keep us updated with progress
             if t_ind % 5 == 4:
