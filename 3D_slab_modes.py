@@ -19,7 +19,7 @@ import os
 
 # What mode do you want? OPTIONS:
 mode_options = ['slow-kink-surf', 'slow-saus-surf', 'slow-saus-body-3',
-                'slow-kink-body-3', 'slow-saus-body-2', 'slow-kink-body-2', 
+                'slow-kink-body-3', 'slow-saus-body-2', 'slow-kink-body-2',
                 'slow-saus-body-1', 'slow-kink-body-1', 'fast-saus-body-1',
                 'fast-kink-body-1', 'fast-saus-body-2', 'fast-kink-body-2',
                 'fast-saus-body-3', 'fast-kink-body-3', 'fast-kink-surf',
@@ -48,7 +48,7 @@ show_mini_axis = False
 show_boundary = False
 
 # Uncomment the parametrer you would like to see
-# No density perturbation for alfven modes.
+# No density perturbation for Alfven modes.
 
 show_density = True
 show_mag = True
@@ -86,8 +86,8 @@ show_animation = False
 #show_animation = True
 
 # Basic plot to see which eigensolutions have been found.
-show_quick_plot = False
-#show_quick_plot = True
+#show_quick_plot = False
+show_quick_plot = True
 
 #range(14): # for all others. REMEMBER SBB pparameters
 #for mode_ind in [14,15]: #for fast body surf. REMEMBER SBS parameters
@@ -110,11 +110,11 @@ number_of_frames = 50
 # Frames per second of output video
 fps = 20
 
-#save_images = False
-save_images = True
+save_images = False
+#save_images = True
 
-#make_video = False
-make_video = True
+make_video = False
+#make_video = True
 
 # Where should I save the animation images/videos?
 os.path.abspath(os.curdir)
@@ -122,7 +122,8 @@ os.chdir('..')
 save_directory = os.path.join(os.path.abspath(os.curdir), '3D_vis_animations')
 
 # Where should I save the dispersion diagrams?
-save_dispersion_diagram_directory = os.path.join(os.path.abspath(os.curdir), '3D_vis_dispersion_diagrams')
+save_dispersion_diagram_directory = os.path.join(os.path.abspath(os.curdir),
+                                                 '3D_vis_dispersion_diagrams')
 
 # ================================
 # Visualisation set-up
